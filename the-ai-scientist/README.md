@@ -83,12 +83,16 @@ npm run feedback:reset
 - `GET /api/feedback`
 - `POST /api/feedback`
 - `POST /api/feedback/retrieve`
+- `POST /api/feedback/seed` (development only)
+- `POST /api/feedback/reset` (development only)
 
 All route inputs and outputs are validated with Zod where relevant. API keys are read only on the server.
 
 ## Feedback Learning Loop
 
 Feedback is saved as structured scientist corrections. The system derives a reusable rule, stores it locally, scores relevance by domain, experiment type, tags, keyword overlap, applicability, severity, and optional embeddings, then injects matching rules into later plan generation. The UI shows exactly which feedback rules were applied.
+
+In development, the sidebar includes **Seed demo feedback** and **Reset feedback** buttons so judges can quickly exercise the learning loop.
 
 ## Safety and Compliance
 

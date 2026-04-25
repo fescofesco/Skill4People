@@ -163,6 +163,19 @@ export default function Home() {
     void refreshHealthAndFeedback();
   }
 
+  async function runFeedbackAction(action: "seed" | "reset") {
+    setError(null);
+    try {
+      const res = await fetch(`/api/feedback/${action}`, { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error?.message || `Feedback ${action} failed`);
+      setToast(action === "seed" ? "Seeded demo feedback examples." : "Feedback store reset.");
+      await refreshHealthAndFeedback();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : `Feedback ${action} failed`);
+    }
+  }
+
   return (
     <main className="min-h-screen px-4 py-8 md:px-8">
       <div className="mx-auto max-w-7xl">
@@ -294,6 +307,20 @@ export default function Home() {
                     </div>
                   ))
                 )}
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2 border-t pt-4">
+                <button
+                  onClick={() => void runFeedbackAction("seed")}
+                  className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100"
+                >
+                  Seed demo feedback
+                </button>
+                <button
+                  onClick={() => void runFeedbackAction("reset")}
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Reset feedback
+                </button>
               </div>
             </Card>
           </aside>
