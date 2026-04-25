@@ -51,12 +51,37 @@ type FeedbackTarget = {
   label: string;
 };
 
+type LiteratureDiagnostics = {
+  sources: string[];
+  demoFallback: boolean;
+  openaiConfigured: boolean;
+  parseSource: "openai" | "heuristic";
+  parseModel: string | null;
+  parseErrors: string[];
+  noveltySource: "openai" | "heuristic" | "demo";
+  noveltyModel: string | null;
+  noveltyErrors: string[];
+  referenceCount: number;
+};
+
+type PlanGenerationMeta = {
+  source: "openai" | "deterministic_fallback" | "safety_restricted";
+  model: string | null;
+  attempts: number;
+  errors: string[];
+};
+
+type LiteratureQCWithMeta = LiteratureQC & { _diagnostics?: LiteratureDiagnostics };
+type ExperimentPlanWithMeta = ExperimentPlan & { _generation?: PlanGenerationMeta };
+
 export default function Home() {
   const [hypothesis, setHypothesis] = useState(samples[0].text);
   const [stage, setStage] = useState<Stage>("input");
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [literatureQC, setLiteratureQC] = useState<LiteratureQC | null>(null);
+  const [litDiag, setLitDiag] = useState<LiteratureDiagnostics | null>(null);
   const [plan, setPlan] = useState<ExperimentPlan | null>(null);
+  const [genMeta, setGenMeta] = useState<PlanGenerationMeta | null>(null);
   const [feedbackCount, setFeedbackCount] = useState(0);
   const [recentFeedback, setRecentFeedback] = useState<ScientistFeedback[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -90,6 +115,8 @@ export default function Home() {
     setError(null);
     setStage("literature_loading");
     setPlan(null);
+    setGenMeta(null);
+    setLitDiag(null);
     setSavedSincePlan(false);
     try {
       const res = await fetch("/api/literature", {
@@ -97,9 +124,13 @@ export default function Home() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ hypothesis })
       });
-      const json = await res.json();
+      const json = (await res.json()) as LiteratureQCWithMeta & {
+        error?: { message?: string };
+      };
       if (!res.ok) throw new Error(json?.error?.message || "Literature QC failed");
-      setLiteratureQC(json);
+      const { _diagnostics, ...qcOnly } = json;
+      setLiteratureQC(qcOnly as LiteratureQC);
+      setLitDiag(_diagnostics ?? null);
       setStage("literature_ready");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Literature QC failed");
@@ -117,9 +148,13 @@ export default function Home() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ hypothesis, literature_qc: literatureQC })
       });
-      const json = await res.json();
+      const json = (await res.json()) as ExperimentPlanWithMeta & {
+        error?: { message?: string };
+      };
       if (!res.ok) throw new Error(json?.error?.message || "Plan generation failed");
-      setPlan(json);
+      const { _generation, ...planOnly } = json;
+      setPlan(planOnly as ExperimentPlan);
+      setGenMeta(_generation ?? null);
       setStage("plan_ready");
       setSavedSincePlan(false);
       void refreshHealthAndFeedback();
@@ -203,6 +238,18 @@ export default function Home() {
           </div>
         )}
 
+        {health && health.env.openaiConfigured === false && (
+          <div className="mb-4 flex flex-col gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 md:flex-row md:items-center md:justify-between">
+            <div>
+              <b>OpenAI key not detected.</b> The app will use a deterministic template fallback
+              instead of calling a real model. Add{" "}
+              <code className="rounded bg-amber-100 px-1">OPENAI_API_KEY</code> to{" "}
+              <code className="rounded bg-amber-100 px-1">.env.local</code> and restart the dev
+              server.
+            </div>
+          </div>
+        )}
+
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <section className="space-y-6">
             <Card>
@@ -258,6 +305,7 @@ export default function Home() {
             {literatureQC && (
               <LiteratureCard
                 qc={literatureQC}
+                diagnostics={litDiag}
                 onGenerate={generatePlan}
                 loading={stage === "plan_loading"}
               />
@@ -267,6 +315,7 @@ export default function Home() {
             {plan && (
               <PlanDashboard
                 plan={plan}
+                generation={genMeta}
                 savedSincePlan={savedSincePlan}
                 onRegenerate={generatePlan}
                 onEdit={setTarget}
@@ -350,7 +399,17 @@ function StatusBadges({ health, feedbackCount }: { health: HealthResponse | null
   );
 }
 
-function LiteratureCard({ qc, onGenerate, loading }: { qc: LiteratureQC; onGenerate: () => void; loading: boolean }) {
+function LiteratureCard({
+  qc,
+  diagnostics,
+  onGenerate,
+  loading
+}: {
+  qc: LiteratureQC;
+  diagnostics: LiteratureDiagnostics | null;
+  onGenerate: () => void;
+  loading: boolean;
+}) {
   return (
     <Card>
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -360,9 +419,36 @@ function LiteratureCard({ qc, onGenerate, loading }: { qc: LiteratureQC; onGener
           </h2>
           <p className="mt-1 text-sm text-slate-600">Rapid novelty signal, not a systematic review.</p>
         </div>
-        <Badge tone={qc.novelty.signal === "exact_match_found" ? "red" : qc.novelty.signal === "similar_work_exists" ? "amber" : "emerald"}>
-          {qc.novelty.signal.replaceAll("_", " ")}
-        </Badge>
+        <div className="flex flex-col items-end gap-2">
+          <Badge tone={qc.novelty.signal === "exact_match_found" ? "red" : qc.novelty.signal === "similar_work_exists" ? "amber" : "emerald"}>
+            {qc.novelty.signal.replaceAll("_", " ")}
+          </Badge>
+          {diagnostics && (
+            <div className="flex flex-wrap gap-1">
+              <Badge tone={diagnostics.parseSource === "openai" ? "emerald" : "amber"}>
+                Parsed by {diagnostics.parseSource === "openai" ? `AI · ${diagnostics.parseModel ?? "openai"}` : "heuristic"}
+              </Badge>
+              <Badge
+                tone={
+                  diagnostics.noveltySource === "openai"
+                    ? "emerald"
+                    : diagnostics.noveltySource === "heuristic"
+                      ? "amber"
+                      : "red"
+                }
+              >
+                Novelty {diagnostics.noveltySource === "openai"
+                  ? `AI · ${diagnostics.noveltyModel ?? "openai"}`
+                  : diagnostics.noveltySource === "heuristic"
+                    ? "heuristic"
+                    : "demo fallback"}
+              </Badge>
+              {diagnostics.sources.length > 0 && (
+                <Badge tone="slate">live: {diagnostics.sources.join(", ")}</Badge>
+              )}
+            </div>
+          )}
+        </div>
       </div>
       <div className="mt-4">
         <div className="mb-1 flex justify-between text-sm text-slate-600">
@@ -417,11 +503,13 @@ function LiteratureCard({ qc, onGenerate, loading }: { qc: LiteratureQC; onGener
 
 function PlanDashboard({
   plan,
+  generation,
   savedSincePlan,
   onRegenerate,
   onEdit
 }: {
   plan: ExperimentPlan;
+  generation: PlanGenerationMeta | null;
   savedSincePlan: boolean;
   onRegenerate: () => void;
   onEdit: (target: FeedbackTarget) => void;
@@ -436,6 +524,38 @@ function PlanDashboard({
               <Beaker className="h-5 w-5 text-blue-600" /> Stage C — Plan Dashboard
             </h2>
             <p className="mt-1 text-sm text-slate-500">Plan ID: {plan.plan_id}</p>
+            {generation && (
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <Badge
+                  tone={
+                    generation.source === "openai"
+                      ? "emerald"
+                      : generation.source === "safety_restricted"
+                        ? "red"
+                        : "amber"
+                  }
+                >
+                  {generation.source === "openai"
+                    ? `Generated by ${generation.model ?? "OpenAI"}`
+                    : generation.source === "safety_restricted"
+                      ? "Safety-restricted plan"
+                      : "Deterministic fallback (no AI)"}
+                </Badge>
+                {generation.attempts > 0 && (
+                  <Badge tone="slate">{generation.attempts} attempt{generation.attempts === 1 ? "" : "s"}</Badge>
+                )}
+                {generation.errors.length > 0 && (
+                  <details className="text-xs text-amber-800">
+                    <summary className="cursor-pointer underline">{generation.errors.length} note{generation.errors.length === 1 ? "" : "s"}</summary>
+                    <ul className="mt-1 list-disc pl-5">
+                      {generation.errors.map((e, i) => (
+                        <li key={i}>{e}</li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+              </div>
+            )}
           </div>
           <div className="flex flex-wrap gap-2">
             <button

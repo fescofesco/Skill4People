@@ -10,6 +10,8 @@ import {
   newRiskId,
   newTimelineId
 } from "./ids";
+import { chatCompletionsJson, getOpenAIClient, getOpenAIModel } from "./openai";
+import { PLAN_SYSTEM_PROMPT, SCHEMA_HINT, buildPlanUserPrompt } from "./plan-prompts";
 import {
   Assumption,
   Control,
@@ -34,6 +36,23 @@ export type GeneratePlanArgs = {
   literatureQC: LiteratureQC;
   evidenceCards: EvidenceCard[];
   feedback: RetrievedFeedback[];
+};
+
+export type PlanGenerationSource =
+  | "openai"
+  | "deterministic_fallback"
+  | "safety_restricted";
+
+export type PlanGenerationMeta = {
+  source: PlanGenerationSource;
+  model: string | null;
+  attempts: number;
+  errors: string[];
+};
+
+export type GeneratePlanResult = {
+  plan: ExperimentPlan;
+  generation: PlanGenerationMeta;
 };
 
 type PlanContent = {
@@ -72,12 +91,210 @@ type PlanContent = {
   knownGaps: string[];
 };
 
-export async function generateExperimentPlan(args: GeneratePlanArgs): Promise<ExperimentPlan> {
+export async function generateExperimentPlan(args: GeneratePlanArgs): Promise<GeneratePlanResult> {
   const safety = assessSafety(args.hypothesis, args.parsed);
   if (safety.unsafe) {
-    return restrictedPlan(args, safety.reason || "Request is outside safe scope.");
+    return {
+      plan: restrictedPlan(args, safety.reason || "Request is outside safe scope."),
+      generation: {
+        source: "safety_restricted",
+        model: null,
+        attempts: 0,
+        errors: [safety.reason || "Request is outside safe scope."]
+      }
+    };
   }
-  return deterministicReviewPlan(args);
+
+  const ai = await aiGeneratePlan(args);
+  if (ai.plan) {
+    return {
+      plan: ai.plan,
+      generation: {
+        source: "openai",
+        model: getOpenAIModel(),
+        attempts: ai.attempts,
+        errors: ai.errors
+      }
+    };
+  }
+
+  return {
+    plan: deterministicReviewPlan(args),
+    generation: {
+      source: "deterministic_fallback",
+      model: null,
+      attempts: ai.attempts,
+      errors: ai.errors
+    }
+  };
+}
+
+async function aiGeneratePlan(args: GeneratePlanArgs): Promise<{
+  plan: ExperimentPlan | null;
+  attempts: number;
+  errors: string[];
+}> {
+  const errors: string[] = [];
+  const client = getOpenAIClient();
+  if (!client) {
+    errors.push("openai_plan_skipped: no_api_key");
+    return { plan: null, attempts: 0, errors };
+  }
+
+  const maxAttempts = 2;
+  let validationErrorHint: string | undefined;
+  let attemptsUsed = 0;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    attemptsUsed = attempt;
+    try {
+      const userPrompt = buildPlanUserPrompt({
+        hypothesis: args.hypothesis,
+        parsed: args.parsed,
+        literatureQC: args.literatureQC,
+        evidenceCards: args.evidenceCards,
+        feedback: args.feedback,
+        schemaHint: SCHEMA_HINT,
+        validationErrorHint
+      });
+      const raw = await chatCompletionsJson({
+        system: PLAN_SYSTEM_PROMPT,
+        user: userPrompt,
+        temperature: 0.2,
+        maxTokens: 6000
+      });
+
+      const candidate = normalizeAiPlan(raw, args);
+      const parsed = ExperimentPlanSchema.safeParse(candidate);
+      if (parsed.success) {
+        return { plan: parsed.data, attempts: attempt, errors };
+      }
+      const issues = parsed.error.issues
+        .slice(0, 8)
+        .map((i) => `${i.path.join(".") || "root"}: ${i.message}`);
+      errors.push(`openai_plan_validation_attempt_${attempt}: ${issues.join(" | ")}`);
+      validationErrorHint = issues.join("\n");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      errors.push(`openai_plan_request_attempt_${attempt}: ${message}`);
+      // Network / quota / policy errors aren't usefully retryable; bail.
+      break;
+    }
+  }
+
+  return { plan: null, attempts: attemptsUsed, errors };
+}
+
+/**
+ * Take whatever the LLM returned and overwrite the fields that must remain canonical
+ * (so the LLM cannot invent feedback IDs, evidence cards, or references). Also
+ * recomputes the budget so the totals match the materials/equipment the LLM emitted.
+ */
+function normalizeAiPlan(raw: unknown, args: GeneratePlanArgs): unknown {
+  if (!raw || typeof raw !== "object") return raw;
+  const plan = raw as Record<string, any>;
+
+  plan.plan_id = newPlanId();
+  plan.created_at = nowIso();
+
+  plan.hypothesis = {
+    raw: args.hypothesis,
+    parsed: args.parsed
+  };
+
+  plan.novelty = {
+    signal: args.literatureQC.novelty.signal,
+    confidence: args.literatureQC.novelty.confidence,
+    rationale: args.literatureQC.novelty.rationale,
+    references: args.literatureQC.novelty.references
+  };
+
+  plan.applied_feedback = args.feedback.map((item) => ({
+    feedback_id: item.feedback.id,
+    derived_rule: item.feedback.derived_rule,
+    similarity_score: item.similarity_score,
+    reason_applied:
+      item.reason || "Matched by domain, experiment type, tags, or keyword overlap.",
+    source_item_type: item.feedback.item_type,
+    severity: item.feedback.severity
+  }));
+
+  // Force every editable child to literal `true`. Some LLM responses return the string "true".
+  const editableLists = ["protocol", "materials", "equipment", "timeline", "risks_and_mitigations", "assumptions"] as const;
+  for (const key of editableLists) {
+    const list = plan[key];
+    if (Array.isArray(list)) {
+      for (const item of list) {
+        if (item && typeof item === "object") item.editable = true;
+      }
+    }
+  }
+  if (plan.validation && typeof plan.validation === "object") {
+    plan.validation.editable = true;
+    if (Array.isArray(plan.validation.controls)) {
+      for (const control of plan.validation.controls) {
+        if (control && typeof control === "object") control.editable = true;
+      }
+    }
+  }
+  if (plan.budget && typeof plan.budget === "object") {
+    plan.budget.editable = true;
+  }
+
+  // Prefer canonical evidence cards over anything the LLM might have invented.
+  if (!plan.evidence_quality || typeof plan.evidence_quality !== "object") {
+    plan.evidence_quality = {};
+  }
+  plan.evidence_quality.evidence_cards = args.evidenceCards;
+  if (!plan.evidence_quality.literature_coverage) {
+    plan.evidence_quality.literature_coverage =
+      args.literatureQC.novelty.references.length >= 3 ? "medium" : "low";
+  }
+  if (!plan.evidence_quality.supplier_data_confidence) {
+    plan.evidence_quality.supplier_data_confidence = args.evidenceCards.some(
+      (e) => e.source_type === "supplier_page"
+    )
+      ? "medium"
+      : "low";
+  }
+  if (!plan.evidence_quality.protocol_grounding_confidence) {
+    plan.evidence_quality.protocol_grounding_confidence = args.evidenceCards.some(
+      (e) => e.source_type === "protocol"
+    )
+      ? "medium"
+      : "low";
+  }
+  if (!plan.evidence_quality.overall_plan_confidence) {
+    plan.evidence_quality.overall_plan_confidence =
+      args.literatureQC.novelty.references.length >= 3 && args.evidenceCards.length >= 3
+        ? "medium"
+        : "low";
+  }
+  if (!Array.isArray(plan.evidence_quality.known_gaps)) {
+    plan.evidence_quality.known_gaps = [];
+  }
+
+  // Recompute budget to keep totals consistent with the materials/equipment emitted.
+  if (Array.isArray(plan.materials) && Array.isArray(plan.equipment)) {
+    try {
+      plan.budget = recomputeBudget({
+        materials: plan.materials as Material[],
+        equipment: plan.equipment as Equipment[],
+        currency: plan.budget?.currency || "USD",
+        contingencyPercent: plan.budget?.contingency_percent ?? 15,
+        laborOrService:
+          typeof plan.budget?.labor_or_service_estimate === "number"
+            ? plan.budget.labor_or_service_estimate
+            : null,
+        notesPrefix:
+          "AI-generated materials. Catalog numbers and prices recomputed; verify with live supplier evidence before ordering."
+      });
+    } catch {
+      // If the LLM emitted shapes that don't fit recomputeBudget cleanly, leave the
+      // budget as-is and let Zod validation surface specific errors on the next pass.
+    }
+  }
+
+  return plan;
 }
 
 function deterministicReviewPlan(args: GeneratePlanArgs): ExperimentPlan {

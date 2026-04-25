@@ -24,14 +24,15 @@ export async function POST(req: Request) {
       searchSuppliers(body.hypothesis, parsed)
     ]);
     const evidenceCards = mergeEvidenceCards(protocolEvidence, supplierEvidence);
-    const plan = await generateExperimentPlan({
+    const { plan, generation } = await generateExperimentPlan({
       hypothesis: body.hypothesis,
       parsed,
       literatureQC,
       evidenceCards,
       feedback
     });
-    return Response.json(ExperimentPlanSchema.parse(plan));
+    const validated = ExperimentPlanSchema.parse(plan);
+    return Response.json({ ...validated, _generation: generation });
   } catch (err) {
     return jsonError(err);
   }

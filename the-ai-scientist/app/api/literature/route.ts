@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     }
     const { qc, diagnostics } = await runLiteratureQC(body.hypothesis);
     const parsed = LiteratureQCSchema.parse(qc);
-    return Response.json({ ...parsed, diagnostics });
+    return Response.json({ ...parsed, _diagnostics: diagnostics });
   } catch (err) {
     return jsonError(err);
   }

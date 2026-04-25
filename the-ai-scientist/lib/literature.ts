@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { searchArxiv } from "./arxiv";
-import { detectDemoTopic, demoLiteratureQC, demoParsedHypothesis, demoQueries } from "./demo-fallbacks";
+import { demoLiteratureQC, demoQueries } from "./demo-fallbacks";
 import { getEnv } from "./env";
-import { chatCompletionsJson, getOpenAIClient } from "./openai";
+import { chatCompletionsJson, getOpenAIClient, getOpenAIModel } from "./openai";
 import { searchPubmed } from "./pubmed";
 import { searchSemanticScholar } from "./semantic-scholar";
 import { tavilyMultiSearch } from "./tavily";
@@ -22,8 +22,18 @@ Be conservative. Do not invent details that are not implied by the input.
 
 Return only valid JSON matching the schema. Lists must be arrays of strings (use empty array if unknown). Strings must be plain text, not markdown.`;
 
-export async function parseHypothesis(hypothesis: string): Promise<ParsedHypothesis> {
+export type AiSource = "openai" | "heuristic";
+
+export type ParseHypothesisResult = {
+  parsed: ParsedHypothesis;
+  source: AiSource;
+  model: string | null;
+  errors: string[];
+};
+
+export async function parseHypothesis(hypothesis: string): Promise<ParseHypothesisResult> {
   const client = getOpenAIClient();
+  const errors: string[] = [];
   if (client) {
     try {
       const raw = await chatCompletionsJson({
@@ -32,12 +42,25 @@ export async function parseHypothesis(hypothesis: string): Promise<ParsedHypothe
         temperature: 0.1
       });
       const parsed = ParsedHypothesisSchema.safeParse(raw);
-      if (parsed.success) return parsed.data;
-    } catch {
-      // fall through to heuristic
+      if (parsed.success) {
+        return { parsed: parsed.data, source: "openai", model: getOpenAIModel(), errors };
+      }
+      errors.push(
+        "openai_parse_validation_failed: " +
+          parsed.error.issues
+            .slice(0, 3)
+            .map((i) => `${i.path.join(".") || "root"}: ${i.message}`)
+            .join(" | ")
+      );
+    } catch (err) {
+      errors.push(
+        "openai_parse_request_failed: " + (err instanceof Error ? err.message : String(err))
+      );
     }
+  } else {
+    errors.push("openai_parse_skipped: no_api_key");
   }
-  return heuristicParse(hypothesis);
+  return { parsed: heuristicParse(hypothesis), source: "heuristic", model: null, errors };
 }
 
 function parseUserPrompt(hypothesis: string): string {
@@ -67,12 +90,7 @@ Rules:
 }
 
 export function heuristicParse(hypothesis: string): ParsedHypothesis {
-  const topic = detectDemoTopic(hypothesis);
-  const base = demoParsedHypothesis(topic, hypothesis);
-  if (topic === "generic") {
-    return genericHeuristicParse(hypothesis);
-  }
-  return base;
+  return genericHeuristicParse(hypothesis);
 }
 
 function genericHeuristicParse(hypothesis: string): ParsedHypothesis {
@@ -359,14 +377,22 @@ const NoveltyClassifySchema = z.object({
   coverage_warnings: z.array(z.string()).default([])
 });
 
+export type ClassifyNoveltyResult = {
+  qc: LiteratureQC;
+  source: AiSource;
+  model: string | null;
+  errors: string[];
+};
+
 export async function classifyNovelty(args: {
   hypothesis: string;
   parsed: ParsedHypothesis;
   references: Reference[];
   queries: string[];
-}): Promise<LiteratureQC> {
+}): Promise<ClassifyNoveltyResult> {
   const trimmedRefs = args.references.slice(0, 12);
   const client = getOpenAIClient();
+  const errors: string[] = [];
   if (client && trimmedRefs.length > 0) {
     try {
       const refList = trimmedRefs
@@ -406,12 +432,14 @@ Return JSON: {
       const raw = await chatCompletionsJson({ system, user, temperature: 0.1 });
       const parsed = NoveltyClassifySchema.safeParse(raw);
       if (parsed.success) {
-        const indices = parsed.data.used_reference_indices.filter((i) => i >= 0 && i < trimmedRefs.length);
+        const indices = parsed.data.used_reference_indices.filter(
+          (i) => i >= 0 && i < trimmedRefs.length
+        );
         const usedRefs = (indices.length > 0
           ? indices.map((i) => trimmedRefs[i])
           : trimmedRefs.slice(0, 3)
         ).slice(0, 5);
-        return LiteratureQCSchema.parse({
+        const qc = LiteratureQCSchema.parse({
           parsed_hypothesis: args.parsed,
           novelty: {
             signal: parsed.data.signal,
@@ -422,13 +450,26 @@ Return JSON: {
             coverage_warnings: parsed.data.coverage_warnings
           }
         });
+        return { qc, source: "openai", model: getOpenAIModel(), errors };
       }
-    } catch {
-      // fall through to heuristic
+      errors.push(
+        "openai_novelty_validation_failed: " +
+          parsed.error.issues
+            .slice(0, 3)
+            .map((i) => `${i.path.join(".") || "root"}: ${i.message}`)
+            .join(" | ")
+      );
+    } catch (err) {
+      errors.push(
+        "openai_novelty_request_failed: " + (err instanceof Error ? err.message : String(err))
+      );
     }
+  } else if (!client) {
+    errors.push("openai_novelty_skipped: no_api_key");
+  } else {
+    errors.push("openai_novelty_skipped: no_references_to_classify");
   }
-
-  return heuristicNovelty(args);
+  return { qc: heuristicNovelty(args), source: "heuristic", model: null, errors };
 }
 
 export function heuristicNovelty(args: {
@@ -474,41 +515,87 @@ export function heuristicNovelty(args: {
   });
 }
 
+export type LiteratureDiagnostics = {
+  sources: string[];
+  demoFallback: boolean;
+  openaiConfigured: boolean;
+  parseSource: AiSource;
+  parseModel: string | null;
+  parseErrors: string[];
+  noveltySource: AiSource | "demo";
+  noveltyModel: string | null;
+  noveltyErrors: string[];
+  referenceCount: number;
+};
+
 export async function runLiteratureQC(hypothesis: string): Promise<{
   qc: LiteratureQC;
-  diagnostics: { sources: string[]; demoFallback: boolean };
+  diagnostics: LiteratureDiagnostics;
 }> {
   const env = getEnv();
-  const parsed = await parseHypothesis(hypothesis);
-  const queries = generateLiteratureQueries(parsed, hypothesis);
+  const openaiConfigured = Boolean(env.openaiApiKey);
+  const parseResult = await parseHypothesis(hypothesis);
+  const queries = generateLiteratureQueries(parseResult.parsed, hypothesis);
 
   const sourcesUsed: string[] = [];
-  let refs: Reference[] = [];
 
-  // Run searches in parallel
   const [ssRefs, axRefs, pmRefs, prRefs] = await Promise.all([
     safeSearch(() => searchSemanticScholar(queries), "semantic_scholar", sourcesUsed),
-    shouldUseArxiv(parsed) ? safeSearch(() => searchArxiv(queries), "arxiv", sourcesUsed) : Promise.resolve([]),
-    shouldUsePubmed(parsed) ? safeSearch(() => searchPubmed(queries), "pubmed", sourcesUsed) : Promise.resolve([]),
+    shouldUseArxiv(parseResult.parsed)
+      ? safeSearch(() => searchArxiv(queries), "arxiv", sourcesUsed)
+      : Promise.resolve([]),
+    shouldUsePubmed(parseResult.parsed)
+      ? safeSearch(() => searchPubmed(queries), "pubmed", sourcesUsed)
+      : Promise.resolve([]),
     safeSearch(() => searchProtocolRepositories(queries), "protocol_repository", sourcesUsed)
   ]);
 
-  refs = dedupeReferences([...ssRefs, ...axRefs, ...pmRefs, ...prRefs]).slice(0, 12);
+  const refs = dedupeReferences([...ssRefs, ...axRefs, ...pmRefs, ...prRefs]).slice(0, 12);
 
-  if (refs.length === 0 && env.demoFallbackEnabled) {
-    const topic = detectDemoTopic(hypothesis);
-    const demo = demoLiteratureQC(topic, hypothesis, parsed);
-    return { qc: demo, diagnostics: { sources: sourcesUsed, demoFallback: true } };
+  // Demo fallback only fires when OpenAI is not configured AND demo is explicitly enabled.
+  // With a real API key we always go through the AI/heuristic path so user-entered hypotheses
+  // are never replaced by canned sample-topic data.
+  if (!openaiConfigured && env.demoFallbackEnabled && refs.length === 0) {
+    const demo = demoLiteratureQC("generic", hypothesis, parseResult.parsed);
+    return {
+      qc: demo,
+      diagnostics: {
+        sources: sourcesUsed,
+        demoFallback: true,
+        openaiConfigured,
+        parseSource: parseResult.source,
+        parseModel: parseResult.model,
+        parseErrors: parseResult.errors,
+        noveltySource: "demo",
+        noveltyModel: null,
+        noveltyErrors: ["demo_fallback: openai_not_configured_and_no_live_results"],
+        referenceCount: 0
+      }
+    };
   }
 
-  const qc = await classifyNovelty({
+  const novelty = await classifyNovelty({
     hypothesis,
-    parsed,
+    parsed: parseResult.parsed,
     references: refs,
     queries
   });
 
-  return { qc, diagnostics: { sources: sourcesUsed, demoFallback: false } };
+  return {
+    qc: novelty.qc,
+    diagnostics: {
+      sources: sourcesUsed,
+      demoFallback: false,
+      openaiConfigured,
+      parseSource: parseResult.source,
+      parseModel: parseResult.model,
+      parseErrors: parseResult.errors,
+      noveltySource: novelty.source,
+      noveltyModel: novelty.model,
+      noveltyErrors: novelty.errors,
+      referenceCount: refs.length
+    }
+  };
 }
 
 async function safeSearch(

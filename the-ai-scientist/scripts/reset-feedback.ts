@@ -1,3 +1,4 @@
+import "./load-env";
 import { resetFeedback } from "../lib/feedback-store";
 
 async function main() {

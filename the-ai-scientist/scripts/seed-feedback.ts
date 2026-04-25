@@ -1,3 +1,4 @@
+import "./load-env";
 import { replaceAllFeedback } from "../lib/feedback-store";
 import { buildSeedFeedback } from "../lib/seed-feedback";
 

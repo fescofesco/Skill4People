@@ -1,3 +1,4 @@
+import "./load-env";
 import { existsSync } from "fs";
 import { LiteratureRequestSchema } from "../lib/schemas";
 import { readAllFeedback } from "../lib/feedback-store";
@@ -13,13 +14,13 @@ async function main() {
       "A paper-based electrochemical biosensor will detect CRP in whole blood compared with ELISA."
   });
 
-  const parsed = await parseHypothesis(
+  const parseResult = await parseHypothesis(
     "A paper-based electrochemical biosensor will detect CRP in whole blood compared with ELISA."
   );
   const feedback = await readAllFeedback();
   const retrieved = await retrieveRelevantFeedback({
     hypothesis: "CRP biosensor whole blood ELISA matrix control",
-    parsed_hypothesis: parsed,
+    parsed_hypothesis: parseResult.parsed,
     limit: 3
   });
 
@@ -30,7 +31,10 @@ async function main() {
         feedbackStoreExists: feedbackExists,
         feedbackCount: feedback.length,
         retrievedCount: retrieved.length,
-        parsedDomain: parsed.domain
+        parsedDomain: parseResult.parsed.domain,
+        parseSource: parseResult.source,
+        parseModel: parseResult.model,
+        parseErrors: parseResult.errors
       },
       null,
       2
