@@ -436,14 +436,36 @@ function PlanDashboard({
             </h2>
             <p className="mt-1 text-sm text-slate-500">Plan ID: {plan.plan_id}</p>
           </div>
-          {savedSincePlan && (
+          <div className="flex flex-wrap gap-2">
             <button
-              onClick={onRegenerate}
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
+              onClick={() =>
+                downloadText(
+                  `${plan.plan_id}.json`,
+                  JSON.stringify(plan, null, 2),
+                  "application/json"
+                )
+              }
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
             >
-              <RefreshCw className="h-4 w-4" /> Regenerate with Feedback
+              Export JSON
             </button>
-          )}
+            <button
+              onClick={() =>
+                downloadText(`${plan.plan_id}.md`, planToMarkdown(plan), "text/markdown")
+              }
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+            >
+              Export Markdown
+            </button>
+            {savedSincePlan && (
+              <button
+                onClick={onRegenerate}
+                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
+              >
+                <RefreshCw className="h-4 w-4" /> Regenerate with Feedback
+              </button>
+            )}
+          </div>
         </div>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <MiniField label="Objective" value={plan.executive_summary.objective} />
@@ -822,4 +844,144 @@ function contextTarget(
     original_context: JSON.stringify(value, null, 2),
     label: `${itemType} · ${itemId}`
   };
+}
+
+function downloadText(filename: string, text: string, type: string) {
+  const blob = new Blob([text], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function planToMarkdown(plan: ExperimentPlan): string {
+  const lines: string[] = [];
+  lines.push(`# The AI Scientist Plan`);
+  lines.push("");
+  lines.push(`- Plan ID: ${plan.plan_id}`);
+  lines.push(`- Created: ${plan.created_at}`);
+  lines.push(`- Domain: ${plan.hypothesis.parsed.domain}`);
+  lines.push(`- Experiment type: ${plan.hypothesis.parsed.experiment_type}`);
+  lines.push("");
+  lines.push(`## Hypothesis`);
+  lines.push(plan.hypothesis.raw);
+  lines.push("");
+  lines.push(`## Executive Summary`);
+  lines.push(`**Objective:** ${plan.executive_summary.objective}`);
+  lines.push("");
+  lines.push(`**Strategy:** ${plan.executive_summary.experimental_strategy}`);
+  lines.push("");
+  lines.push(`**Expected result:** ${plan.executive_summary.expected_result}`);
+  lines.push("");
+  lines.push(`**Decision gate:** ${plan.executive_summary.decision_gate}`);
+  lines.push("");
+  lines.push(`## Novelty`);
+  lines.push(`Signal: ${plan.novelty.signal}`);
+  lines.push(`Confidence: ${Math.round(plan.novelty.confidence * 100)}%`);
+  lines.push(plan.novelty.rationale);
+  lines.push("");
+  lines.push(`## Applied Scientist Feedback`);
+  if (plan.applied_feedback.length === 0) {
+    lines.push("No prior feedback was applied.");
+  } else {
+    for (const feedback of plan.applied_feedback) {
+      lines.push(
+        `- [${feedback.severity}, score ${feedback.similarity_score.toFixed(2)}] ${feedback.derived_rule}`
+      );
+    }
+  }
+  lines.push("");
+  lines.push(`## Safety / Ethics / Compliance`);
+  lines.push(`Risk level: ${plan.safety_ethics_compliance.overall_risk_level}`);
+  lines.push(`Biosafety assumption: ${plan.safety_ethics_compliance.biosafety_level_assumption}`);
+  lines.push(`Human samples: ${plan.safety_ethics_compliance.human_subjects_or_samples}`);
+  lines.push(`Animal work: ${plan.safety_ethics_compliance.animal_work}`);
+  lines.push("");
+  lines.push(`Required approvals:`);
+  for (const approval of plan.safety_ethics_compliance.required_approvals) {
+    lines.push(`- ${approval}`);
+  }
+  lines.push("");
+  lines.push(`Critical warnings:`);
+  for (const warning of plan.safety_ethics_compliance.critical_warnings) {
+    lines.push(`- ${warning}`);
+  }
+  lines.push("");
+  lines.push(`## Protocol Plan`);
+  for (const step of plan.protocol) {
+    lines.push(`### ${step.title}`);
+    lines.push(step.purpose);
+    for (const instruction of step.instructions) {
+      lines.push(`- ${instruction}`);
+    }
+    lines.push("");
+  }
+  lines.push(`## Materials`);
+  for (const material of plan.materials) {
+    lines.push(
+      `- ${material.name}: ${material.supplier}; catalog ${material.catalog_number}; estimated cost ${
+        material.estimated_cost ?? "unknown"
+      } ${material.currency}; confidence ${material.confidence}`
+    );
+  }
+  lines.push("");
+  lines.push(`## Budget`);
+  lines.push(`- Material subtotal: ${plan.budget.currency} ${plan.budget.material_line_items_total}`);
+  lines.push(
+    `- Equipment if needed: ${plan.budget.currency} ${plan.budget.equipment_line_items_total_if_needed}`
+  );
+  lines.push(`- Contingency: ${plan.budget.contingency_percent}%`);
+  lines.push(`- Estimated total: ${plan.budget.currency} ${plan.budget.estimated_total}`);
+  lines.push(`- Notes: ${plan.budget.calculation_notes}`);
+  lines.push("");
+  lines.push(`## Timeline`);
+  for (const phase of plan.timeline) {
+    lines.push(`- ${phase.name} (${phase.duration}): ${phase.decision_gate}`);
+  }
+  lines.push("");
+  lines.push(`## Validation`);
+  lines.push(`Primary readout: ${plan.validation.primary_readout}`);
+  lines.push("");
+  lines.push(`Controls:`);
+  for (const control of plan.validation.controls) {
+    lines.push(`- ${control.name} (${control.control_type}): ${control.purpose}`);
+  }
+  lines.push("");
+  lines.push(`Success criteria:`);
+  for (const item of plan.validation.success_criteria) {
+    lines.push(`- ${item}`);
+  }
+  lines.push("");
+  lines.push(`Failure criteria:`);
+  for (const item of plan.validation.failure_criteria) {
+    lines.push(`- ${item}`);
+  }
+  lines.push("");
+  lines.push(`## Risks`);
+  for (const risk of plan.risks_and_mitigations) {
+    lines.push(`- ${risk.risk} (${risk.severity}/${risk.likelihood}): ${risk.mitigation}`);
+  }
+  lines.push("");
+  lines.push(`## Assumptions`);
+  for (const assumption of plan.assumptions) {
+    lines.push(`- ${assumption.assumption} Verify: ${assumption.how_to_verify}`);
+  }
+  lines.push("");
+  lines.push(`## Evidence Quality`);
+  lines.push(`- Literature coverage: ${plan.evidence_quality.literature_coverage}`);
+  lines.push(`- Supplier confidence: ${plan.evidence_quality.supplier_data_confidence}`);
+  lines.push(`- Protocol grounding: ${plan.evidence_quality.protocol_grounding_confidence}`);
+  lines.push(`- Overall confidence: ${plan.evidence_quality.overall_plan_confidence}`);
+  lines.push("");
+  lines.push(`Known gaps:`);
+  for (const gap of plan.evidence_quality.known_gaps) {
+    lines.push(`- ${gap}`);
+  }
+  lines.push("");
+  lines.push("> Generated for expert review. Do not execute without approved local SOPs and required institutional approvals.");
+  return lines.join("\n");
 }

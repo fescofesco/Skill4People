@@ -12,6 +12,7 @@ The app is intentionally conservative: generated plans are for expert review, no
 - **Literature QC:** `/api/literature` parses the hypothesis, searches available literature sources, and returns a novelty signal.
 - **Experiment Plan:** `/api/generate-plan` retrieves relevant feedback, gathers protocol/supplier evidence when configured, and returns a validated structured plan.
 - **Scientist Review Loop:** users can correct plan items; feedback is saved to `data/feedback_store.json`; later similar plans retrieve and visibly apply prior corrections.
+- **Export:** generated plans can be downloaded as JSON or Markdown for review outside the app.
 
 ## Tech Stack
 
