@@ -658,6 +658,53 @@ function PlanDashboard({
             <ListBlock title="Known gaps" items={plan.evidence_quality.known_gaps} />
           </div>
         </div>
+        <div className="mt-6 border-t pt-4">
+          <h3 className="font-semibold text-slate-900">Evidence Cards</h3>
+          {plan.evidence_quality.evidence_cards.length === 0 ? (
+            <p className="mt-2 text-sm text-slate-500">
+              No evidence cards were available for this generation.
+            </p>
+          ) : (
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              {plan.evidence_quality.evidence_cards.map((card) => (
+                <details key={card.id} className="rounded-xl border bg-slate-50 p-3 text-sm">
+                  <summary className="cursor-pointer font-semibold text-slate-950">
+                    {card.title}
+                  </summary>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Badge tone="slate">{card.source_type}</Badge>
+                    <Badge
+                      tone={
+                        card.confidence === "high"
+                          ? "emerald"
+                          : card.confidence === "medium"
+                            ? "blue"
+                            : "amber"
+                      }
+                    >
+                      {card.confidence}
+                    </Badge>
+                    <Badge tone="slate">{card.source_name}</Badge>
+                  </div>
+                  <p className="mt-3 leading-6 text-slate-600">{card.snippet}</p>
+                  {card.extracted_facts.length > 0 && (
+                    <ListBlock title="Extracted facts" items={card.extracted_facts} />
+                  )}
+                  {card.source_url !== "not_found" && (
+                    <a
+                      className="mt-3 inline-block font-semibold text-blue-700 hover:underline"
+                      href={card.source_url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Open source
+                    </a>
+                  )}
+                </details>
+              ))}
+            </div>
+          )}
+        </div>
       </SectionCard>
     </div>
   );
