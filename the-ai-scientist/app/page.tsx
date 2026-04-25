@@ -280,11 +280,11 @@ export default function Home() {
                 <ClipboardCheck className="h-5 w-5 text-blue-600" /> Judge Demo
               </h2>
               <ol className="mt-3 space-y-2 text-sm text-slate-600">
-                <li>1. Click Diagnostics.</li>
-                <li>2. Run Literature QC.</li>
-                <li>3. Generate plan.</li>
-                <li>4. Edit/correct validation or protocol.</li>
-                <li>5. Regenerate and show Applied Scientist Feedback.</li>
+                <li>Click a sample or enter your own hypothesis.</li>
+                <li>Run Literature QC.</li>
+                <li>Generate plan.</li>
+                <li>Edit/correct validation or protocol.</li>
+                <li>Regenerate and show Applied Scientist Feedback.</li>
               </ol>
             </Card>
             <Card>

@@ -6,6 +6,8 @@ This is a hackathon prototype for turning a scientific hypothesis into a structu
 
 The app is intentionally conservative: generated plans are for expert review, not direct execution. Operational details must be checked against approved local SOPs and institutional approvals.
 
+The four sample buttons are only convenience examples. Plan generation is universal: the planner derives objective, controls, materials, validation, risks, assumptions, and safety gates from the user-entered hypothesis and parsed hypothesis fields rather than selecting a hard-coded plan.
+
 ## Challenge Mapping
 
 - **Input:** natural-language scientific hypothesis with four quick-fill examples.

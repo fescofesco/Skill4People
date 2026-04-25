@@ -36,6 +36,42 @@ export type GeneratePlanArgs = {
   feedback: RetrievedFeedback[];
 };
 
+type PlanContent = {
+  objective: string;
+  strategy: string;
+  expectedResult: string;
+  majorRisks: string[];
+  decisionGate: string;
+  riskLevel: "low" | "medium" | "high";
+  biosafety: string;
+  humanSamples: string;
+  animalWork: string;
+  environmental: string;
+  approvals: string[];
+  ppe: string[];
+  waste: string[];
+  criticalWarnings: string[];
+  protocol: string[];
+  materials: string[];
+  equipment: string[];
+  timeline: string[];
+  validation: {
+    primary: string;
+    secondary: string[];
+    controls: string[][];
+    replicates: string;
+    sampleSize: string;
+    randomization: string;
+    stats: string;
+    success: string[];
+    failure: string[];
+    quality: string[];
+  };
+  risks: string[][];
+  assumptions: string[][];
+  knownGaps: string[];
+};
+
 export async function generateExperimentPlan(args: GeneratePlanArgs): Promise<ExperimentPlan> {
   const safety = assessSafety(args.hypothesis, args.parsed);
   if (safety.unsafe) {
@@ -48,7 +84,7 @@ function deterministicReviewPlan(args: GeneratePlanArgs): ExperimentPlan {
   const topic = detectDemoTopic(args.hypothesis);
   const evidenceCards = args.evidenceCards.length ? args.evidenceCards : demoEvidenceCards(topic);
   const safety = assessSafety(args.hypothesis, args.parsed);
-  const content = domainContent(topic);
+  const content = buildUniversalContent(args, safety);
 
   const feedbackRules = args.feedback.map((item) => item.feedback.derived_rule);
   const feedbackNote = feedbackRules.length
@@ -156,6 +192,185 @@ function deterministicReviewPlan(args: GeneratePlanArgs): ExperimentPlan {
   };
 
   return ExperimentPlanSchema.parse(plan);
+}
+
+function buildUniversalContent(
+  args: GeneratePlanArgs,
+  safety: ReturnType<typeof assessSafety>
+): PlanContent {
+  const p = args.parsed;
+  const system = valueOr(p.organism_or_system, "the stated experimental system");
+  const intervention = valueOr(p.intervention, "the proposed intervention");
+  const comparator = valueOr(p.comparator, "an appropriate comparator or baseline");
+  const outcome = valueOr(p.primary_outcome, "the primary measured outcome");
+  const target = valueOr(p.quantitative_target, "the pre-specified success threshold");
+  const mechanism = valueOr(p.mechanism, "the proposed mechanism");
+  const flags = safety.flags.map((flag) => flag.toLowerCase());
+
+  const approvals = ["Principal investigator / domain expert review"];
+  if (flags.some((f) => f.includes("human"))) approvals.push("IRB / ethics determination");
+  if (flags.some((f) => f.includes("animal"))) approvals.push("IACUC or equivalent animal-use approval");
+  if (flags.some((f) => f.includes("cell") || f.includes("biohazard") || f.includes("pathogen") || f.includes("microbe"))) {
+    approvals.push("Institutional biosafety review");
+  }
+  if (flags.some((f) => f.includes("environment") || f.includes("gmo"))) approvals.push("Environmental / GMO containment review");
+  if (flags.some((f) => f.includes("chemical") || f.includes("electrical") || f.includes("cryogenic"))) {
+    approvals.push("Chemical/electrical safety review");
+  }
+
+  const controlTuples = controlNames(p).map((name, i) => {
+    const lower = name.toLowerCase();
+    const type =
+      lower.includes("positive") || lower.includes("reference")
+        ? "positive"
+        : lower.includes("negative") || lower.includes("blank") || lower.includes("no ")
+          ? "negative"
+          : lower.includes("vehicle")
+            ? "vehicle"
+            : lower.includes("baseline")
+              ? "baseline"
+              : "other";
+    return [
+      name,
+      type,
+      `Control for interpreting ${outcome}.`,
+      i === 0 ? "Expected to establish interpretable baseline." : "Expected to support or bound the primary comparison."
+    ];
+  });
+
+  const keyMaterials = Array.from(
+    new Set(
+      [
+        intervention,
+        system,
+        comparator,
+        ...p.key_measurements.map((m) => `${m} assay or measurement materials`),
+        ...p.key_variables.slice(0, 3).map((v) => `${v} control materials`)
+      ]
+        .map((item) => item.trim())
+        .filter(Boolean)
+    )
+  ).slice(0, 7);
+
+  const keyEquipment = Array.from(
+    new Set(
+      [
+        `${outcome} measurement instrument`,
+        "Safety and containment equipment required by local SOP",
+        "Data capture and analysis workstation",
+        ...p.key_measurements.slice(0, 3).map((m) => `${m} readout equipment`)
+      ]
+        .map((item) => item.trim())
+        .filter(Boolean)
+    )
+  ).slice(0, 5);
+
+  const riskLevel = flags.length >= 4 || approvals.length >= 4 ? "high" : flags.length >= 1 ? "medium" : "low";
+
+  return {
+    objective: `Evaluate whether ${intervention} changes ${outcome} in ${system} relative to ${comparator}, with target ${target}.`,
+    strategy:
+      `Use a staged, review-first experiment plan derived from the entered hypothesis: scope and approvals, evidence review, sourcing, pilot feasibility, validation, and expert sign-off. The plan keeps local SOPs and approvals as gates while preserving the hypothesis-specific system (${system}), intervention (${intervention}), comparator (${comparator}), outcome (${outcome}), and mechanism (${mechanism}).`,
+    expectedResult:
+      `A reviewed planning dossier showing whether the pre-specified target (${target}) is scientifically plausible and measurable with appropriate controls and quality checks.`,
+    majorRisks: [
+      "Insufficient evidence grounding for protocol or supplier choices",
+      "Comparator or control design does not isolate the intervention effect",
+      "Safety/compliance requirements are underestimated",
+      "Measurement variability obscures the target effect"
+    ],
+    decisionGate:
+      `Proceed only after expert review confirms the comparator, controls, primary readout, safety approvals, and success/failure criteria for ${outcome}.`,
+    riskLevel,
+    biosafety:
+      flags.length > 0
+        ? `Review required because the hypothesis triggered these flags: ${safety.flags.join(", ")}.`
+        : "No specific biosafety level inferred; verify with institutional policy.",
+    humanSamples: flags.some((f) => f.includes("human"))
+      ? "Human samples/subjects may be involved; ethics review, consent/source documentation, and privacy controls are required."
+      : "No human sample requirement inferred from the parsed hypothesis.",
+    animalWork: flags.some((f) => f.includes("animal"))
+      ? "Animal work may be involved; IACUC/equivalent approval, humane endpoints, and veterinary review are required."
+      : "No animal work inferred from the parsed hypothesis.",
+    environmental: flags.some((f) => f.includes("environment") || f.includes("gmo"))
+      ? "Environmental/GMO containment must be reviewed before any work proceeds."
+      : "No environmental release or GMO concern inferred; verify during safety review.",
+    approvals,
+    ppe: ["Follow approved local SOP PPE", "Gloves", "Eye protection", "Lab coat or task-appropriate protective clothing"],
+    waste: ["Dispose materials through the waste stream required by the approved SOP", "Document regulated or biohazardous waste handling if applicable"],
+    criticalWarnings: [
+      "Generated plan is for expert review, not direct execution.",
+      "Do not order materials or begin work until supplier facts, safety gates, and local SOPs are reviewed.",
+      "Do not infer operational parameters from this high-level plan."
+    ],
+    protocol: [
+      "Confirm hypothesis scope, outcome definition, safety flags, approvals, and go/no-go criteria.",
+      "Run targeted literature, protocol, and supplier evidence review for the stated system, intervention, comparator, and outcome.",
+      "Select controls and comparator strategy that isolate the effect of the intervention.",
+      "Prepare a sourcing and budget review using only verified supplier facts.",
+      "Design a validation package with primary readout, secondary readouts, replicates, sample-size rationale, statistics, and data-quality checks.",
+      "Hold scientist review and incorporate corrections before any execution."
+    ],
+    materials: keyMaterials.length ? keyMaterials : ["Primary intervention material", "Comparator/control material", "Measurement/readout materials"],
+    equipment: keyEquipment,
+    timeline: ["Scope and compliance review", "Evidence and sourcing review", "Pilot feasibility design", "Validation design", "Scientist sign-off"],
+    validation: {
+      primary: outcome,
+      secondary: p.key_measurements.length
+        ? p.key_measurements.filter((m) => m !== outcome).slice(0, 5)
+        : ["Orthogonal readout", "Process QC readout"],
+      controls: controlTuples.length
+        ? controlTuples
+        : [
+            ["Negative control", "negative", "Measure background or baseline behavior.", "No target-specific effect."],
+            ["Positive or reference control", "positive", "Confirm the readout can detect an expected effect.", "Expected signal or benchmark response."],
+            ["Comparator control", "baseline", `Compare against ${comparator}.`, "Defines baseline for target effect."]
+          ],
+      replicates:
+        "Use technical and biological/independent replicates appropriate to expected variance; specify replicate unit before execution.",
+      sampleSize:
+        "Base sample size on expected effect size, variance, desired confidence/precision, and attrition; update after pilot variance is known.",
+      randomization:
+        "Randomize run/sample order where feasible and blind analysts to condition labels when the readout allows.",
+      stats:
+        "Pre-specify analysis model, inclusion/exclusion rules, confidence intervals, multiple-comparison handling, and acceptance windows.",
+      success: [`Primary readout supports target: ${target}`, "Controls pass pre-specified acceptance criteria"],
+      failure: ["Controls fail", "Primary effect does not meet the pre-specified target", "Safety or data-quality gate fails"],
+      quality: ["Lot/source tracking", "Instrument calibration or readout QC", "Missing-data and outlier rules", "Independent expert review log"]
+    },
+    risks: [
+      ["Weak evidence grounding", "medium", "medium", "Collect targeted literature/protocol/supplier evidence before execution.", "Low evidence-confidence badges or gaps"],
+      ["Control design does not isolate intervention", "high", "medium", "Review controls with domain expert before pilot.", "Ambiguous or conflicting readouts"],
+      ["Supplier facts incomplete", "medium", "high", "Do not invent catalog numbers/prices; request quotes or official datasheets.", "Materials table contains not_found/null entries"],
+      ["Safety/compliance gap", "high", flags.length ? "medium" : "low", "Escalate all inferred hazards to institutional review.", "Unresolved safety flags"]
+    ],
+    assumptions: [
+      [`${system} is an appropriate system for testing the hypothesis.`, "External validity may be weak.", "Justify system choice against literature and expert review."],
+      [`${comparator} is a fair comparator.`, "Effect estimate may be biased.", "Confirm comparator with domain expert."],
+      [`${outcome} can be measured with sufficient precision.`, "Target may be untestable.", "Run or review measurement-system QC."],
+      ["Supplier and protocol facts can be verified before execution.", "Budget/order plan may be wrong.", "Use official supplier pages, quotes, and approved SOPs."]
+    ],
+    knownGaps: [
+      "Universal planner used; no domain-specific hard-coded plan selected.",
+      "Exact operational parameters must come from reviewed sources and local SOPs.",
+      "Supplier catalog numbers and prices remain missing unless live official sources verify them."
+    ]
+  };
+}
+
+function valueOr(value: string, fallback: string): string {
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : fallback;
+}
+
+function controlNames(parsed: ParsedHypothesis): string[] {
+  const fromParsed = parsed.implied_controls.map((item) => item.trim()).filter(Boolean);
+  const comparator = parsed.comparator.trim();
+  const controls = [...fromParsed];
+  if (comparator && !controls.some((c) => c.toLowerCase().includes(comparator.toLowerCase()))) {
+    controls.push(`${comparator} comparator`);
+  }
+  return Array.from(new Set(controls)).slice(0, 7);
 }
 
 function restrictedPlan(args: GeneratePlanArgs, reason: string): ExperimentPlan {

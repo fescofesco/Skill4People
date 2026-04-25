@@ -68,22 +68,166 @@ Rules:
 
 export function heuristicParse(hypothesis: string): ParsedHypothesis {
   const topic = detectDemoTopic(hypothesis);
-  // The demo parsed hypothesis is a reasonable heuristic; refine when needed.
   const base = demoParsedHypothesis(topic, hypothesis);
   if (topic === "generic") {
-    return {
-      ...base,
-      organism_or_system: extractFirst(hypothesis, /\b(mice|rats?|humans?|cells?|bacteria|yeast|microbe|patient|tissue|hela|c57bl)\b/i) || base.organism_or_system,
-      intervention: truncate(hypothesis, 160),
-      key_measurements: base.key_measurements
-    };
+    return genericHeuristicParse(hypothesis);
   }
   return base;
 }
 
-function extractFirst(text: string, re: RegExp): string | null {
-  const m = text.match(re);
-  return m ? m[0].toLowerCase() : null;
+function genericHeuristicParse(hypothesis: string): ParsedHypothesis {
+  const text = hypothesis.trim().replace(/\s+/g, " ");
+  const lowered = text.toLowerCase();
+  const intervention = extractBeforeWill(text);
+  const comparator = extractComparator(text);
+  const primaryOutcome = extractOutcome(text);
+  const quantitativeTarget = extractQuantitativeTarget(text);
+  const mechanism = extractMechanism(text);
+  const organismOrSystem = extractSystem(text);
+  const safetyFlags = inferSafetyFlags(text);
+  const keyMeasurements = Array.from(
+    new Set(
+      [
+        primaryOutcome,
+        ...tokenize(primaryOutcome)
+          .filter((t) => /(cytokine|viability|expression|release|growth|rate|concentration|signal|yield|efficiency|permeability|activity|binding|toxicity|response)/.test(t))
+          .map((t) => `${t} measurement`)
+      ].filter(Boolean)
+    )
+  ).slice(0, 5);
+
+  return {
+    domain: inferDomain(lowered),
+    experiment_type: inferExperimentType(lowered),
+    organism_or_system: organismOrSystem,
+    intervention,
+    comparator,
+    primary_outcome: primaryOutcome,
+    quantitative_target: quantitativeTarget,
+    mechanism,
+    implied_controls: inferControls(comparator, intervention),
+    key_variables: inferVariables(intervention, comparator, organismOrSystem, mechanism),
+    key_measurements: keyMeasurements.length ? keyMeasurements : ["primary outcome measurement"],
+    safety_flags: safetyFlags
+  };
+}
+
+function extractBeforeWill(text: string): string {
+  const match = text.match(/^(.+?)\s+(will|would|can|could|may|should)\s+/i);
+  if (match?.[1]) return truncate(match[1].trim(), 180);
+  const compared = text.split(/\b(compared with|compared to|versus|vs\.?)\b/i)[0]?.trim();
+  return truncate(compared || text, 180);
+}
+
+function extractOutcome(text: string): string {
+  const afterWill = text.match(/\b(will|would|can|could|may|should)\s+(.+?)(?:\s+compared\s+(?:with|to)|\s+relative\s+to|\s+versus|\s+vs\.?|\s+due\s+to|\s+because|\.$|$)/i)?.[2];
+  if (afterWill) return truncate(afterWill.trim(), 180);
+  const measured = text.match(/\b(measured by|measured as|quantified by)\s+(.+?)(?:\s+due\s+to|\.|$)/i)?.[2];
+  return truncate(measured?.trim() || "primary outcome stated in hypothesis", 180);
+}
+
+function extractComparator(text: string): string {
+  const match = text.match(/\b(compared with|compared to|relative to|versus|vs\.?)\s+(.+?)(?:\s+due\s+to|\s+because|,|\.|$)/i);
+  if (match?.[2]) return truncate(match[2].trim(), 160);
+  if (/\bcontrol(s)?\b/i.test(text)) return "stated control group";
+  return "appropriate baseline or negative/reference control";
+}
+
+function extractQuantitativeTarget(text: string): string {
+  const patterns = [
+    /\b(at least|at most|below|above|greater than|less than|under|over|>=|<=|>|<)\s+[^,;.]+?(?:percent|%|mg\/l|mmol\/l\/day|fold|minutes?|hours?|days?|percentage points?|pp)\b/i,
+    /\b\d+(?:\.\d+)?\s*(?:%|percent|mg\/l|mmol\/l\/day|fold|minutes?|hours?|days?|percentage points?|pp)\b/i
+  ];
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match?.[0]) return match[0].trim();
+  }
+  return "as stated in hypothesis";
+}
+
+function extractMechanism(text: string): string {
+  const match = text.match(/\b(due to|because of|because|via|through)\s+(.+?)(?:\.|$)/i);
+  return truncate(match?.[2]?.trim() || "mechanism stated or implied by hypothesis", 180);
+}
+
+function extractSystem(text: string): string {
+  const patterns = [
+    /\bfrom\s+(.+?)(?:\s+by|\s+compared|\s+due\s+to|,|\.|$)/i,
+    /\bin\s+(.+?)(?:\s+by|\s+compared|\s+due\s+to|,|\.|$)/i,
+    /\busing\s+(.+?)(?:\s+by|\s+compared|\s+due\s+to|,|\.|$)/i,
+    /\b(cultures?|cells?|mice|rats?|bacteria|yeast|hydrogel|reactor|sensor|enzyme|protein|tissue|samples?)\b[^,;.]{0,80}/i
+  ];
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match?.[1]) return truncate(match[1].trim(), 160);
+    if (match?.[0]) return truncate(match[0].trim(), 160);
+  }
+  return "experimental system stated in hypothesis";
+}
+
+function inferDomain(lowered: string): string {
+  if (/(cell|macrophage|cytokine|protein|gene|culture|tissue)/.test(lowered)) return "cell biology";
+  if (/(polymer|hydrogel|nanoparticle|material|surface|membrane)/.test(lowered)) return "materials / bioengineering";
+  if (/(mice|rat|animal|in vivo|gut|microbiome)/.test(lowered)) return "in vivo biology";
+  if (/(sensor|biosensor|diagnostic|elisa|biomarker)/.test(lowered)) return "diagnostics";
+  if (/(reactor|co2|carbon|electrochemical|catalyst|climate)/.test(lowered)) return "climate / electrochemistry";
+  return "general experimental science";
+}
+
+function inferExperimentType(lowered: string): string {
+  if (/(cell|macrophage|culture|cytokine)/.test(lowered)) return "in vitro cell-culture response study";
+  if (/(hydrogel|material|polymer|release)/.test(lowered)) return "materials formulation and release validation";
+  if (/(sensor|biosensor|diagnostic)/.test(lowered)) return "analytical validation study";
+  if (/(mice|rat|animal|in vivo)/.test(lowered)) return "controlled in vivo study";
+  if (/(reactor|electrochemical|cathode|anode)/.test(lowered)) return "reactor performance validation study";
+  return "controlled experimental validation study";
+}
+
+function inferControls(comparator: string, intervention: string): string[] {
+  return Array.from(
+    new Set([
+      comparator,
+      "negative / vehicle control",
+      "positive or reference control",
+      `${intervention} without active component or matched sham control`
+    ])
+  ).filter(Boolean);
+}
+
+function inferVariables(
+  intervention: string,
+  comparator: string,
+  organismOrSystem: string,
+  mechanism: string
+): string[] {
+  return Array.from(
+    new Set([
+      intervention,
+      comparator,
+      organismOrSystem,
+      mechanism,
+      "exposure duration",
+      "dose or loading level",
+      "readout timing"
+    ])
+  ).filter(Boolean);
+}
+
+function inferSafetyFlags(text: string): string[] {
+  const flags: string[] = [];
+  const patterns: [RegExp, string][] = [
+    [/\b(human|patient|blood|serum|plasma|clinical sample)\b/i, "human samples"],
+    [/\b(mice|mouse|rat|animal|in vivo)\b/i, "animal work"],
+    [/\b(cell|macrophage|hela|culture|tissue)\b/i, "cell lines or cell culture"],
+    [/\b(lps|endotoxin|biohazard|pathogen|bacteria|virus)\b/i, "biohazardous or inflammatory stimulant handling"],
+    [/\b(gmo|recombinant|crispr|transgenic)\b/i, "genetically modified organisms"],
+    [/\b(solvent|dmso|curcumin|nanoparticle|chemical)\b/i, "chemical handling"],
+    [/\b(reactor|electrical|cathode|anode|voltage)\b/i, "electrical/electrochemical hazards"]
+  ];
+  for (const [pattern, flag] of patterns) {
+    if (pattern.test(text)) flags.push(flag);
+  }
+  return Array.from(new Set(flags));
 }
 
 export function generateLiteratureQueries(parsed: ParsedHypothesis, hypothesis: string): string[] {
