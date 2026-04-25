@@ -426,6 +426,7 @@ function PlanDashboard({
   onRegenerate: () => void;
   onEdit: (target: FeedbackTarget) => void;
 }) {
+  const confidence = computePlanConfidence(plan);
   return (
     <div className="space-y-6">
       <Card>
@@ -470,6 +471,32 @@ function PlanDashboard({
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <MiniField label="Objective" value={plan.executive_summary.objective} />
           <MiniField label="Decision Gate" value={plan.executive_summary.decision_gate} />
+        </div>
+        <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 className="font-semibold text-blue-950">Plan confidence</h3>
+              <p className="mt-1 text-sm text-blue-800">
+                Composite score from evidence quality, supplier completeness, validation completeness,
+                and feedback relevance.
+              </p>
+            </div>
+            <Badge tone={confidence.score >= 75 ? "emerald" : confidence.score >= 50 ? "blue" : "amber"}>
+              {confidence.score}/100 · {confidence.label}
+            </Badge>
+          </div>
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-white">
+            <div
+              className="h-full rounded-full bg-blue-600"
+              style={{ width: `${confidence.score}%` }}
+            />
+          </div>
+          <div className="mt-3 grid gap-2 text-xs text-blue-900 sm:grid-cols-4">
+            <span>Evidence {confidence.parts.evidence}/40</span>
+            <span>Suppliers {confidence.parts.suppliers}/20</span>
+            <span>Validation {confidence.parts.validation}/20</span>
+            <span>Feedback {confidence.parts.feedback}/20</span>
+          </div>
         </div>
         <p className="mt-4 text-sm leading-6 text-slate-700">{plan.executive_summary.experimental_strategy}</p>
       </Card>
@@ -972,6 +999,8 @@ function planToMarkdown(plan: ExperimentPlan): string {
   }
   lines.push("");
   lines.push(`## Evidence Quality`);
+  const confidence = computePlanConfidence(plan);
+  lines.push(`- Plan confidence: ${confidence.score}/100 (${confidence.label})`);
   lines.push(`- Literature coverage: ${plan.evidence_quality.literature_coverage}`);
   lines.push(`- Supplier confidence: ${plan.evidence_quality.supplier_data_confidence}`);
   lines.push(`- Protocol grounding: ${plan.evidence_quality.protocol_grounding_confidence}`);
@@ -984,4 +1013,61 @@ function planToMarkdown(plan: ExperimentPlan): string {
   lines.push("");
   lines.push("> Generated for expert review. Do not execute without approved local SOPs and required institutional approvals.");
   return lines.join("\n");
+}
+
+function computePlanConfidence(plan: ExperimentPlan): {
+  score: number;
+  label: "low" | "medium" | "high";
+  parts: { evidence: number; suppliers: number; validation: number; feedback: number };
+} {
+  const qualityScore = { low: 0.25, medium: 0.65, high: 1 };
+  const evidence =
+    Math.round(
+      40 *
+        average([
+          qualityScore[plan.evidence_quality.literature_coverage],
+          qualityScore[plan.evidence_quality.protocol_grounding_confidence],
+          qualityScore[plan.evidence_quality.overall_plan_confidence]
+        ])
+    );
+
+  const supplierKnown = plan.materials.length
+    ? plan.materials.filter((m) => m.catalog_number !== "not_found" || m.estimated_cost !== null).length /
+      plan.materials.length
+    : 0;
+  const supplierConfidence =
+    qualityScore[plan.evidence_quality.supplier_data_confidence] * 0.5 + supplierKnown * 0.5;
+  const suppliers = Math.round(20 * supplierConfidence);
+
+  const validationSignals = [
+    plan.validation.primary_readout.length > 0,
+    plan.validation.controls.length >= 2,
+    plan.validation.success_criteria.length > 0,
+    plan.validation.failure_criteria.length > 0,
+    plan.validation.data_quality_checks.length > 0,
+    plan.validation.sample_size_rationale.length > 0,
+    plan.validation.statistical_analysis.length > 0
+  ];
+  const validation = Math.round(
+    20 * (validationSignals.filter(Boolean).length / validationSignals.length)
+  );
+
+  const feedback =
+    plan.applied_feedback.length === 0
+      ? 8
+      : Math.min(20, 10 + Math.round(10 * Math.max(...plan.applied_feedback.map((f) => f.similarity_score))));
+
+  const raw = evidence + suppliers + validation + feedback;
+  const score = Math.max(0, Math.min(100, raw));
+  const label = score >= 75 ? "high" : score >= 50 ? "medium" : "low";
+  return {
+    score,
+    label,
+    parts: { evidence, suppliers, validation, feedback }
+  };
+}
+
+function average(values: number[]): number {
+  if (values.length === 0) return 0;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
 }

@@ -13,6 +13,7 @@ The app is intentionally conservative: generated plans are for expert review, no
 - **Experiment Plan:** `/api/generate-plan` retrieves relevant feedback, gathers protocol/supplier evidence when configured, and returns a validated structured plan.
 - **Scientist Review Loop:** users can correct plan items; feedback is saved to `data/feedback_store.json`; later similar plans retrieve and visibly apply prior corrections.
 - **Export:** generated plans can be downloaded as JSON or Markdown for review outside the app.
+- **Plan Confidence:** dashboard and Markdown exports show a composite confidence score based on evidence quality, supplier completeness, validation completeness, and feedback relevance.
 
 ## Tech Stack
 
