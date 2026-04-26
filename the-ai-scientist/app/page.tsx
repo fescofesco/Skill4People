@@ -9,6 +9,7 @@ import {
   BookOpen,
   BrainCircuit,
   CheckCircle2,
+  ChevronDown,
   ClipboardCheck,
   ClipboardList,
   ExternalLink,
@@ -154,6 +155,9 @@ export default function Home() {
   const [target, setTarget] = useState<FeedbackTarget | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [savedSincePlan, setSavedSincePlan] = useState(false);
+  const [inputCollapsed, setInputCollapsed] = useState(false);
+  const [litCollapsed, setLitCollapsed] = useState(false);
+  const [planCollapsed, setPlanCollapsed] = useState(false);
 
   useEffect(() => {
     void refreshHealthAndFeedback();
@@ -176,6 +180,9 @@ export default function Home() {
     setEvidenceMeta(null);
     setCritique(null);
     setSavedSincePlan(false);
+    setInputCollapsed(false);
+    setLitCollapsed(false);
+    setPlanCollapsed(false);
   }
 
   async function refreshHealthAndFeedback() {
@@ -212,6 +219,8 @@ export default function Home() {
       setLiteratureQC(qcOnly as LiteratureQC);
       setLitDiag(_diagnostics ?? null);
       setStage("literature_ready");
+      setInputCollapsed(true);
+      setLitCollapsed(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Literature QC failed");
       setStage("error");
@@ -239,6 +248,8 @@ export default function Home() {
       setCritique(_critique ?? null);
       setStage("plan_ready");
       setSavedSincePlan(false);
+      setLitCollapsed(true);
+      setPlanCollapsed(false);
       void refreshHealthAndFeedback();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Plan generation failed");
@@ -395,83 +406,94 @@ export default function Home() {
                         want to test.
                       </p>
                     </div>
-                    <span className="helix-chip text-[11px] uppercase tracking-[0.14em] text-slate-500">
-                      {hypothesis.length}/3000
-                    </span>
-                  </div>
-
-                  <div className="mt-5">
-                    <label className="sr-only" htmlFor="hypothesis">
-                      Hypothesis
-                    </label>
-                    <textarea
-                      id="hypothesis"
-                      className="helix-textarea min-h-[180px]"
-                      placeholder="Describe the intervention, system, expected outcome and threshold — e.g. 'Replacing sucrose with trehalose as a cryoprotectant will increase HeLa post-thaw viability by ≥15 percentage points...'"
-                      value={hypothesis}
-                      onChange={(e) => setHypothesis(e.target.value)}
-                    />
-                    {!validation.ok && (
-                      <p className="mt-2 text-sm text-red-700">{validation.message}</p>
-                    )}
-                  </div>
-
-                  <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex flex-wrap gap-2">
-                      <span className="helix-chip">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> Hypothesis-ready
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="helix-chip text-[11px] uppercase tracking-[0.14em] text-slate-500">
+                        {hypothesis.length}/3000
                       </span>
-                      <span className="helix-chip">
-                        <FlaskConical className="h-3.5 w-3.5 text-blue-600" /> Wet-lab context
-                      </span>
-                      <span className="helix-chip">
-                        <Search className="h-3.5 w-3.5 text-slate-500" /> Tavily QC
-                      </span>
+                      <CollapseToggle
+                        collapsed={inputCollapsed}
+                        onToggle={() => setInputCollapsed((v) => !v)}
+                        label="Scientific question"
+                      />
                     </div>
-                    <button
-                      onClick={runLiteratureQC}
-                      disabled={
-                        !validation.ok ||
-                        stage === "literature_loading" ||
-                        stage === "plan_loading"
-                      }
-                      className="helix-btn-primary"
-                    >
-                      {stage === "literature_loading" ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 animate-spin" />
-                          Running Literature QC…
-                        </>
-                      ) : (
-                        <>
-                          Run Literature QC <ArrowRight className="h-4 w-4" />
-                        </>
-                      )}
-                    </button>
                   </div>
 
-                  <div className="mt-5 rounded-2xl border border-slate-200/70 bg-slate-50/60 p-4">
-                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                      <Lightbulb className="h-3.5 w-3.5" />
-                      <span>Try an example</span>
-                    </div>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {samples.map((sample) => (
+                  {!inputCollapsed && (
+                    <>
+                      <div className="mt-5">
+                        <label className="sr-only" htmlFor="hypothesis">
+                          Hypothesis
+                        </label>
+                        <textarea
+                          id="hypothesis"
+                          className="helix-textarea min-h-[180px]"
+                          placeholder="Describe the intervention, system, expected outcome and threshold — e.g. 'Replacing sucrose with trehalose as a cryoprotectant will increase HeLa post-thaw viability by ≥15 percentage points...'"
+                          value={hypothesis}
+                          onChange={(e) => setHypothesis(e.target.value)}
+                        />
+                        {!validation.ok && (
+                          <p className="mt-2 text-sm text-red-700">{validation.message}</p>
+                        )}
+                      </div>
+
+                      <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex flex-wrap gap-2">
+                          <span className="helix-chip">
+                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> Hypothesis-ready
+                          </span>
+                          <span className="helix-chip">
+                            <FlaskConical className="h-3.5 w-3.5 text-blue-600" /> Wet-lab context
+                          </span>
+                          <span className="helix-chip">
+                            <Search className="h-3.5 w-3.5 text-slate-500" /> Tavily QC
+                          </span>
+                        </div>
                         <button
-                          key={sample.label}
-                          className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
-                          onClick={() => {
-                            setHypothesis(sample.text);
-                            resetDownstream();
-                            setError(null);
-                            setStage("input");
-                          }}
+                          onClick={runLiteratureQC}
+                          disabled={
+                            !validation.ok ||
+                            stage === "literature_loading" ||
+                            stage === "plan_loading"
+                          }
+                          className="helix-btn-primary"
                         >
-                          {sample.label}
+                          {stage === "literature_loading" ? (
+                            <>
+                              <RefreshCw className="h-4 w-4 animate-spin" />
+                              Running Literature QC…
+                            </>
+                          ) : (
+                            <>
+                              Run Literature QC <ArrowRight className="h-4 w-4" />
+                            </>
+                          )}
                         </button>
-                      ))}
-                    </div>
-                  </div>
+                      </div>
+
+                      <div className="mt-5 rounded-2xl border border-slate-200/70 bg-slate-50/60 p-4">
+                        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                          <Lightbulb className="h-3.5 w-3.5" />
+                          <span>Try an example</span>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {samples.map((sample) => (
+                            <button
+                              key={sample.label}
+                              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                              onClick={() => {
+                                setHypothesis(sample.text);
+                                resetDownstream();
+                                setError(null);
+                                setStage("input");
+                              }}
+                            >
+                              {sample.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </Card>
@@ -493,6 +515,8 @@ export default function Home() {
                 qc={literatureQC}
                 diagnostics={litDiag}
                 onGenerate={generatePlan}
+                collapsed={litCollapsed}
+                onToggleCollapsed={() => setLitCollapsed((v) => !v)}
                 onUpdateParsed={(parsed) => {
                   // Editing the parse invalidates the existing plan, but
                   // keeps the literatureQC + references — the user can
@@ -533,6 +557,8 @@ export default function Home() {
                 savedSincePlan={savedSincePlan}
                 onRegenerate={generatePlan}
                 onEdit={setTarget}
+                collapsed={planCollapsed}
+                onToggleCollapsed={() => setPlanCollapsed((v) => !v)}
               />
             )}
           </section>
@@ -1037,13 +1063,17 @@ function LiteratureCard({
   diagnostics,
   onGenerate,
   onUpdateParsed,
-  loading
+  loading,
+  collapsed,
+  onToggleCollapsed
 }: {
   qc: LiteratureQC;
   diagnostics: LiteratureDiagnostics | null;
   onGenerate: () => void;
   onUpdateParsed: (parsed: ParsedHypothesis) => void;
   loading: boolean;
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
 }) {
   const [editingParse, setEditingParse] = useState(false);
 
@@ -1089,9 +1119,21 @@ function LiteratureCard({
             </p>
           </div>
         </div>
-        <Badge tone={signalCopy.tone}>{signalCopy.label}</Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge tone={signalCopy.tone}>{signalCopy.label}</Badge>
+          <Badge tone="slate">
+            {qc.novelty.references.length} reference{qc.novelty.references.length === 1 ? "" : "s"}
+          </Badge>
+          <CollapseToggle
+            collapsed={collapsed}
+            onToggle={onToggleCollapsed}
+            label="Literature QC"
+          />
+        </div>
       </div>
 
+      {!collapsed && (
+      <>
       <div className="mt-5 rounded-2xl border border-slate-200/70 bg-slate-50/60 p-4">
         <div className="flex items-start gap-3">
           <div className="mt-0.5">{signalCopy.icon}</div>
@@ -1226,6 +1268,8 @@ function LiteratureCard({
           )}
         </button>
       </div>
+      </>
+      )}
     </Card>
   );
 }
@@ -1237,7 +1281,9 @@ function PlanDashboard({
   critique,
   savedSincePlan,
   onRegenerate,
-  onEdit
+  onEdit,
+  collapsed,
+  onToggleCollapsed
 }: {
   plan: ExperimentPlan;
   generation: PlanGenerationMeta | null;
@@ -1245,9 +1291,106 @@ function PlanDashboard({
   critique: PlanCritiqueMeta | null;
   savedSincePlan: boolean;
   onRegenerate: () => void;
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
   onEdit: (target: FeedbackTarget) => void;
 }) {
   const confidence = computePlanConfidence(plan);
+
+  type PlanTab = {
+    key: string;
+    label: string;
+    count?: number;
+    tone?: "warn";
+    icon: JSX.Element;
+  };
+
+  const hasCriticalCritique =
+    !!critique && critique.findings.some((f) => f.severity === "critical");
+
+  const visibleTabs = useMemo<PlanTab[]>(() => {
+    const t: PlanTab[] = [
+      {
+        key: "protocol",
+        label: "Protocol",
+        count: plan.protocol.length,
+        icon: <ClipboardCheck className="h-4 w-4" />
+      },
+      {
+        key: "materials",
+        label: "Materials",
+        count: plan.materials.length,
+        icon: <ShoppingCart className="h-4 w-4" />
+      },
+      {
+        key: "budget",
+        label: "Budget & Timeline",
+        icon: <CheckCircle2 className="h-4 w-4" />
+      },
+      {
+        key: "validation",
+        label: "Validation",
+        count: plan.validation.controls.length,
+        icon: <AlertTriangle className="h-4 w-4" />
+      },
+      {
+        key: "risks",
+        label: "Risks",
+        count: plan.risks_and_mitigations.length,
+        icon: <BookOpen className="h-4 w-4" />
+      },
+      {
+        key: "safety",
+        label: "Safety",
+        tone: plan.safety_ethics_compliance.critical_warnings.length > 0 ? "warn" : undefined,
+        icon: <ShieldAlert className="h-4 w-4" />
+      }
+    ];
+    if (critique)
+      t.push({
+        key: "critic",
+        label: "AI critic",
+        count: critique.findings.length,
+        tone: hasCriticalCritique ? "warn" : undefined,
+        icon: <Atom className="h-4 w-4" />
+      });
+    if (evidence)
+      t.push({
+        key: "livesearch",
+        label: "Live search",
+        count: evidence.cardCount,
+        icon: <Search className="h-4 w-4" />
+      });
+    if (plan.applied_feedback.length > 0)
+      t.push({
+        key: "applied",
+        label: "Applied feedback",
+        count: plan.applied_feedback.length,
+        icon: <BrainCircuit className="h-4 w-4" />
+      });
+    return t;
+  }, [
+    plan.protocol.length,
+    plan.materials.length,
+    plan.validation.controls.length,
+    plan.risks_and_mitigations.length,
+    plan.applied_feedback.length,
+    plan.safety_ethics_compliance.critical_warnings.length,
+    critique,
+    evidence,
+    hasCriticalCritique
+  ]);
+
+  const [activeTab, setActiveTab] = useState<string>("protocol");
+  useEffect(() => {
+    setActiveTab("protocol");
+  }, [plan.plan_id]);
+  useEffect(() => {
+    if (!visibleTabs.some((t) => t.key === activeTab)) {
+      setActiveTab(visibleTabs[0]?.key ?? "protocol");
+    }
+  }, [visibleTabs, activeTab]);
+
   return (
     <div className="space-y-6">
       <Card>
@@ -1339,8 +1482,15 @@ function PlanDashboard({
                 <RefreshCw className="h-4 w-4" /> Regenerate with feedback
               </button>
             )}
+            <CollapseToggle
+              collapsed={collapsed}
+              onToggle={onToggleCollapsed}
+              label="Experiment plan"
+            />
           </div>
         </div>
+        {!collapsed && (
+          <>
         <div className="mt-5 grid gap-3 md:grid-cols-2">
           <MiniField label="Objective" value={plan.executive_summary.objective} />
           <MiniField label="Decision gate" value={plan.executive_summary.decision_gate} />
@@ -1378,368 +1528,461 @@ function PlanDashboard({
         <p className="mt-5 text-sm leading-7 text-slate-700">
           {plan.executive_summary.experimental_strategy}
         </p>
+          </>
+        )}
       </Card>
 
-      {evidence && <EvidenceDiagnosticsCard evidence={evidence} />}
-
-      {critique && <PlanCritiquePanel critique={critique} />}
-
-      <SectionCard
-        title="Applied scientist feedback"
-        subtitle="Past corrections retrieved and applied to this generation."
-        icon={<BrainCircuit className="h-5 w-5" />}
-      >
-        {plan.applied_feedback.length === 0 ? (
-          <p className="text-sm text-slate-500">No relevant saved feedback was applied yet.</p>
-        ) : (
-          <div className="space-y-3">
-            {plan.applied_feedback.map((fb) => (
-              <div
-                key={fb.feedback_id}
-                className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-sm"
+      {!collapsed && (
+        <>
+      <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-1.5 shadow-sm backdrop-blur">
+        <div
+          className="flex flex-wrap gap-1"
+          role="tablist"
+          aria-label="Plan dashboard sections"
+        >
+          {visibleTabs.map((t) => {
+            const isActive = activeTab === t.key;
+            return (
+              <button
+                key={t.key}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                aria-controls={`plan-tab-${t.key}`}
+                id={`plan-tab-trigger-${t.key}`}
+                onClick={() => setActiveTab(t.key)}
+                className={
+                  isActive
+                    ? "inline-flex items-center gap-2 rounded-xl bg-[hsl(var(--helix-brand))] px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition"
+                    : "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                }
               >
-                <div className="flex flex-wrap gap-2">
-                  <Badge tone={fb.severity === "critical" ? "red" : "emerald"}>{fb.severity}</Badge>
-                  <Badge tone="slate">score {fb.similarity_score.toFixed(2)}</Badge>
-                  <Badge tone="slate">{fb.source_item_type}</Badge>
-                </div>
-                <p className="mt-2 font-semibold text-emerald-950">{fb.derived_rule}</p>
-                <p className="mt-1 leading-6 text-emerald-800">{fb.reason_applied}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </SectionCard>
-
-      <SectionCard
-        title="Safety, ethics & compliance"
-        subtitle="Required oversight, approvals, and biosafety posture."
-        icon={<ShieldAlert className="h-5 w-5" />}
-      >
-        <div className="grid gap-3 md:grid-cols-2">
-          <MiniField label="Risk level" value={plan.safety_ethics_compliance.overall_risk_level} />
-          <MiniField
-            label="Biosafety assumption"
-            value={plan.safety_ethics_compliance.biosafety_level_assumption}
-          />
-          <MiniField
-            label="Human samples"
-            value={plan.safety_ethics_compliance.human_subjects_or_samples}
-          />
-          <MiniField label="Animal work" value={plan.safety_ethics_compliance.animal_work} />
-        </div>
-        <ListBlock title="Approvals" items={plan.safety_ethics_compliance.required_approvals} />
-        <ListBlock
-          title="Critical warnings"
-          items={plan.safety_ethics_compliance.critical_warnings}
-          tone="red"
-        />
-        <EditButton
-          onClick={() => onEdit(contextTarget("safety", "safety", plan.safety_ethics_compliance))}
-        />
-      </SectionCard>
-
-      <SectionCard
-        title="Protocol plan"
-        subtitle="Step-by-step methodology, designed for scientist review."
-        icon={<ClipboardCheck className="h-5 w-5" />}
-      >
-        <ol className="space-y-3">
-          {plan.protocol.map((step, i) => (
-            <li
-              key={step.id}
-              className="rounded-2xl border border-slate-200/70 bg-slate-50/60 p-4"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="flex items-start gap-3">
-                  <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-[11px] font-semibold text-[hsl(var(--helix-brand))] ring-1 ring-blue-100">
-                    {i + 1}
+                <span className={isActive ? "opacity-95" : "opacity-70"}>{t.icon}</span>
+                <span>{t.label}</span>
+                {typeof t.count === "number" && (
+                  <span
+                    className={
+                      isActive
+                        ? "inline-flex min-w-[1.25rem] justify-center rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums"
+                        : "inline-flex min-w-[1.25rem] justify-center rounded-full bg-slate-200/70 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 tabular-nums"
+                    }
+                  >
+                    {t.count}
                   </span>
-                  <div>
-                    <h3 className="font-semibold text-slate-900">{step.title}</h3>
-                    <p className="mt-1 text-sm leading-6 text-slate-600">{step.purpose}</p>
-                  </div>
-                </div>
-                <EditButton onClick={() => onEdit(contextTarget("protocol", step.id, step))} compact />
-              </div>
-              <ListBlock title="Review instructions" items={step.instructions} />
-            </li>
-          ))}
-        </ol>
-      </SectionCard>
+                )}
+                {t.tone === "warn" && !isActive && (
+                  <span
+                    className="h-1.5 w-1.5 rounded-full bg-amber-500"
+                    aria-label="needs attention"
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-      <SectionCard
-        title="Materials and supply chain"
-        subtitle="Specific reagents, catalog numbers, and supplier confidence."
-        icon={<ShoppingCart className="h-5 w-5" />}
-      >
-        <div className="overflow-hidden rounded-2xl border border-slate-200/70">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-sm">
-              <thead className="bg-slate-50/70 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                <tr>
-                  <th className="px-4 py-3">Item</th>
-                  <th className="px-4 py-3">Supplier</th>
-                  <th className="px-4 py-3">Catalog</th>
-                  <th className="px-4 py-3">Cost</th>
-                  <th className="px-4 py-3">Confidence</th>
-                  <th className="px-4 py-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
-                {plan.materials.map((m) => {
-                  const isApprox =
-                    typeof m.notes === "string" && m.notes.includes("[approx_estimate]");
-                  return (
-                    <tr key={m.id} className="align-top">
-                      <td className="px-4 py-3">
-                        <div className="font-semibold text-slate-900">{m.name}</div>
-                        <div className="text-xs text-slate-500">{m.purpose}</div>
-                      </td>
-                      <td className="px-4 py-3 text-slate-700">{m.supplier}</td>
-                      <td className="px-4 py-3">
-                        {m.catalog_number === "not_found" ? (
-                          <Badge tone="amber">not found</Badge>
-                        ) : (
-                          <span className="font-mono text-xs text-slate-700">
-                            {m.catalog_number}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        {m.estimated_cost === null ? (
-                          <span className="text-slate-400">—</span>
-                        ) : isApprox ? (
-                          <span
-                            className="inline-flex items-center gap-1.5"
-                            title="AI-estimated approximation, not a vendor quote. Verify before ordering."
-                          >
-                            <span className="font-medium text-slate-800">
-                              ~${m.estimated_cost}
-                            </span>
-                            <Badge tone="amber">approx</Badge>
-                          </span>
-                        ) : (
-                          <span className="font-medium text-slate-800">
-                            ${m.estimated_cost}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
+      {activeTab === "protocol" && (
+        <div role="tabpanel" id="plan-tab-protocol" aria-labelledby="plan-tab-trigger-protocol">
+          <SectionCard
+            title="Protocol plan"
+            subtitle="Step-by-step methodology, designed for scientist review."
+            icon={<ClipboardCheck className="h-5 w-5" />}
+          >
+            <ol className="space-y-3">
+              {plan.protocol.map((step, i) => (
+                <li
+                  key={step.id}
+                  className="rounded-2xl border border-slate-200/70 bg-slate-50/60 p-4"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-[11px] font-semibold text-[hsl(var(--helix-brand))] ring-1 ring-blue-100">
+                        {i + 1}
+                      </span>
+                      <div>
+                        <h3 className="font-semibold text-slate-900">{step.title}</h3>
+                        <p className="mt-1 text-sm leading-6 text-slate-600">{step.purpose}</p>
+                      </div>
+                    </div>
+                    <EditButton onClick={() => onEdit(contextTarget("protocol", step.id, step))} compact />
+                  </div>
+                  <ListBlock title="Review instructions" items={step.instructions} />
+                </li>
+              ))}
+            </ol>
+          </SectionCard>
+        </div>
+      )}
+
+      {activeTab === "materials" && (
+        <div role="tabpanel" id="plan-tab-materials" aria-labelledby="plan-tab-trigger-materials">
+          <SectionCard
+            title="Materials and supply chain"
+            subtitle="Specific reagents, catalog numbers, and supplier confidence."
+            icon={<ShoppingCart className="h-5 w-5" />}
+          >
+            <div className="overflow-hidden rounded-2xl border border-slate-200/70">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[760px] text-left text-sm">
+                  <thead className="bg-slate-50/70 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                    <tr>
+                      <th className="px-4 py-3">Item</th>
+                      <th className="px-4 py-3">Supplier</th>
+                      <th className="px-4 py-3">Catalog</th>
+                      <th className="px-4 py-3">Cost</th>
+                      <th className="px-4 py-3">Confidence</th>
+                      <th className="px-4 py-3 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 bg-white">
+                    {plan.materials.map((m) => {
+                      const isApprox =
+                        typeof m.notes === "string" && m.notes.includes("[approx_estimate]");
+                      return (
+                        <tr key={m.id} className="align-top">
+                          <td className="px-4 py-3">
+                            <div className="font-semibold text-slate-900">{m.name}</div>
+                            <div className="text-xs text-slate-500">{m.purpose}</div>
+                          </td>
+                          <td className="px-4 py-3 text-slate-700">{m.supplier}</td>
+                          <td className="px-4 py-3">
+                            {m.catalog_number === "not_found" ? (
+                              <Badge tone="amber">not found</Badge>
+                            ) : (
+                              <span className="font-mono text-xs text-slate-700">
+                                {m.catalog_number}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            {m.estimated_cost === null ? (
+                              <span className="text-slate-400">—</span>
+                            ) : isApprox ? (
+                              <span
+                                className="inline-flex items-center gap-1.5"
+                                title="AI-estimated approximation, not a vendor quote. Verify before ordering."
+                              >
+                                <span className="font-medium text-slate-800">
+                                  ~${m.estimated_cost}
+                                </span>
+                                <Badge tone="amber">approx</Badge>
+                              </span>
+                            ) : (
+                              <span className="font-medium text-slate-800">
+                                ${m.estimated_cost}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            <Badge
+                              tone={
+                                m.confidence === "high"
+                                  ? "emerald"
+                                  : m.confidence === "medium"
+                                    ? "blue"
+                                    : "amber"
+                              }
+                            >
+                              {m.confidence}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <EditButton
+                              onClick={() => onEdit(contextTarget("material", m.id, m))}
+                              compact
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </SectionCard>
+        </div>
+      )}
+
+      {activeTab === "budget" && (
+        <div
+          role="tabpanel"
+          id="plan-tab-budget"
+          aria-labelledby="plan-tab-trigger-budget"
+          className="grid gap-6 lg:grid-cols-2"
+        >
+          <SectionCard
+            title="Budget"
+            subtitle="Realistic line-item estimate, ready for ordering review."
+            icon={<CheckCircle2 className="h-5 w-5" />}
+          >
+            <div className="space-y-1 text-sm">
+              <Row
+                label="Materials subtotal"
+                value={`$${plan.budget.material_line_items_total.toFixed(2)}`}
+              />
+              <Row
+                label="Equipment if needed"
+                value={`$${plan.budget.equipment_line_items_total_if_needed.toFixed(2)}`}
+              />
+              <Row
+                label="Contingency"
+                value={`$${plan.budget.contingency_amount.toFixed(2)} (${plan.budget.contingency_percent}%)`}
+              />
+              <Row
+                label="Estimated total"
+                value={`$${plan.budget.estimated_total.toFixed(2)}`}
+                strong
+              />
+            </div>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              {plan.budget.calculation_notes}
+            </p>
+            <EditButton onClick={() => onEdit(contextTarget("budget", "budget", plan.budget))} />
+          </SectionCard>
+          <SectionCard
+            title="Timeline"
+            subtitle="Phased breakdown with dependencies and decision gates."
+            icon={<RefreshCw className="h-5 w-5" />}
+          >
+            <div className="space-y-3">
+              {plan.timeline.map((p) => (
+                <div
+                  key={p.id}
+                  className="rounded-2xl border border-slate-200/70 bg-slate-50/60 p-3.5 text-sm"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <b className="text-slate-900">{p.name}</b>
+                    <Badge tone="slate">{p.duration}</Badge>
+                  </div>
+                  <p className="mt-1 leading-6 text-slate-700">{p.decision_gate}</p>
+                  <EditButton onClick={() => onEdit(contextTarget("timeline", p.id, p))} compact />
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        </div>
+      )}
+
+      {activeTab === "validation" && (
+        <div role="tabpanel" id="plan-tab-validation" aria-labelledby="plan-tab-trigger-validation">
+          <SectionCard
+            title="Validation and controls"
+            subtitle="Primary readout, success / failure thresholds, and control structure."
+            icon={<AlertTriangle className="h-5 w-5" />}
+          >
+            <MiniField label="Primary readout" value={plan.validation.primary_readout} />
+            <ListBlock title="Success criteria" items={plan.validation.success_criteria} />
+            <ListBlock title="Failure criteria" items={plan.validation.failure_criteria} />
+            <h3 className="mt-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              Controls
+            </h3>
+            <div className="mt-2 grid gap-3 md:grid-cols-2">
+              {plan.validation.controls.map((c) => (
+                <div
+                  key={c.id}
+                  className="rounded-2xl border border-slate-200/70 bg-slate-50/60 p-3.5 text-sm"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <b className="text-slate-900">{c.name}</b>
+                    <Badge tone="slate">{c.control_type}</Badge>
+                  </div>
+                  <p className="mt-1 leading-6 text-slate-700">{c.purpose}</p>
+                  <EditButton onClick={() => onEdit(contextTarget("control", c.id, c))} compact />
+                </div>
+              ))}
+            </div>
+            <EditButton
+              onClick={() => onEdit(contextTarget("validation", "validation", plan.validation))}
+            />
+          </SectionCard>
+        </div>
+      )}
+
+      {activeTab === "risks" && (
+        <div role="tabpanel" id="plan-tab-risks" aria-labelledby="plan-tab-trigger-risks">
+          <SectionCard
+            title="Risks, assumptions & evidence"
+            subtitle="What could go wrong, what we're assuming, and how confident we are."
+            icon={<BookOpen className="h-5 w-5" />}
+          >
+            <div className="grid gap-4 lg:grid-cols-3">
+              <div>
+                <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  Risks
+                </h3>
+                {plan.risks_and_mitigations.map((r) => (
+                  <div
+                    key={r.id}
+                    className="mt-2 rounded-2xl border border-slate-200/70 bg-slate-50/60 p-3.5 text-sm"
+                  >
+                    <b className="text-slate-900">{r.risk}</b>
+                    <p className="mt-1 leading-6 text-slate-700">{r.mitigation}</p>
+                    <EditButton onClick={() => onEdit(contextTarget("risk", r.id, r))} compact />
+                  </div>
+                ))}
+              </div>
+              <div>
+                <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  Assumptions
+                </h3>
+                {plan.assumptions.map((a) => (
+                  <div
+                    key={a.id}
+                    className="mt-2 rounded-2xl border border-slate-200/70 bg-slate-50/60 p-3.5 text-sm"
+                  >
+                    <b className="text-slate-900">{a.assumption}</b>
+                    <p className="mt-1 leading-6 text-slate-700">{a.how_to_verify}</p>
+                    <EditButton onClick={() => onEdit(contextTarget("assumption", a.id, a))} compact />
+                  </div>
+                ))}
+              </div>
+              <div>
+                <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  Evidence
+                </h3>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Badge tone="blue">Literature {plan.evidence_quality.literature_coverage}</Badge>
+                  <Badge tone="amber">Supplier {plan.evidence_quality.supplier_data_confidence}</Badge>
+                  <Badge tone="emerald">
+                    Protocol {plan.evidence_quality.protocol_grounding_confidence}
+                  </Badge>
+                </div>
+                <ListBlock title="Known gaps" items={plan.evidence_quality.known_gaps} />
+              </div>
+            </div>
+            <div className="mt-6 border-t border-slate-100 pt-4">
+              <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                Evidence cards
+              </h3>
+              {plan.evidence_quality.evidence_cards.length === 0 ? (
+                <p className="mt-2 text-sm text-slate-500">
+                  No evidence cards were available for this generation.
+                </p>
+              ) : (
+                <div className="mt-3 grid gap-3 md:grid-cols-2">
+                  {plan.evidence_quality.evidence_cards.map((card) => (
+                    <details
+                      key={card.id}
+                      className="rounded-2xl border border-slate-200/70 bg-slate-50/60 p-3.5 text-sm"
+                    >
+                      <summary className="cursor-pointer font-semibold text-slate-900">
+                        {card.title}
+                      </summary>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <Badge tone="slate">{card.source_type}</Badge>
                         <Badge
                           tone={
-                            m.confidence === "high"
+                            card.confidence === "high"
                               ? "emerald"
-                              : m.confidence === "medium"
+                              : card.confidence === "medium"
                                 ? "blue"
                                 : "amber"
                           }
                         >
-                          {m.confidence}
+                          {card.confidence}
                         </Badge>
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <EditButton
-                          onClick={() => onEdit(contextTarget("material", m.id, m))}
-                          compact
-                        />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </SectionCard>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <SectionCard
-          title="Budget"
-          subtitle="Realistic line-item estimate, ready for ordering review."
-          icon={<CheckCircle2 className="h-5 w-5" />}
-        >
-          <div className="space-y-1 text-sm">
-            <Row
-              label="Materials subtotal"
-              value={`$${plan.budget.material_line_items_total.toFixed(2)}`}
-            />
-            <Row
-              label="Equipment if needed"
-              value={`$${plan.budget.equipment_line_items_total_if_needed.toFixed(2)}`}
-            />
-            <Row
-              label="Contingency"
-              value={`$${plan.budget.contingency_amount.toFixed(2)} (${plan.budget.contingency_percent}%)`}
-            />
-            <Row
-              label="Estimated total"
-              value={`$${plan.budget.estimated_total.toFixed(2)}`}
-              strong
-            />
-          </div>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
-            {plan.budget.calculation_notes}
-          </p>
-          <EditButton onClick={() => onEdit(contextTarget("budget", "budget", plan.budget))} />
-        </SectionCard>
-        <SectionCard
-          title="Timeline"
-          subtitle="Phased breakdown with dependencies and decision gates."
-          icon={<RefreshCw className="h-5 w-5" />}
-        >
-          <div className="space-y-3">
-            {plan.timeline.map((p) => (
-              <div
-                key={p.id}
-                className="rounded-2xl border border-slate-200/70 bg-slate-50/60 p-3.5 text-sm"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <b className="text-slate-900">{p.name}</b>
-                  <Badge tone="slate">{p.duration}</Badge>
+                        <Badge tone="slate">{card.source_name}</Badge>
+                      </div>
+                      <p className="mt-3 leading-6 text-slate-700">{card.snippet}</p>
+                      {card.extracted_facts.length > 0 && (
+                        <ListBlock title="Extracted facts" items={card.extracted_facts} />
+                      )}
+                      {card.source_url !== "not_found" && (
+                        <a
+                          className="mt-3 inline-flex items-center gap-1 font-semibold text-blue-700 hover:underline"
+                          href={card.source_url}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Open source <ExternalLink className="h-3 w-3" />
+                        </a>
+                      )}
+                    </details>
+                  ))}
                 </div>
-                <p className="mt-1 leading-6 text-slate-700">{p.decision_gate}</p>
-                <EditButton onClick={() => onEdit(contextTarget("timeline", p.id, p))} compact />
-              </div>
-            ))}
-          </div>
-        </SectionCard>
-      </div>
-
-      <SectionCard
-        title="Validation and controls"
-        subtitle="Primary readout, success / failure thresholds, and control structure."
-        icon={<AlertTriangle className="h-5 w-5" />}
-      >
-        <MiniField label="Primary readout" value={plan.validation.primary_readout} />
-        <ListBlock title="Success criteria" items={plan.validation.success_criteria} />
-        <ListBlock title="Failure criteria" items={plan.validation.failure_criteria} />
-        <h3 className="mt-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-          Controls
-        </h3>
-        <div className="mt-2 grid gap-3 md:grid-cols-2">
-          {plan.validation.controls.map((c) => (
-            <div
-              key={c.id}
-              className="rounded-2xl border border-slate-200/70 bg-slate-50/60 p-3.5 text-sm"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <b className="text-slate-900">{c.name}</b>
-                <Badge tone="slate">{c.control_type}</Badge>
-              </div>
-              <p className="mt-1 leading-6 text-slate-700">{c.purpose}</p>
-              <EditButton onClick={() => onEdit(contextTarget("control", c.id, c))} compact />
+              )}
             </div>
-          ))}
+          </SectionCard>
         </div>
-        <EditButton
-          onClick={() => onEdit(contextTarget("validation", "validation", plan.validation))}
-        />
-      </SectionCard>
+      )}
 
-      <SectionCard
-        title="Risks, assumptions & evidence"
-        subtitle="What could go wrong, what we're assuming, and how confident we are."
-        icon={<BookOpen className="h-5 w-5" />}
-      >
-        <div className="grid gap-4 lg:grid-cols-3">
-          <div>
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-              Risks
-            </h3>
-            {plan.risks_and_mitigations.map((r) => (
-              <div
-                key={r.id}
-                className="mt-2 rounded-2xl border border-slate-200/70 bg-slate-50/60 p-3.5 text-sm"
-              >
-                <b className="text-slate-900">{r.risk}</b>
-                <p className="mt-1 leading-6 text-slate-700">{r.mitigation}</p>
-                <EditButton onClick={() => onEdit(contextTarget("risk", r.id, r))} compact />
-              </div>
-            ))}
-          </div>
-          <div>
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-              Assumptions
-            </h3>
-            {plan.assumptions.map((a) => (
-              <div
-                key={a.id}
-                className="mt-2 rounded-2xl border border-slate-200/70 bg-slate-50/60 p-3.5 text-sm"
-              >
-                <b className="text-slate-900">{a.assumption}</b>
-                <p className="mt-1 leading-6 text-slate-700">{a.how_to_verify}</p>
-                <EditButton onClick={() => onEdit(contextTarget("assumption", a.id, a))} compact />
-              </div>
-            ))}
-          </div>
-          <div>
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-              Evidence
-            </h3>
-            <div className="mt-2 flex flex-wrap gap-2">
-              <Badge tone="blue">Literature {plan.evidence_quality.literature_coverage}</Badge>
-              <Badge tone="amber">Supplier {plan.evidence_quality.supplier_data_confidence}</Badge>
-              <Badge tone="emerald">
-                Protocol {plan.evidence_quality.protocol_grounding_confidence}
-              </Badge>
+      {activeTab === "safety" && (
+        <div role="tabpanel" id="plan-tab-safety" aria-labelledby="plan-tab-trigger-safety">
+          <SectionCard
+            title="Safety, ethics & compliance"
+            subtitle="Required oversight, approvals, and biosafety posture."
+            icon={<ShieldAlert className="h-5 w-5" />}
+          >
+            <div className="grid gap-3 md:grid-cols-2">
+              <MiniField label="Risk level" value={plan.safety_ethics_compliance.overall_risk_level} />
+              <MiniField
+                label="Biosafety assumption"
+                value={plan.safety_ethics_compliance.biosafety_level_assumption}
+              />
+              <MiniField
+                label="Human samples"
+                value={plan.safety_ethics_compliance.human_subjects_or_samples}
+              />
+              <MiniField label="Animal work" value={plan.safety_ethics_compliance.animal_work} />
             </div>
-            <ListBlock title="Known gaps" items={plan.evidence_quality.known_gaps} />
-          </div>
+            <ListBlock title="Approvals" items={plan.safety_ethics_compliance.required_approvals} />
+            <ListBlock
+              title="Critical warnings"
+              items={plan.safety_ethics_compliance.critical_warnings}
+              tone="red"
+            />
+            <EditButton
+              onClick={() => onEdit(contextTarget("safety", "safety", plan.safety_ethics_compliance))}
+            />
+          </SectionCard>
         </div>
-        <div className="mt-6 border-t border-slate-100 pt-4">
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-            Evidence cards
-          </h3>
-          {plan.evidence_quality.evidence_cards.length === 0 ? (
-            <p className="mt-2 text-sm text-slate-500">
-              No evidence cards were available for this generation.
-            </p>
-          ) : (
-            <div className="mt-3 grid gap-3 md:grid-cols-2">
-              {plan.evidence_quality.evidence_cards.map((card) => (
-                <details
-                  key={card.id}
-                  className="rounded-2xl border border-slate-200/70 bg-slate-50/60 p-3.5 text-sm"
-                >
-                  <summary className="cursor-pointer font-semibold text-slate-900">
-                    {card.title}
-                  </summary>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <Badge tone="slate">{card.source_type}</Badge>
-                    <Badge
-                      tone={
-                        card.confidence === "high"
-                          ? "emerald"
-                          : card.confidence === "medium"
-                            ? "blue"
-                            : "amber"
-                      }
-                    >
-                      {card.confidence}
-                    </Badge>
-                    <Badge tone="slate">{card.source_name}</Badge>
+      )}
+
+      {activeTab === "critic" && critique && (
+        <div role="tabpanel" id="plan-tab-critic" aria-labelledby="plan-tab-trigger-critic">
+          <PlanCritiquePanel critique={critique} />
+        </div>
+      )}
+
+      {activeTab === "livesearch" && evidence && (
+        <div role="tabpanel" id="plan-tab-livesearch" aria-labelledby="plan-tab-trigger-livesearch">
+          <EvidenceDiagnosticsCard evidence={evidence} />
+        </div>
+      )}
+
+      {activeTab === "applied" && (
+        <div role="tabpanel" id="plan-tab-applied" aria-labelledby="plan-tab-trigger-applied">
+          <SectionCard
+            title="Applied scientist feedback"
+            subtitle="Past corrections retrieved and applied to this generation."
+            icon={<BrainCircuit className="h-5 w-5" />}
+          >
+            {plan.applied_feedback.length === 0 ? (
+              <p className="text-sm text-slate-500">No relevant saved feedback was applied yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {plan.applied_feedback.map((fb) => (
+                  <div
+                    key={fb.feedback_id}
+                    className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-sm"
+                  >
+                    <div className="flex flex-wrap gap-2">
+                      <Badge tone={fb.severity === "critical" ? "red" : "emerald"}>{fb.severity}</Badge>
+                      <Badge tone="slate">score {fb.similarity_score.toFixed(2)}</Badge>
+                      <Badge tone="slate">{fb.source_item_type}</Badge>
+                    </div>
+                    <p className="mt-2 font-semibold text-emerald-950">{fb.derived_rule}</p>
+                    <p className="mt-1 leading-6 text-emerald-800">{fb.reason_applied}</p>
                   </div>
-                  <p className="mt-3 leading-6 text-slate-700">{card.snippet}</p>
-                  {card.extracted_facts.length > 0 && (
-                    <ListBlock title="Extracted facts" items={card.extracted_facts} />
-                  )}
-                  {card.source_url !== "not_found" && (
-                    <a
-                      className="mt-3 inline-flex items-center gap-1 font-semibold text-blue-700 hover:underline"
-                      href={card.source_url}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Open source <ExternalLink className="h-3 w-3" />
-                    </a>
-                  )}
-                </details>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </SectionCard>
         </div>
-      </SectionCard>
+      )}
+        </>
+      )}
     </div>
   );
 }
@@ -1969,6 +2212,31 @@ function Card({ children, className }: { children: React.ReactNode; className?: 
     <div className={`helix-card ${className ?? ""}`.trim()}>
       {children}
     </div>
+  );
+}
+
+function CollapseToggle({
+  collapsed,
+  onToggle,
+  label
+}: {
+  collapsed: boolean;
+  onToggle: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={!collapsed}
+      aria-label={collapsed ? `Expand ${label}` : `Collapse ${label}`}
+      title={collapsed ? `Expand ${label}` : `Collapse ${label}`}
+      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700"
+    >
+      <ChevronDown
+        className={`h-4 w-4 transition-transform ${collapsed ? "" : "rotate-180"}`}
+      />
+    </button>
   );
 }
 
