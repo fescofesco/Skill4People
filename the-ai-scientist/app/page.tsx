@@ -22,6 +22,7 @@ import type {
   ExperimentPlan,
   HealthResponse,
   LiteratureQC,
+  ParsedHypothesis,
   Reference,
   ScientistFeedback
 } from "@/lib/schemas";
@@ -440,6 +441,19 @@ export default function Home() {
                 qc={literatureQC}
                 diagnostics={litDiag}
                 onGenerate={generatePlan}
+                onUpdateParsed={(parsed) => {
+                  // Editing the parse invalidates the existing plan, but
+                  // keeps the literatureQC + references — the user can
+                  // regenerate immediately with the corrected parse.
+                  setLiteratureQC({ ...literatureQC, parsed_hypothesis: parsed });
+                  setPlan(null);
+                  setGenMeta(null);
+                  setEvidenceMeta(null);
+                  setCritique(null);
+                  setSavedSincePlan(false);
+                  setStage("literature_ready");
+                  setToast("Parse updated. Regenerate the plan to use the corrected fields.");
+                }}
                 loading={stage === "plan_loading"}
               />
             )}
@@ -722,17 +736,92 @@ function ReferenceList({ references }: { references: Reference[] }) {
   );
 }
 
+function ParsedHypothesisEditor({
+  initial,
+  onSave,
+  onCancel
+}: {
+  initial: ParsedHypothesis;
+  onSave: (parsed: ParsedHypothesis) => void;
+  onCancel: () => void;
+}) {
+  const [draft, setDraft] = useState<ParsedHypothesis>(initial);
+  const fields: { key: keyof ParsedHypothesis; label: string; multiline?: boolean }[] = [
+    { key: "domain", label: "Domain" },
+    { key: "experiment_type", label: "Experiment type" },
+    { key: "organism_or_system", label: "System / organism" },
+    { key: "intervention", label: "Intervention", multiline: true },
+    { key: "comparator", label: "Comparator", multiline: true },
+    { key: "primary_outcome", label: "Primary outcome", multiline: true },
+    { key: "quantitative_target", label: "Quantitative target" },
+    { key: "mechanism", label: "Mechanism", multiline: true }
+  ];
+  return (
+    <div className="mt-2 rounded-xl border border-blue-200 bg-blue-50/50 p-4">
+      <p className="text-sm text-slate-600">
+        Correct the parse before generating the plan. Lists (controls, variables, safety
+        flags) stay as the AI / heuristic produced them.
+      </p>
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        {fields.map((f) => (
+          <div key={f.key} className={f.multiline ? "md:col-span-2" : undefined}>
+            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {f.label}
+            </label>
+            {f.multiline ? (
+              <textarea
+                className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                rows={2}
+                value={draft[f.key] as string}
+                onChange={(e) =>
+                  setDraft((d) => ({ ...d, [f.key]: e.target.value }) as ParsedHypothesis)
+                }
+              />
+            ) : (
+              <input
+                className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                value={draft[f.key] as string}
+                onChange={(e) =>
+                  setDraft((d) => ({ ...d, [f.key]: e.target.value }) as ParsedHypothesis)
+                }
+              />
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
+        <button
+          onClick={onCancel}
+          className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={() => onSave(draft)}
+          className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700"
+        >
+          Save changes
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function LiteratureCard({
   qc,
   diagnostics,
   onGenerate,
+  onUpdateParsed,
   loading
 }: {
   qc: LiteratureQC;
   diagnostics: LiteratureDiagnostics | null;
   onGenerate: () => void;
+  onUpdateParsed: (parsed: ParsedHypothesis) => void;
   loading: boolean;
 }) {
+  const [editingParse, setEditingParse] = useState(false);
+
   return (
     <Card>
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -805,12 +894,42 @@ function LiteratureCard({
         </div>
       </div>
       <p className="mt-4 text-sm leading-6 text-slate-700">{qc.novelty.rationale}</p>
-      <div className="mt-4 grid gap-3 md:grid-cols-2">
-        <MiniField label="Domain" value={qc.parsed_hypothesis.domain} />
-        <MiniField label="Experiment Type" value={qc.parsed_hypothesis.experiment_type} />
-        <MiniField label="System" value={qc.parsed_hypothesis.organism_or_system} />
-        <MiniField label="Outcome" value={qc.parsed_hypothesis.primary_outcome} />
+      <div className="mt-4 flex items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+          Parsed hypothesis
+        </h3>
+        {!editingParse ? (
+          <button
+            onClick={() => setEditingParse(true)}
+            className="rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100"
+          >
+            Edit parse
+          </button>
+        ) : (
+          <span className="text-xs text-slate-500">
+            Editing — save to apply, then regenerate the plan.
+          </span>
+        )}
       </div>
+      {editingParse ? (
+        <ParsedHypothesisEditor
+          initial={qc.parsed_hypothesis}
+          onSave={(p) => {
+            onUpdateParsed(p);
+            setEditingParse(false);
+          }}
+          onCancel={() => setEditingParse(false)}
+        />
+      ) : (
+        <div className="mt-2 grid gap-3 md:grid-cols-2">
+          <MiniField label="Domain" value={qc.parsed_hypothesis.domain} />
+          <MiniField label="Experiment Type" value={qc.parsed_hypothesis.experiment_type} />
+          <MiniField label="System" value={qc.parsed_hypothesis.organism_or_system} />
+          <MiniField label="Outcome" value={qc.parsed_hypothesis.primary_outcome} />
+          <MiniField label="Intervention" value={qc.parsed_hypothesis.intervention} />
+          <MiniField label="Comparator" value={qc.parsed_hypothesis.comparator} />
+        </div>
+      )}
       <ReferenceList references={qc.novelty.references} />
       {qc.novelty.coverage_warnings.length > 0 && (
         <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">

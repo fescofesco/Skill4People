@@ -33,7 +33,52 @@ export type ParseHypothesisResult = {
   errors: string[];
 };
 
+// In-memory parse cache keyed by normalized hypothesis. Survives across
+// requests within a single warm Node process (dev server, warm Vercel
+// lambda). TTL bounds memory and ensures upstream model upgrades take
+// effect within ~30 min. Cache only AI successes — heuristic fallbacks
+// are deterministic and cheap, so caching them adds no value.
+const PARSE_CACHE_TTL_MS = 30 * 60_000;
+const PARSE_CACHE_MAX = 50;
+const parseCache = new Map<string, { result: ParseHypothesisResult; expiresAt: number }>();
+
+function parseCacheKey(hypothesis: string): string {
+  return hypothesis.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function readParseCache(key: string): ParseHypothesisResult | null {
+  const hit = parseCache.get(key);
+  if (!hit) return null;
+  if (hit.expiresAt < Date.now()) {
+    parseCache.delete(key);
+    return null;
+  }
+  return hit.result;
+}
+
+function writeParseCache(key: string, result: ParseHypothesisResult): void {
+  if (parseCache.size >= PARSE_CACHE_MAX) {
+    // Drop the oldest entry. Map iteration is insertion-ordered, so the
+    // first key we visit is the oldest one and therefore the cheapest to
+    // evict without tracking access order separately.
+    const oldest = parseCache.keys().next().value as string | undefined;
+    if (oldest) parseCache.delete(oldest);
+  }
+  parseCache.set(key, { result, expiresAt: Date.now() + PARSE_CACHE_TTL_MS });
+}
+
 export async function parseHypothesis(hypothesis: string): Promise<ParseHypothesisResult> {
+  const cacheKey = parseCacheKey(hypothesis);
+  const cached = readParseCache(cacheKey);
+  if (cached) {
+    return {
+      ...cached,
+      // Preserve original errors but tag this as a cache hit so diagnostics
+      // can surface "no second OpenAI call needed" without confusing the user.
+      errors: [...cached.errors, "openai_parse_cache_hit"]
+    };
+  }
+
   const client = getOpenAIClient();
   const errors: string[] = [];
   if (client) {
@@ -45,7 +90,14 @@ export async function parseHypothesis(hypothesis: string): Promise<ParseHypothes
       });
       const parsed = ParsedHypothesisSchema.safeParse(raw);
       if (parsed.success) {
-        return { parsed: parsed.data, source: "openai", model: getOpenAIModel(), errors };
+        const result: ParseHypothesisResult = {
+          parsed: parsed.data,
+          source: "openai",
+          model: getOpenAIModel(),
+          errors
+        };
+        writeParseCache(cacheKey, result);
+        return result;
       }
       errors.push(
         "openai_parse_validation_failed: " +
@@ -363,6 +415,45 @@ export function interleaveReferences(...lists: Reference[][]): Reference[] {
   return out;
 }
 
+/**
+ * Re-rank a list of references against the parsed hypothesis using a unified
+ * token-overlap signal. Each source's API gives us its own opaque ranking
+ * (citation count for Semantic Scholar, fixed 0.55 for OpenAlex, fixed 0.6
+ * for arXiv), so without this step the within-source ordering is API order,
+ * not relevance to the user's hypothesis.
+ *
+ * We blend 30% of the original source signal (so high-cite peer-reviewed
+ * papers still beat low-cite ones) with 70% Jaccard overlap between the
+ * reference title+venue and the hypothesis tokens. The new score replaces
+ * relevance_score IN-PLACE, which is what `interleaveReferences` consumes.
+ */
+export function rerankAgainstHypothesis(
+  refs: Reference[],
+  parsed: ParsedHypothesis
+): Reference[] {
+  const haystack = tokenize(
+    [
+      parsed.intervention,
+      parsed.organism_or_system,
+      parsed.primary_outcome,
+      parsed.comparator,
+      parsed.mechanism
+    ]
+      .filter(Boolean)
+      .join(" ")
+  );
+  return refs.map((r) => {
+    const titleTokens = tokenize(`${r.title} ${r.venue ?? ""}`);
+    const overlap = jaccard(titleTokens, haystack);
+    const base = typeof r.relevance_score === "number" ? r.relevance_score : 0.55;
+    const blended = Math.max(0, Math.min(1, 0.3 * base + 0.7 * overlap));
+    // Always keep some signal so completely off-topic refs still order
+    // consistently below near-misses; never zero so dedup ties don't all
+    // collapse to position 0.
+    return { ...r, relevance_score: Math.max(0.05, blended) };
+  });
+}
+
 export async function searchProtocolRepositories(queries: string[]): Promise<Reference[]> {
   const env = getEnv();
   if (!env.tavilyApiKey) return [];
@@ -474,9 +565,16 @@ Return JSON: {
         const indices = parsed.data.used_reference_indices.filter(
           (i) => i >= 0 && i < trimmedRefs.length
         );
+        // If the AI explicitly picks references, use exactly those (clipped
+        // to the schema's max of 5). If it picks none — common for "novel
+        // hypothesis" classifications — fall back to the top 5 from our
+        // re-ranked round-robin merge, which is already ordered by token
+        // overlap with the hypothesis. This preserves source diversity
+        // (peer-reviewed + preprint + protocol + news) when the AI didn't
+        // single anyone out, instead of arbitrarily showing only 3.
         const usedRefs = (indices.length > 0
           ? indices.map((i) => trimmedRefs[i])
-          : trimmedRefs.slice(0, 3)
+          : trimmedRefs
         ).slice(0, 5);
         const qc = LiteratureQCSchema.parse({
           parsed_hypothesis: args.parsed,
@@ -604,11 +702,18 @@ export async function runLiteratureQC(hypothesis: string): Promise<{
       : skipped("tavily_news", "skipped: TAVILY_API_KEY missing", sourceStats)
   ]);
 
+  // Re-rank each source list by hypothesis token overlap so the top-of-list
+  // for every source is the most relevant hit, not just whatever the API
+  // returned first. This gives the round-robin merge below a meaningful
+  // ordering signal across all sources.
+  const reranked = [ssRefs, oaRefs, pmRefs, axRefs, prRefs, nwRefs].map((list) =>
+    rerankAgainstHypothesis(list, parseResult.parsed)
+  );
   // Interleave by source so the top-5 (and top-12) always shows diversity
   // even when Semantic Scholar 429s or PubMed comes back empty. Order
   // expresses priority: peer-reviewed first (SS, OpenAlex, PubMed), then
   // preprints (arXiv), then protocols, then recent news/preprint coverage.
-  const merged = interleaveReferences(ssRefs, oaRefs, pmRefs, axRefs, prRefs, nwRefs);
+  const merged = interleaveReferences(...reranked);
   const refs = dedupeReferences(merged).slice(0, 12);
   const sourcesUsed = sourceStats.filter((s) => s.status === "ok").map((s) => s.name);
 

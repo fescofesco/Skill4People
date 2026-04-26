@@ -1,5 +1,5 @@
 import { chatCompletionsJson, getOpenAIClient, getOpenAIModel } from "./openai";
-import { ExperimentPlan, LiteratureQC } from "./schemas";
+import { Control, ExperimentPlan, LiteratureQC } from "./schemas";
 import { getEnv } from "./env";
 
 export type CritiqueFinding = {
@@ -123,19 +123,31 @@ export function heuristicCritique(plan: ExperimentPlan, lit: LiteratureQC): Plan
 
   const controls = plan.validation?.controls || [];
   const controlTypes = new Set(controls.map((c) => c.control_type));
-  if (!controlTypes.has("negative")) {
+  // The control_type is constrained by the schema enum, but plans
+  // sometimes route a "vehicle" or "sham" control through the wider
+  // control_type slot. Treat those as proxies for negative-control
+  // coverage so we don't double-flag a plan that already has a sham.
+  const negativeProxies = ["negative", "vehicle", "sham", "baseline"];
+  const positiveProxies = ["positive", "reference_standard"];
+  const hasNegative =
+    negativeProxies.some((p) => controlTypes.has(p as Control["control_type"])) ||
+    controls.some((c) => /sham|vehicle|untreated|no[\s-]?intervention/i.test(`${c.name} ${c.purpose}`));
+  const hasPositive =
+    positiveProxies.some((p) => controlTypes.has(p as Control["control_type"])) ||
+    controls.some((c) => /reference|standard|positive/i.test(`${c.name} ${c.purpose}`));
+  if (!hasNegative) {
     findings.push({
       area: "controls",
-      finding: "No explicit negative control listed.",
+      finding: "No explicit negative / vehicle / sham control listed.",
       suggestion:
         "Add a sham/no-intervention or matrix-only control so off-target signal can be measured.",
       severity: "warning"
     });
   }
-  if (!controlTypes.has("positive")) {
+  if (!hasPositive) {
     findings.push({
       area: "controls",
-      finding: "No positive/reference control listed.",
+      finding: "No positive / reference-standard control listed.",
       suggestion:
         "Add a known positive (or reference standard) so the readout is calibrated against expected response.",
       severity: "info"
