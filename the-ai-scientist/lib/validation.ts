@@ -1,4 +1,4 @@
-import { ZodError, ZodSchema } from "zod";
+import { z, ZodError } from "zod";
 
 export class HttpError extends Error {
   status: number;
@@ -21,7 +21,19 @@ export class HttpError extends Error {
   }
 }
 
-export function validate<T>(schema: ZodSchema<T>, value: unknown, code = "VALIDATION_ERROR"): T {
+/**
+ * Generic Zod validator that always returns the SCHEMA OUTPUT type
+ * (post-defaults, post-transforms). The previous version used
+ * `ZodSchema<T>` which constrains both input and output to T, causing
+ * TypeScript to infer the input type whenever a schema relies on
+ * `.default(...)` — see the structural mismatches that show up when
+ * passing the validated body to plan-store.
+ */
+export function validate<S extends z.ZodTypeAny>(
+  schema: S,
+  value: unknown,
+  code = "VALIDATION_ERROR"
+): z.infer<S> {
   const result = schema.safeParse(value);
   if (!result.success) {
     throw new HttpError({
@@ -32,7 +44,7 @@ export function validate<T>(schema: ZodSchema<T>, value: unknown, code = "VALIDA
       recoverable: true
     });
   }
-  return result.data;
+  return result.data as z.infer<S>;
 }
 
 export function jsonError(err: unknown): Response {

@@ -299,14 +299,20 @@ export const ExperimentPlanSchema = z.object({
 });
 export type ExperimentPlan = z.infer<typeof ExperimentPlanSchema>;
 
+export const FeedbackScopeSchema = z.enum(["organization", "category", "experiment"]);
+export type FeedbackScope = z.infer<typeof FeedbackScopeSchema>;
+
 export const ScientistFeedbackSchema = z.object({
   id: z.string(),
   created_at: z.string(),
+  organization_id: z.string().default("default"),
   source_plan_id: z.string(),
   hypothesis: z.string(),
   parsed_hypothesis: ParsedHypothesisSchema.optional(),
   domain: z.string(),
   experiment_type: z.string(),
+  category_id: z.string().nullable().optional(),
+  scope: FeedbackScopeSchema.optional(),
   item_type: z.enum([
     "protocol",
     "material",
@@ -326,6 +332,7 @@ export const ScientistFeedbackSchema = z.object({
   reason: z.string(),
   rating_before: z.number().int().min(1).max(5).nullable().optional(),
   derived_rule: z.string(),
+  applicable_rule: z.string().optional(),
   tags: z.array(z.string()),
   applicability: z.enum([
     "only_this_plan",
@@ -339,6 +346,34 @@ export const ScientistFeedbackSchema = z.object({
 });
 export type ScientistFeedback = z.infer<typeof ScientistFeedbackSchema>;
 
+export const CategorySchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string().optional(),
+  created_at: z.string(),
+  builtin: z.boolean().default(false)
+});
+export type Category = z.infer<typeof CategorySchema>;
+
+export const CategoryListResponseSchema = z.object({
+  ok: z.literal(true),
+  organization_id: z.string(),
+  categories: z.array(CategorySchema)
+});
+export type CategoryListResponse = z.infer<typeof CategoryListResponseSchema>;
+
+export const CategoryCreateRequestSchema = z.object({
+  name: z.string().trim().min(1).max(60),
+  description: z.string().trim().max(240).optional()
+});
+export type CategoryCreateRequest = z.infer<typeof CategoryCreateRequestSchema>;
+
+export const CategoryUpdateRequestSchema = z.object({
+  name: z.string().trim().min(1).max(60).optional(),
+  description: z.string().trim().max(240).optional()
+});
+export type CategoryUpdateRequest = z.infer<typeof CategoryUpdateRequestSchema>;
+
 export const LiteratureRequestSchema = z.object({
   hypothesis: NonEmptyString.min(20).max(3000)
 });
@@ -346,7 +381,10 @@ export type LiteratureRequest = z.infer<typeof LiteratureRequestSchema>;
 
 export const GeneratePlanRequestSchema = z.object({
   hypothesis: NonEmptyString.min(20).max(3000),
-  literature_qc: LiteratureQCSchema
+  literature_qc: LiteratureQCSchema,
+  category_id: z.string().min(1).default("other"),
+  continue_from_plan_id: z.string().min(1).nullable().optional(),
+  organization_id: z.string().min(1).optional()
 });
 export type GeneratePlanRequest = z.infer<typeof GeneratePlanRequestSchema>;
 
@@ -356,6 +394,9 @@ export const FeedbackCreateRequestSchema = z.object({
   parsed_hypothesis: ParsedHypothesisSchema.optional(),
   domain: z.string().min(1),
   experiment_type: z.string().min(1),
+  organization_id: z.string().min(1).optional(),
+  category_id: z.string().min(1).nullable().optional(),
+  scope: FeedbackScopeSchema.optional(),
   item_type: ScientistFeedbackSchema.shape.item_type,
   item_id: z.string().min(1),
   original_context: z.string().min(1),
@@ -368,6 +409,78 @@ export const FeedbackCreateRequestSchema = z.object({
   confidence: Confidence01.default(0.7)
 });
 export type FeedbackCreateRequest = z.infer<typeof FeedbackCreateRequestSchema>;
+
+export const SavedPlanSchema = z.object({
+  id: z.string().min(1),
+  organization_id: z.string().min(1),
+  category_id: z.string().min(1),
+  continue_from_plan_id: z.string().nullable().optional(),
+  title: z.string().min(1).max(160),
+  hypothesis: z.string().min(1),
+  parsed_hypothesis: ParsedHypothesisSchema.optional(),
+  literature_qc: LiteratureQCSchema,
+  plan: ExperimentPlanSchema,
+  generation: z
+    .object({
+      source: z.enum(["openai", "deterministic_fallback", "safety_restricted"]),
+      model: z.string().nullable(),
+      attempts: z.number().int().nonnegative(),
+      errors: z.array(z.string())
+    })
+    .optional(),
+  evidence: z
+    .object({
+      tavilyConfigured: z.boolean(),
+      sourceStats: z.array(z.any()).optional(),
+      regulatoryReasons: z.array(z.string()).optional(),
+      cardCount: z.number().int().nonnegative().optional()
+    })
+    .optional(),
+  critique: z.any().optional(),
+  feedback_used: z.array(z.string()).default([]),
+  created_at: z.string(),
+  updated_at: z.string()
+});
+export type SavedPlan = z.infer<typeof SavedPlanSchema>;
+
+export const SavedPlanSummarySchema = z.object({
+  id: z.string(),
+  organization_id: z.string(),
+  category_id: z.string(),
+  title: z.string(),
+  hypothesis_snippet: z.string(),
+  domain: z.string().optional(),
+  experiment_type: z.string().optional(),
+  has_critique: z.boolean(),
+  feedback_used_count: z.number().int().nonnegative(),
+  created_at: z.string(),
+  updated_at: z.string()
+});
+export type SavedPlanSummary = z.infer<typeof SavedPlanSummarySchema>;
+
+export const PlanUpsertRequestSchema = z.object({
+  id: z.string().min(1).optional(),
+  category_id: z.string().min(1),
+  continue_from_plan_id: z.string().nullable().optional(),
+  title: z.string().min(1).max(160).optional(),
+  hypothesis: z.string().min(1),
+  parsed_hypothesis: ParsedHypothesisSchema.optional(),
+  literature_qc: LiteratureQCSchema,
+  plan: ExperimentPlanSchema,
+  generation: SavedPlanSchema.shape.generation,
+  evidence: SavedPlanSchema.shape.evidence,
+  critique: SavedPlanSchema.shape.critique,
+  feedback_used: z.array(z.string()).default([])
+});
+export type PlanUpsertRequest = z.infer<typeof PlanUpsertRequestSchema>;
+
+export const PlanUpdateRequestSchema = z.object({
+  title: z.string().min(1).max(160).optional(),
+  category_id: z.string().min(1).optional(),
+  plan: ExperimentPlanSchema.optional(),
+  critique: z.any().optional()
+});
+export type PlanUpdateRequest = z.infer<typeof PlanUpdateRequestSchema>;
 
 export const FeedbackRetrieveRequestSchema = z.object({
   hypothesis: z.string().min(1),

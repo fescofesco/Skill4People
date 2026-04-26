@@ -1,0 +1,2846 @@
+[
+  {
+    "id": "plan_d2d5645c48f749f5",
+    "organization_id": "e2e-org",
+    "category_id": "cell_biology",
+    "continue_from_plan_id": null,
+    "title": "CRP biosensor — auto save E2E",
+    "hypothesis": "A paper-based electrochemical biosensor functionalized with anti-CRP antibodies will detect C-reactive protein in whole blood at concentrations below 0.5 mg/L within 10 minutes, matching laboratory ELISA sensitivity without requiring sample preprocessing.",
+    "parsed_hypothesis": {
+      "domain": "biosensor technology",
+      "experiment_type": "analytical performance evaluation",
+      "organism_or_system": "human blood",
+      "intervention": "paper-based electrochemical biosensor functionalized with anti-CRP antibodies",
+      "comparator": "laboratory ELISA",
+      "primary_outcome": "detection of C-reactive protein",
+      "quantitative_target": "below 0.5 mg/L within 10 minutes",
+      "mechanism": "electrochemical detection using anti-CRP antibodies",
+      "implied_controls": [],
+      "key_variables": [
+        "concentration of C-reactive protein",
+        "detection time"
+      ],
+      "key_measurements": [
+        "sensitivity of biosensor",
+        "detection limit",
+        "time to detection"
+      ],
+      "safety_flags": [
+        "human-sample"
+      ]
+    },
+    "literature_qc": {
+      "parsed_hypothesis": {
+        "domain": "biosensor technology",
+        "experiment_type": "analytical performance evaluation",
+        "organism_or_system": "human blood",
+        "intervention": "paper-based electrochemical biosensor functionalized with anti-CRP antibodies",
+        "comparator": "laboratory ELISA",
+        "primary_outcome": "detection of C-reactive protein",
+        "quantitative_target": "below 0.5 mg/L within 10 minutes",
+        "mechanism": "electrochemical detection using anti-CRP antibodies",
+        "implied_controls": [],
+        "key_variables": [
+          "concentration of C-reactive protein",
+          "detection time"
+        ],
+        "key_measurements": [
+          "sensitivity of biosensor",
+          "detection limit",
+          "time to detection"
+        ],
+        "safety_flags": [
+          "human-sample"
+        ]
+      },
+      "novelty": {
+        "signal": "similar_work_exists",
+        "confidence": 0.4,
+        "rationale": "There are references discussing electrochemical biosensors and CRP detection, such as reference 5 which mentions real-time detection of CRP using electrochemical impedance spectroscopy. However, none of the references specifically describe a paper-based electrochemical biosensor functionalized with anti-CRP antibodies for detecting CRP in whole blood at the specified sensitivity and time frame.",
+        "references": [
+          {
+            "id": "ref_b9a1e215343f8edd",
+            "title": "Electrochemical protein biosensors for disease marker detection",
+            "authors": [],
+            "year": null,
+            "venue": "www.nature.com",
+            "url": "https://www.nature.com/articles/s41378-024-00700-w",
+            "doi": null,
+            "source": "protocol_repository",
+            "relevance_reason": "Protocol repository match via Tavily",
+            "relevance_score": 0.2258235,
+            "evidence_type": "protocol"
+          },
+          {
+            "id": "ref_cb6192e5425bac9c",
+            "title": "Real time detection of C reactive protein in interstitial fluid using electrochemical impedance spectroscopy, towards wearable health monitoring",
+            "authors": [
+              "Aristea Grammoustianou",
+              "Ali Saeidi",
+              "Johan Longo",
+              "Felix Risch",
+              "Adrian M. Ionescu"
+            ],
+            "year": 2024,
+            "venue": "arXiv",
+            "url": "http://arxiv.org/abs/2407.16734v1",
+            "doi": null,
+            "source": "arxiv",
+            "relevance_reason": "arXiv preprint match",
+            "relevance_score": 0.2876923076923077,
+            "evidence_type": "literature"
+          }
+        ],
+        "search_queries_used": [
+          "human blood paper-based electrochemical biosensor functionalized anti-crp antibodies detection c-reactive",
+          "paper-based electrochemical biosensor functionalized with anti-CRP antibodies human blood",
+          "paper-based electrochemical biosensor functionalized with anti-CRP antibodies detection of C-reactive protein",
+          "human blood detection of C-reactive protein",
+          "electrochemical detection using anti-CRP antibodies",
+          "A paper-based electrochemical biosensor functionalized with anti-CRP antibodies will detect C-reactive protein in whole blood at concentrations below 0.5 mg/L …"
+        ],
+        "coverage_warnings": [
+          "The references do not directly address the use of paper-based biosensors for CRP detection in whole blood with the specified sensitivity and time constraints."
+        ]
+      }
+    },
+    "plan": {
+      "plan_id": "plan_d25fa0de2f4db251",
+      "created_at": "2026-04-26T10:05:43.527Z",
+      "hypothesis": {
+        "raw": "A paper-based electrochemical biosensor functionalized with anti-CRP antibodies will detect C-reactive protein in whole blood at concentrations below 0.5 mg/L within 10 minutes, matching laboratory ELISA sensitivity without requiring sample preprocessing.",
+        "parsed": {
+          "domain": "biosensor technology",
+          "experiment_type": "analytical performance evaluation",
+          "organism_or_system": "human blood",
+          "intervention": "paper-based electrochemical biosensor functionalized with anti-CRP antibodies",
+          "comparator": "laboratory ELISA",
+          "primary_outcome": "detection of C-reactive protein",
+          "quantitative_target": "below 0.5 mg/L within 10 minutes",
+          "mechanism": "electrochemical detection using anti-CRP antibodies",
+          "implied_controls": [],
+          "key_variables": [
+            "concentration of C-reactive protein",
+            "detection time"
+          ],
+          "key_measurements": [
+            "sensitivity of biosensor",
+            "detection limit",
+            "time to detection"
+          ],
+          "safety_flags": [
+            "human-sample"
+          ]
+        }
+      },
+      "novelty": {
+        "signal": "similar_work_exists",
+        "confidence": 0.4,
+        "rationale": "There are references discussing electrochemical biosensors and CRP detection, such as reference 5 which mentions real-time detection of CRP using electrochemical impedance spectroscopy. However, none of the references specifically describe a paper-based electrochemical biosensor functionalized with anti-CRP antibodies for detecting CRP in whole blood at the specified sensitivity and time frame.",
+        "references": [
+          {
+            "id": "ref_b9a1e215343f8edd",
+            "title": "Electrochemical protein biosensors for disease marker detection",
+            "authors": [],
+            "year": null,
+            "venue": "www.nature.com",
+            "url": "https://www.nature.com/articles/s41378-024-00700-w",
+            "doi": null,
+            "source": "protocol_repository",
+            "relevance_reason": "Protocol repository match via Tavily",
+            "relevance_score": 0.2258235,
+            "evidence_type": "protocol"
+          },
+          {
+            "id": "ref_cb6192e5425bac9c",
+            "title": "Real time detection of C reactive protein in interstitial fluid using electrochemical impedance spectroscopy, towards wearable health monitoring",
+            "authors": [
+              "Aristea Grammoustianou",
+              "Ali Saeidi",
+              "Johan Longo",
+              "Felix Risch",
+              "Adrian M. Ionescu"
+            ],
+            "year": 2024,
+            "venue": "arXiv",
+            "url": "http://arxiv.org/abs/2407.16734v1",
+            "doi": null,
+            "source": "arxiv",
+            "relevance_reason": "arXiv preprint match",
+            "relevance_score": 0.2876923076923077,
+            "evidence_type": "literature"
+          }
+        ]
+      },
+      "applied_feedback": [
+        {
+          "feedback_id": "fbk_39e4a70760586533",
+          "derived_rule": "Always order DMSO from Sigma-Aldrich as per lab supplier policy.",
+          "similarity_score": 1,
+          "reason_applied": "organization-wide rule",
+          "source_item_type": "material",
+          "severity": "important"
+        },
+        {
+          "feedback_id": "fbk_e29affa3a1464dfb",
+          "derived_rule": "Authenticate cell lines by STR every 6 months for any cell-culture experiment.",
+          "similarity_score": 0.95,
+          "reason_applied": "category-wide rule",
+          "source_item_type": "validation",
+          "severity": "important"
+        }
+      ],
+      "executive_summary": {
+        "objective": "To evaluate the analytical performance of a paper-based electrochemical biosensor functionalized with anti-CRP antibodies for detecting C-reactive protein in whole blood.",
+        "experimental_strategy": "Fabricate the biosensor, functionalize with anti-CRP antibodies, and test its sensitivity and detection time against a standard laboratory ELISA.",
+        "expected_result": "The biosensor will detect CRP at concentrations below 0.5 mg/L within 10 minutes, matching ELISA sensitivity.",
+        "major_risks": [
+          "Inadequate sensitivity of the biosensor",
+          "Interference from whole blood components"
+        ],
+        "decision_gate": "Proceed to full-scale testing if biosensor meets sensitivity and time criteria."
+      },
+      "safety_ethics_compliance": {
+        "overall_risk_level": "medium",
+        "biosafety_level_assumption": "BSL-2",
+        "human_subjects_or_samples": "Use of human blood samples requires ethical approval.",
+        "animal_work": "None",
+        "environmental_or_gmo_considerations": "None",
+        "required_approvals": [
+          "Institutional Review Board (IRB)"
+        ],
+        "ppe": [
+          "Gloves",
+          "Lab coat",
+          "Safety goggles"
+        ],
+        "waste_disposal": [
+          "Biohazard waste disposal for human samples"
+        ],
+        "critical_warnings": [
+          "Ensure proper handling of human blood samples to prevent contamination."
+        ],
+        "expert_review_required": true
+      },
+      "protocol": [
+        {
+          "id": "step_01",
+          "title": "Fabrication of Paper-Based Biosensor",
+          "purpose": "To create the paper-based scaffold for the biosensor.",
+          "instructions": [
+            "Cut paper into desired shape for the sensor.",
+            "Sputter-coat a gold/palladium layer using shadow masking."
+          ],
+          "parameters": {
+            "reagent_amounts": [],
+            "concentrations": [],
+            "temperatures": [],
+            "durations": [],
+            "volumes": [],
+            "equipment_settings": [],
+            "environmental_conditions": []
+          },
+          "acceptance_criteria": [
+            "Uniform coating of gold/palladium layer."
+          ],
+          "common_failure_modes": [
+            "Non-uniform coating"
+          ],
+          "troubleshooting": [
+            "Adjust sputter-coating parameters."
+          ],
+          "safety_notes": [
+            "Wear appropriate PPE during sputter-coating."
+          ],
+          "source_reference_ids": [
+            "ev_f35619df5ec19d7d"
+          ],
+          "editable": true
+        },
+        {
+          "id": "step_02",
+          "title": "Functionalization with Anti-CRP Antibodies",
+          "purpose": "To functionalize the biosensor with antibodies specific to CRP.",
+          "instructions": [
+            "Incubate the sensor with anti-CRP antibodies.",
+            "Rinse with distilled water and incubate with 2 mM mercaptohexanol."
+          ],
+          "parameters": {
+            "reagent_amounts": [
+              "2 mL anti-CRP antibodies"
+            ],
+            "concentrations": [
+              "2 mM mercaptohexanol"
+            ],
+            "temperatures": [],
+            "durations": [],
+            "volumes": [],
+            "equipment_settings": [],
+            "environmental_conditions": []
+          },
+          "acceptance_criteria": [
+            "Successful binding of antibodies to the sensor surface."
+          ],
+          "common_failure_modes": [
+            "Poor antibody binding"
+          ],
+          "troubleshooting": [
+            "Optimize incubation time and conditions."
+          ],
+          "safety_notes": [
+            "Handle antibodies with care to avoid contamination."
+          ],
+          "source_reference_ids": [
+            "ev_8ceb8c525fb98283",
+            "ev_d484bd46371cc970"
+          ],
+          "editable": true
+        },
+        {
+          "id": "step_03",
+          "title": "Testing Sensitivity and Detection Time",
+          "purpose": "To evaluate the biosensor's performance in detecting CRP.",
+          "instructions": [
+            "Apply whole blood samples to the biosensor.",
+            "Measure electrochemical response and record detection time."
+          ],
+          "parameters": {
+            "reagent_amounts": [],
+            "concentrations": [],
+            "temperatures": [],
+            "durations": [],
+            "volumes": [],
+            "equipment_settings": [],
+            "environmental_conditions": []
+          },
+          "acceptance_criteria": [
+            "Detection of CRP at concentrations below 0.5 mg/L within 10 minutes."
+          ],
+          "common_failure_modes": [
+            "Delayed detection time"
+          ],
+          "troubleshooting": [
+            "Check sensor calibration and sample application."
+          ],
+          "safety_notes": [
+            "Dispose of blood samples according to biohazard protocols."
+          ],
+          "source_reference_ids": [
+            "ev_273d47789cda4c58",
+            "ev_8a6f5830d93e78cf"
+          ],
+          "editable": true
+        }
+      ],
+      "materials": [
+        {
+          "id": "mat_01",
+          "name": "Anti-CRP Antibodies",
+          "purpose": "To functionalize the biosensor for CRP detection.",
+          "supplier": "www.sigmaaldrich.com",
+          "catalog_number": "C3527",
+          "pack_size": "2 mL",
+          "quantity_needed": "2 mL",
+          "unit_cost": 450,
+          "estimated_cost": 450,
+          "currency": "USD",
+          "source_url": "https://www.sigmaaldrich.com/US/en/product/sigma/c3527?srsltid=AfmBOoqiY9-9UteL5QZjRb3MxcMREFyj6SzRJ35pwmcbNs6g9EG_VdJP",
+          "confidence": "low",
+          "substitution_options": [],
+          "notes": "Ensure proper storage conditions. Matched live supplier evidence: C-Reactive Protein antibody C3527 Anti-CRP. Verify catalog and pricing before ordering. Matched live supplier evidence: C-Reactive Protein antibody C3527 Anti-CRP. Verify catalog and pricing before ordering. [approx_estimate] ~$400-$500 — 2 mL pack size + typical vendor: Thermo Fisher Verify with a real vendor quote before ordering.",
+          "editable": true
+        },
+        {
+          "id": "mat_02",
+          "name": "Mercaptohexanol",
+          "purpose": "To stabilize antibody binding on the sensor surface.",
+          "supplier": "www.sigmaaldrich.com",
+          "catalog_number": "C3527",
+          "pack_size": "not_found",
+          "quantity_needed": "2 mM",
+          "unit_cost": 50,
+          "estimated_cost": 50,
+          "currency": "USD",
+          "source_url": "https://www.sigmaaldrich.com/US/en/product/sigma/c3527?srsltid=AfmBOoqiY9-9UteL5QZjRb3MxcMREFyj6SzRJ35pwmcbNs6g9EG_VdJP",
+          "confidence": "low",
+          "substitution_options": [],
+          "notes": "Concentration critical for sensor performance. Matched live supplier evidence: C-Reactive Protein antibody C3527 Anti-CRP. Verify catalog and pricing before ordering. Matched live supplier evidence: C-Reactive Protein antibody C3527 Anti-CRP. Verify catalog and pricing before ordering. [approx_estimate] ~$40-$60 — Smallest research-scale pack + typical vendor: Sigma-Aldrich Verify with a real vendor quote before ordering.",
+          "editable": true
+        }
+      ],
+      "equipment": [
+        {
+          "id": "eq_01",
+          "name": "Sputter Coater",
+          "purpose": "To apply a gold/palladium layer on the paper sensor.",
+          "required_or_optional": "required",
+          "estimated_cost_if_not_available": null,
+          "availability_assumption": "Available in lab",
+          "notes": "Ensure proper calibration before use.",
+          "editable": true
+        },
+        {
+          "id": "eq_02",
+          "name": "Electrochemical Analyzer",
+          "purpose": "To measure the electrochemical response of the biosensor.",
+          "required_or_optional": "required",
+          "estimated_cost_if_not_available": null,
+          "availability_assumption": "Available in lab",
+          "notes": "Check for proper functioning before experiments.",
+          "editable": true
+        }
+      ],
+      "budget": {
+        "currency": "USD",
+        "material_line_items_total": 500,
+        "equipment_line_items_total_if_needed": 0,
+        "labor_or_service_estimate": null,
+        "contingency_percent": 15,
+        "contingency_amount": 75,
+        "estimated_total": 575,
+        "calculation_notes": "2/2 materials use AI-estimated approximations (verify before ordering).  2/2 material costs known. Subtotal sums known costs only. Contingency: 15%.",
+        "low_confidence_items": [
+          "Anti-CRP Antibodies (www.sigmaaldrich.com)",
+          "Mercaptohexanol (www.sigmaaldrich.com)"
+        ],
+        "editable": true
+      },
+      "timeline": [
+        {
+          "id": "phase_01",
+          "name": "Biosensor Fabrication",
+          "duration": "2 weeks",
+          "dependencies": [],
+          "deliverables": [
+            "Fabricated paper-based biosensor"
+          ],
+          "decision_gate": "Proceed if biosensor is successfully fabricated.",
+          "risks_to_schedule": [
+            "Delays in material delivery"
+          ],
+          "editable": true
+        },
+        {
+          "id": "phase_02",
+          "name": "Functionalization",
+          "duration": "1 week",
+          "dependencies": [
+            "phase_01"
+          ],
+          "deliverables": [
+            "Functionalized biosensor"
+          ],
+          "decision_gate": "Proceed if functionalization is confirmed.",
+          "risks_to_schedule": [
+            "Antibody binding issues"
+          ],
+          "editable": true
+        },
+        {
+          "id": "phase_03",
+          "name": "Performance Testing",
+          "duration": "2 weeks",
+          "dependencies": [
+            "phase_02"
+          ],
+          "deliverables": [
+            "Performance data of biosensor"
+          ],
+          "decision_gate": "Proceed if performance meets criteria.",
+          "risks_to_schedule": [
+            "Unexpected sensor performance"
+          ],
+          "editable": true
+        }
+      ],
+      "validation": {
+        "primary_readout": "CRP concentration detection",
+        "secondary_readouts": [
+          "Detection time",
+          "Signal intensity"
+        ],
+        "controls": [
+          {
+            "id": "ctrl_01",
+            "name": "Positive Control",
+            "control_type": "positive",
+            "purpose": "To confirm biosensor functionality.",
+            "expected_result": "Detection of known CRP concentration.",
+            "editable": true
+          },
+          {
+            "id": "ctrl_02",
+            "name": "Negative Control",
+            "control_type": "negative",
+            "purpose": "To ensure no signal in absence of CRP.",
+            "expected_result": "No detection signal.",
+            "editable": true
+          }
+        ],
+        "replicate_strategy": "Triplicate measurements for each sample.",
+        "sample_size_rationale": "Based on standard practice for biosensor validation.",
+        "randomization_blinding": "Randomized sample application; blinding not applicable.",
+        "statistical_analysis": "ANOVA for comparing biosensor and ELISA results.",
+        "success_criteria": [
+          "Detection of CRP below 0.5 mg/L within 10 minutes."
+        ],
+        "failure_criteria": [
+          "Failure to detect CRP at specified sensitivity and time."
+        ],
+        "data_quality_checks": [
+          "Calibration of electrochemical analyzer before each run."
+        ],
+        "editable": true
+      },
+      "risks_and_mitigations": [
+        {
+          "id": "risk_01",
+          "risk": "Inadequate sensitivity of the biosensor",
+          "severity": "high",
+          "likelihood": "medium",
+          "mitigation": "Optimize antibody concentration and binding conditions.",
+          "detection_signal": "Low signal response during testing.",
+          "editable": true
+        },
+        {
+          "id": "risk_02",
+          "risk": "Interference from whole blood components",
+          "severity": "medium",
+          "likelihood": "medium",
+          "mitigation": "Include washing steps to reduce interference.",
+          "detection_signal": "Unexpected signal variations.",
+          "editable": true
+        }
+      ],
+      "assumptions": [
+        {
+          "id": "assume_01",
+          "assumption": "The biosensor fabrication process will yield consistent results.",
+          "impact_if_wrong": "Variability in sensor performance.",
+          "how_to_verify": "Conduct preliminary tests on multiple batches.",
+          "editable": true
+        },
+        {
+          "id": "assume_02",
+          "assumption": "Antibody binding will be stable under test conditions.",
+          "impact_if_wrong": "Reduced sensitivity and specificity.",
+          "how_to_verify": "Perform stability tests under various conditions.",
+          "editable": true
+        }
+      ],
+      "evidence_quality": {
+        "literature_coverage": "medium",
+        "supplier_data_confidence": "medium",
+        "protocol_grounding_confidence": "medium",
+        "overall_plan_confidence": "medium",
+        "known_gaps": [
+          "Exact costs for some materials are unknown."
+        ],
+        "evidence_cards": [
+          {
+            "id": "ev_12e976216ff23ec7",
+            "title": "Disposable paper-based electrochemical sensor using thiol ...",
+            "source_name": "pubmed.ncbi.nlm.nih.gov",
+            "source_url": "https://pubmed.ncbi.nlm.nih.gov/31243577/",
+            "source_type": "protocol",
+            "snippet": "This sensor is applicable as an attractive protocol for an inexpensive, highly sensitive, and disposable material for electrochemical detection of CRP.",
+            "extracted_facts": [],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:05:08.097Z"
+          },
+          {
+            "id": "ev_273d47789cda4c58",
+            "title": "Electrochemical Detection of C-Reactive Protein in Human Serum ...",
+            "source_name": "pmc.ncbi.nlm.nih.gov",
+            "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6960938/",
+            "source_type": "protocol",
+            "snippet": "An origami paper-based electrochemical immunoassay for the C-reactive protein using a screen-printed carbon electrode modified with graphene and gold",
+            "extracted_facts": [],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:05:08.097Z"
+          },
+          {
+            "id": "ev_c8f4e787ac76c202",
+            "title": "Electrochemical Detection of Cancer Biomarkers: From Molecular ...",
+            "source_name": "pmc.ncbi.nlm.nih.gov",
+            "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12838597/",
+            "source_type": "protocol",
+            "snippet": "An origami paper-based electrochemical immunoassay for the C-reactive protein using a screen-printed carbon electrode modified with graphene",
+            "extracted_facts": [],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:05:08.097Z"
+          },
+          {
+            "id": "ev_8ceb8c525fb98283",
+            "title": "Electrochemical Immunosensor for C-Reactive Protein Detection ...",
+            "source_name": "pubs.acs.org",
+            "source_url": "https://pubs.acs.org/doi/abs/10.1021/acsabm.5c00406",
+            "source_type": "protocol",
+            "snippet": "Electrochemical sensing was performed by using electrochemical impedance spectroscopy (EIS). The biosensor demonstrated linear detection of CRP",
+            "extracted_facts": [],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:05:08.097Z"
+          },
+          {
+            "id": "ev_d484bd46371cc970",
+            "title": "Paper-based electrochemical device for early detection of integrin ...",
+            "source_name": "www.nature.com",
+            "source_url": "https://www.nature.com/articles/s42004-024-01144-z",
+            "source_type": "protocol",
+            "snippet": "After this step, the paper-based strip was gently rinsed with distilled water and incubated (in a humid chamber) with 2 mM mercaptohexanol",
+            "extracted_facts": [
+              "After this step, the paper-based strip was gently rinsed with distilled water and incubated (in a humid chamber) with 2 mM mercaptohexanol"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:05:08.097Z"
+          },
+          {
+            "id": "ev_8a6f5830d93e78cf",
+            "title": "Paper‐Based Electrochemical Sensors and How to Make Them (Work)",
+            "source_name": "chemistry-europe.onlinelibrary.wiley.com",
+            "source_url": "https://chemistry-europe.onlinelibrary.wiley.com/doi/10.1002/celc.202000512",
+            "source_type": "protocol",
+            "snippet": "This review aims to provide some guidelines on the fabrication of paper-based electrochemical sensors, helping those that are just starting",
+            "extracted_facts": [],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:05:08.097Z"
+          },
+          {
+            "id": "ev_b76e2fb503e8dea6",
+            "title": "Preparation of paper-based devices for reagentless electrochemical ...",
+            "source_name": "www.nature.com",
+            "source_url": "https://www.nature.com/articles/s41596-019-0186-y",
+            "source_type": "protocol",
+            "snippet": "This protocol describes the preparation of a voltammetric phosphate sensor and an amperometric nerve agent biosensor; both platforms produce quantitative",
+            "extracted_facts": [],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:05:08.097Z"
+          },
+          {
+            "id": "ev_f35619df5ec19d7d",
+            "title": "Paper-Based Electrochemical Sensors Using Paper as a Scaffold to ...",
+            "source_name": "pubs.acs.org",
+            "source_url": "https://pubs.acs.org/doi/10.1021/acsami.0c04896",
+            "source_type": "protocol",
+            "snippet": "The second step of the fabrication process is to locally sputter-coat a gold/palladium layer using shadow masking as shown in Figure 2B.",
+            "extracted_facts": [
+              "The second step of the fabrication process is to locally sputter-coat a gold/palladium layer using shadow masking as shown in Figure 2B."
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:05:08.097Z"
+          },
+          {
+            "id": "ev_1b4abfa709f5749a",
+            "title": "C-Reactive Protein antibody C3527 Anti-CRP",
+            "source_name": "www.sigmaaldrich.com",
+            "source_url": "https://www.sigmaaldrich.com/US/en/product/sigma/c3527?srsltid=AfmBOoqiY9-9UteL5QZjRb3MxcMREFyj6SzRJ35pwmcbNs6g9EG_VdJP",
+            "source_type": "supplier_page",
+            "snippet": "### Application Anti-C-Reactive Protein antibody produced in rabbit has been used in electro immunoassay, and enzyme-linked immunosorbent assay (ELISA). Applications in which this antibody has been used successfully, and the associated peer-reviewed papers, are given below. Enzyme-linked immunosorbent assay (1 paper) ### Biochem/physiol Actions C-reactive protein (CRP) is considered as a major biomarker of sterile inflammation. It is mainly used to observe the treatment response which can predict long-term consequence in inflammatory diseases. CRP facilitates opsonization of low-density lipop…",
+            "extracted_facts": [
+              "catalog: C3527",
+              "catalog: P02741",
+              "concentration: 0.01 M",
+              "pack: 2 mL",
+              "temperature: -8°C"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:05:13.316Z"
+          },
+          {
+            "id": "ev_56a881acc5b704ba",
+            "title": "C-Reactive Protein antibody C3527 Anti-CRP",
+            "source_name": "www.sigmaaldrich.com",
+            "source_url": "https://www.sigmaaldrich.com/US/en/product/sigma/c3527?srsltid=AfmBOoo4qKmuyg_zul1Ae6RWMaKeVS_5gd17pQFduLrrRibCQ0L1qLxD",
+            "source_type": "supplier_page",
+            "snippet": "### Application Anti-C-Reactive Protein antibody produced in rabbit has been used in electro immunoassay, and enzyme-linked immunosorbent assay (ELISA). Applications in which this antibody has been used successfully, and the associated peer-reviewed papers, are given below. Enzyme-linked immunosorbent assay (1 paper) ### Biochem/physiol Actions C-reactive protein (CRP) is considered as a major biomarker of sterile inflammation. It is mainly used to observe the treatment response which can predict long-term consequence in inflammatory diseases. CRP facilitates opsonization of low-density lipop…",
+            "extracted_facts": [
+              "catalog: C3527",
+              "catalog: P02741",
+              "concentration: 0.01 M",
+              "pack: 2 mL",
+              "temperature: -8°C"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:05:13.317Z"
+          },
+          {
+            "id": "ev_00023cfd2a90b2f0",
+            "title": "Monoclonal Anti-C-Reactive Protein antibody produced in mouse clone CRp-8, ascites fluid Anti-CRP",
+            "source_name": "www.sigmaaldrich.com",
+            "source_url": "https://www.sigmaaldrich.com/US/en/product/sigma/c1688?srsltid=AfmBOopxfDY5mDIvlN5gq00YMj_5FO75fWB5kJeUelX_vO1goKEnJRNx",
+            "source_type": "supplier_page",
+            "snippet": "### Immunogen human C-reactive protein. ### Application It has been used in immunoblotting assay, to identify monomeric CRP. In time-resolved fluorometric assay. Monoclonal Anti-C-Reactive Protein antibody produced in mouse is suitable for the following: dot blot analysis indirect ELISA at a working dilution of 1:40,000 western blotting at a working dilution of 1:200 ### Biochem/physiol Actions [...] ### Biochem/physiol Actions C-reactive protein (CRP) shows essential scavenging and metabolic activity and is also associated with defence mechanism. It activates the complement pathway by bindin…",
+            "extracted_facts": [
+              "catalog: C1688",
+              "catalog: P02741",
+              "concentration: 0.01 M",
+              "temperature: 20°C"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:05:13.317Z"
+          },
+          {
+            "id": "ev_0708e62d5357c454",
+            "title": "Monoclonal Anti-C-Reactive Protein antibody produced in mouse clone CRp-8, ascites fluid Anti-CRP",
+            "source_name": "www.sigmaaldrich.com",
+            "source_url": "https://www.sigmaaldrich.com/US/en/product/sigma/c1688?srsltid=AfmBOoq6l9vCZXT1ZSPhyTaGzU7GfST-IqD1MVg4UDGfkMiIDMEvaS8A",
+            "source_type": "supplier_page",
+            "snippet": "### Immunogen human C-reactive protein. ### Application It has been used in immunoblotting assay, to identify monomeric CRP. In time-resolved fluorometric assay. Monoclonal Anti-C-Reactive Protein antibody produced in mouse is suitable for the following: dot blot analysis indirect ELISA at a working dilution of 1:40,000 western blotting at a working dilution of 1:200 ### Biochem/physiol Actions [...] ### Biochem/physiol Actions C-reactive protein (CRP) shows essential scavenging and metabolic activity and is also associated with defence mechanism. It activates the complement pathway by bindin…",
+            "extracted_facts": [
+              "catalog: C1688",
+              "catalog: P02741",
+              "concentration: 0.01 M",
+              "temperature: 20°C"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:05:13.317Z"
+          },
+          {
+            "id": "ev_c430a28b8a059c8b",
+            "title": "Anti-C-Reactive Protein Rabbit pAb liquid, Calbiochem® | Sigma-Aldrich",
+            "source_name": "www.sigmaaldrich.com",
+            "source_url": "https://www.sigmaaldrich.com/GB/en/product/mm/235752?srsltid=AfmBOoptPEcqvY6Qs5WtwCZcNMe2zSOVnBC8QyN0PYJJ-eRb3eVlw_CR",
+            "source_type": "supplier_page",
+            "snippet": "### Immunogen purified, human CRP ### Application ELISA (see application references) Immunoblotting (0.1 µg/ml,see application references) Immunoprecipitation (see comments) Radioimmunoassay (see comments) ### Packaging Please refer to vial label for lot-specific concentration. ### Physical form In 100 mM NaCl, 15 mM phosphate buffer, pH 7.2-7.4. ### Other Notes Exhibits a single precipitin line against CRP control serum. Does not exhibit cross-reactivity against normal human serum. The optimal dilution for RIA and immunoprecipitation should be determined for each sample type. Antibody should…",
+            "extracted_facts": [
+              "concentration: 0.1 µg/mL",
+              "temperature: 20°C",
+              "### Select a Size Change View --- ### About This Item NACRES: NA.41 UNSPSC Code: 12352203 Clone: polyclonal Species reactivity: human Application: — Citations: 7 Technical Service Need help?",
+              "−20°C ### target post-translational modification unmodified ### Gene Information human ..."
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:05:49.794Z"
+          },
+          {
+            "id": "ev_679b4baa15137921",
+            "title": "Anti-CRP, clone 1G1 Antibody | Sigma-Aldrich",
+            "source_name": "www.sigmaaldrich.com",
+            "source_url": "https://www.sigmaaldrich.com/DK/en/product/mm/mabf768?srsltid=AfmBOoqlJcByIHSGXt9D8LLMgUhcnFrPG-2t9cQdtCKNVgOGQH9BgsN0",
+            "source_type": "supplier_page",
+            "snippet": "### Physical form Mouse monoclonal IgG1 ascitic fluid containing 0.03% sodium azide. ### Preparation Note Stable for 1 year at -20°C from date of receipt.Handling Recommendations: Upon receipt and prior to removing the cap, centrifuge the vial and gently mix the solution. Aliquot into microcentrifuge tubes and store at -20°C. Avoid repeated freeze/thaw cycles, which may damage IgG and affect product performance. ### Analysis Note Evaluated by Western Blotting in CRP recombinant protein. Western Blotting Analysis (WB): A 1:500-2,000 dilution of this antibody detected CRP in recombinant protein…",
+            "extracted_facts": [
+              "catalog: P02741",
+              "temperature: 20°C",
+              "[P02741](http://www.uniprot.org/uniprot/P02741) ### target post-translational modification unmodified ### General description Purified recombinant fragment of human CRP expressed in E."
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:05:49.795Z"
+          },
+          {
+            "id": "ev_211083e45c835641",
+            "title": "Anti-CRP, clone 1G1 Antibody | Sigma-Aldrich",
+            "source_name": "www.sigmaaldrich.com",
+            "source_url": "https://www.sigmaaldrich.com/DK/en/product/mm/mabf768?srsltid=AfmBOoq5iuzIzMlHO6hu7VXFhcZGcQ8yH7pDy_1yg-qfXpaUBtaIirm9",
+            "source_type": "supplier_page",
+            "snippet": "### Physical form Mouse monoclonal IgG1 ascitic fluid containing 0.03% sodium azide. ### Preparation Note Stable for 1 year at -20°C from date of receipt.Handling Recommendations: Upon receipt and prior to removing the cap, centrifuge the vial and gently mix the solution. Aliquot into microcentrifuge tubes and store at -20°C. Avoid repeated freeze/thaw cycles, which may damage IgG and affect product performance. ### Analysis Note Evaluated by Western Blotting in CRP recombinant protein. Western Blotting Analysis (WB): A 1:500-2,000 dilution of this antibody detected CRP in recombinant protein…",
+            "extracted_facts": [
+              "catalog: P02741",
+              "temperature: 20°C",
+              "[P02741](http://www.uniprot.org/uniprot/P02741) ### target post-translational modification unmodified ### General description Purified recombinant fragment of human CRP expressed in E."
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:05:49.795Z"
+          },
+          {
+            "id": "ev_641db08b8bc163ff",
+            "title": "6-Mercapto-1-hexanol 6-Mercaptohexanol - Sigma-Aldrich",
+            "source_name": "www.sigmaaldrich.com",
+            "source_url": "https://www.sigmaaldrich.com/US/en/product/aldrich/451088?srsltid=AfmBOoqmMr8tIVgzD0kChQJs8UQboh4DBW2aQ0iLynOLv6Isf4HtE_uu",
+            "source_type": "supplier_page",
+            "snippet": "Price. 5 mL, 451088-5ML. Estimated to ship onJuly 23, 2026fromMILWAUKEE. $97.00 ... CAS Number: 1633-78-9. Molecular Weight: 134.24. UNSPSC Code: 12352103.",
+            "extracted_facts": [
+              "price: $97.00",
+              "pack: 5 mL",
+              "pack: 5ML"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:05:49.795Z"
+          },
+          {
+            "id": "ev_14377e1bddc6552d",
+            "title": "6-Mercapto-1-hexanol 6-Mercaptohexanol - Sigma-Aldrich",
+            "source_name": "www.sigmaaldrich.com",
+            "source_url": "https://www.sigmaaldrich.com/US/en/product/aldrich/451088?srsltid=AfmBOor4DjE12Ndo7Wvs3m04y_hSnhIaQfm8VUQbg--LSTLHkz9VAIZk",
+            "source_type": "supplier_page",
+            "snippet": "Price. 5 mL, 451088-5ML. Estimated to ship onJuly 23, 2026fromMILWAUKEE. $97.00 ... CAS Number: 1633-78-9. Molecular Weight: 134.24. UNSPSC Code: 12352103.",
+            "extracted_facts": [
+              "price: $97.00",
+              "pack: 5 mL",
+              "pack: 5ML"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:05:49.795Z"
+          },
+          {
+            "id": "ev_bc4b14b2f5fdf88e",
+            "title": "Alcohols and polyols | Fisher Scientific",
+            "source_name": "www.fishersci.com",
+            "source_url": "https://www.fishersci.com/us/en/browse/80013996/alcohols-and-polyols?keyword=14970-83-3",
+            "source_type": "supplier_page",
+            "snippet": "small and specialty supplier #### Boiling Point;) #### Molecular Weight (g/mol);) #### Percent Purity;) #### Physical Form;) #### Quantity;) 3-Mercapto-1-hexanol 98.0+%, TCI America™ ### 3-Mercapto-1-hexanol 98.0+%, TCI America™ CAS: 51755-83-0 Molecular Formula: C6H14OS Molecular Weight (g/mol): 134.237 MDL Number: MFCD00792515 InChI Key: TYZFMFVWHZKYSE-UHFFFAOYSA-N Synonym: 3-mercapto-1-hexanol,3-mercaptohexanol,3-mercaptohexan-1-ol,1-hexanol, 3-mercapto,3-thiohexan-1-ol,3-sulphanylhexan-1-ol,3-sulfanyl-1-hexanol,3-thiohexanol,acmc-209kvm,3-mercapto-hexan-1-ol PubChem CID: 521348 ChEBI: CHE…",
+            "extracted_facts": [
+              "catalog: M21685G",
+              "catalog: N0593",
+              "catalog: VN00132390-HY-",
+              "catalog: N0593-",
+              "pack: 25G",
+              "pack: 100G"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:05:49.795Z"
+          }
+        ]
+      }
+    },
+    "generation": {
+      "source": "openai",
+      "model": "gpt-4o",
+      "attempts": 1,
+      "errors": []
+    },
+    "evidence": {
+      "tavilyConfigured": true,
+      "sourceStats": [
+        {
+          "name": "tavily_protocols",
+          "status": "ok",
+          "count": 8,
+          "durationMs": 496,
+          "error": null
+        },
+        {
+          "name": "tavily_suppliers",
+          "status": "ok",
+          "count": 8,
+          "durationMs": 5722,
+          "error": null
+        },
+        {
+          "name": "tavily_regulatory",
+          "status": "ok",
+          "count": 6,
+          "durationMs": 495,
+          "error": null
+        }
+      ],
+      "regulatoryReasons": [
+        "human subjects / human-derived samples (IRB)"
+      ],
+      "cardCount": 12
+    },
+    "critique": {
+      "source": "openai",
+      "model": "gpt-4o",
+      "overall_assessment": "needs_work",
+      "findings": [
+        {
+          "area": "feasibility",
+          "finding": "The budget total of 575 is unrealistically low for a biosensor validation study involving human blood samples.",
+          "suggestion": "Re-evaluate the budget to include costs for additional materials, personnel, and safety measures.",
+          "severity": "critical"
+        },
+        {
+          "area": "sample_size",
+          "finding": "The plan lacks a specific sample size for the biosensor validation, only stating 'standard practice'.",
+          "suggestion": "Define a clear sample size based on power analysis to ensure statistical validity.",
+          "severity": "warning"
+        },
+        {
+          "area": "controls",
+          "finding": "There is no mention of a control for potential interference from whole blood components.",
+          "suggestion": "Include a control that accounts for potential interference from other blood components.",
+          "severity": "warning"
+        },
+        {
+          "area": "validation",
+          "finding": "The validation plan does not specify how the biosensor's performance will be benchmarked against the ELISA.",
+          "suggestion": "Detail the specific criteria and metrics for comparing biosensor results to ELISA results.",
+          "severity": "warning"
+        },
+        {
+          "area": "evidence",
+          "finding": "The confidence in the source of Anti-CRP Antibodies and Mercaptohexanol is marked as low.",
+          "suggestion": "Verify the reliability of suppliers or consider alternative sources with higher confidence.",
+          "severity": "info"
+        }
+      ],
+      "errors": []
+    },
+    "feedback_used": [
+      "fbk_39e4a70760586533",
+      "fbk_e29affa3a1464dfb"
+    ],
+    "created_at": "2026-04-26T10:05:55.416Z",
+    "updated_at": "2026-04-26T10:05:55.416Z"
+  },
+  {
+    "id": "plan_4361d06347826108",
+    "organization_id": "doctest",
+    "category_id": "cell_biology",
+    "continue_from_plan_id": null,
+    "title": "vehicle-matched DMSO controls",
+    "hypothesis": "Test whether vehicle-matched DMSO controls reduce variability in HEK293 cytotoxicity assays.",
+    "parsed_hypothesis": {
+      "domain": "biological sciences",
+      "experiment_type": "cytotoxicity assay",
+      "organism_or_system": "HEK293 cells",
+      "intervention": "vehicle-matched DMSO controls",
+      "comparator": "standard DMSO protocol",
+      "primary_outcome": "variability in cytotoxicity assays",
+      "quantitative_target": "",
+      "mechanism": "",
+      "implied_controls": [
+        "vehicle-matched DMSO controls"
+      ],
+      "key_variables": [
+        "DMSO concentration",
+        "vehicle matching",
+        "cytotoxicity"
+      ],
+      "key_measurements": [
+        "variability in cytotoxicity",
+        "cell viability"
+      ],
+      "safety_flags": [
+        "chemical hazards"
+      ]
+    },
+    "literature_qc": {
+      "parsed_hypothesis": {
+        "domain": "biological sciences",
+        "experiment_type": "cytotoxicity assay",
+        "organism_or_system": "HEK293 cells",
+        "intervention": "vehicle-matched DMSO controls",
+        "comparator": "standard DMSO protocol",
+        "primary_outcome": "variability in cytotoxicity assays",
+        "quantitative_target": "",
+        "mechanism": "",
+        "implied_controls": [
+          "vehicle-matched DMSO controls"
+        ],
+        "key_variables": [
+          "DMSO concentration",
+          "vehicle matching",
+          "cytotoxicity"
+        ],
+        "key_measurements": [
+          "variability in cytotoxicity",
+          "cell viability"
+        ],
+        "safety_flags": [
+          "chemical hazards"
+        ]
+      },
+      "novelty": {
+        "signal": "not_found",
+        "confidence": 0.4,
+        "rationale": "The provided references do not contain any studies directly related to the use of vehicle-matched DMSO controls in HEK293 cytotoxicity assays. The references cover a range of topics including viral immunotherapy, protein degradation pathways, and various cellular mechanisms, but none address the specific hypothesis regarding DMSO controls and assay variability.",
+        "references": [
+          {
+            "id": "ref_e0758878a3ccca39",
+            "title": "Cathepsin L plays a key role in SARS-CoV-2 infection in humans and humanized mice and is a promising target for new drug development",
+            "authors": [
+              "Miaomiao Zhao",
+              "Weili Yang",
+              "Fangyuan Yang",
+              "Li Zhang",
+              "Weijin Huang",
+              "Wei Hou"
+            ],
+            "year": 2021,
+            "venue": "Signal Transduction and Targeted Therapy",
+            "url": "https://doi.org/10.1038/s41392-021-00558-8",
+            "doi": "10.1038/s41392-021-00558-8",
+            "source": "openalex",
+            "relevance_reason": "OpenAlex match",
+            "relevance_score": 0.165,
+            "evidence_type": "literature"
+          },
+          {
+            "id": "ref_df66d8b1eee5c0e7",
+            "title": "A superior loading control for the cellular thermal shift assay - Nature",
+            "authors": [],
+            "year": null,
+            "venue": "www.nature.com",
+            "url": "https://www.nature.com/articles/s41598-022-10653-7",
+            "doi": null,
+            "source": "protocol_repository",
+            "relevance_reason": "Protocol repository match via Tavily",
+            "relevance_score": 0.29997736199999997,
+            "evidence_type": "protocol"
+          },
+          {
+            "id": "ref_5012663d3fa12044",
+            "title": "Synthetic super-enhancers enable precision viral immunotherapy - Nature",
+            "authors": [],
+            "year": null,
+            "venue": "www.nature.com",
+            "url": "https://www.nature.com/articles/s41586-026-10329-6",
+            "doi": null,
+            "source": "tavily",
+            "relevance_reason": "Recent news/preprint discussion (≤90 days) via Tavily",
+            "relevance_score": 0.26349427799999997,
+            "evidence_type": "review"
+          },
+          {
+            "id": "ref_b4578fc764fdd906",
+            "title": "Distinct Roles<i>In Vivo</i>for the Ubiquitin–Proteasome System and the Autophagy–Lysosomal Pathway in the Degradation of α-Synuclein",
+            "authors": [
+              "Darius Ebrahimi‐Fakhari",
+              "Ippolita Cantuti‐Castelvetri",
+              "Zhanyun Fan",
+              "Edward Rockenstein",
+              "Eliezer Masliah",
+              "Bradley T. Hyman"
+            ],
+            "year": 2011,
+            "venue": "Journal of Neuroscience",
+            "url": "https://doi.org/10.1523/jneurosci.1560-11.2011",
+            "doi": "10.1523/jneurosci.1560-11.2011",
+            "source": "openalex",
+            "relevance_reason": "OpenAlex match",
+            "relevance_score": 0.165,
+            "evidence_type": "literature"
+          },
+          {
+            "id": "ref_21086dec1e15de7a",
+            "title": "Discovery of small molecule inhibitors that effectively disrupt ...",
+            "authors": [],
+            "year": null,
+            "venue": "www.nature.com",
+            "url": "https://www.nature.com/articles/s41598-022-21342-w",
+            "doi": null,
+            "source": "protocol_repository",
+            "relevance_reason": "Protocol repository match via Tavily",
+            "relevance_score": 0.299654568,
+            "evidence_type": "protocol"
+          }
+        ],
+        "search_queries_used": [
+          "hek293 cells vehicle-matched dmso controls variability cytotoxicity assays standard protocol",
+          "vehicle-matched DMSO controls HEK293 cells",
+          "vehicle-matched DMSO controls variability in cytotoxicity assays",
+          "HEK293 cells variability in cytotoxicity assays",
+          "Test whether vehicle-matched DMSO controls reduce variability in HEK293 cytotoxicity assays."
+        ],
+        "coverage_warnings": [
+          "The references provided do not cover cytotoxicity assays or the specific use of DMSO controls in HEK293 cells, leading to low confidence in the assessment."
+        ]
+      }
+    },
+    "plan": {
+      "plan_id": "plan_20aa839aace05b80",
+      "created_at": "2026-04-26T10:16:49.887Z",
+      "hypothesis": {
+        "raw": "Test whether vehicle-matched DMSO controls reduce variability in HEK293 cytotoxicity assays.",
+        "parsed": {
+          "domain": "biological sciences",
+          "experiment_type": "cytotoxicity assay",
+          "organism_or_system": "HEK293 cells",
+          "intervention": "vehicle-matched DMSO controls",
+          "comparator": "standard DMSO protocol",
+          "primary_outcome": "variability in cytotoxicity assays",
+          "quantitative_target": "",
+          "mechanism": "",
+          "implied_controls": [
+            "vehicle-matched DMSO controls"
+          ],
+          "key_variables": [
+            "DMSO concentration",
+            "vehicle matching",
+            "cytotoxicity"
+          ],
+          "key_measurements": [
+            "variability in cytotoxicity",
+            "cell viability"
+          ],
+          "safety_flags": [
+            "chemical hazards"
+          ]
+        }
+      },
+      "novelty": {
+        "signal": "not_found",
+        "confidence": 0.4,
+        "rationale": "The provided references do not contain any studies directly related to the use of vehicle-matched DMSO controls in HEK293 cytotoxicity assays. The references cover a range of topics including viral immunotherapy, protein degradation pathways, and various cellular mechanisms, but none address the specific hypothesis regarding DMSO controls and assay variability.",
+        "references": [
+          {
+            "id": "ref_e0758878a3ccca39",
+            "title": "Cathepsin L plays a key role in SARS-CoV-2 infection in humans and humanized mice and is a promising target for new drug development",
+            "authors": [
+              "Miaomiao Zhao",
+              "Weili Yang",
+              "Fangyuan Yang",
+              "Li Zhang",
+              "Weijin Huang",
+              "Wei Hou"
+            ],
+            "year": 2021,
+            "venue": "Signal Transduction and Targeted Therapy",
+            "url": "https://doi.org/10.1038/s41392-021-00558-8",
+            "doi": "10.1038/s41392-021-00558-8",
+            "source": "openalex",
+            "relevance_reason": "OpenAlex match",
+            "relevance_score": 0.165,
+            "evidence_type": "literature"
+          },
+          {
+            "id": "ref_df66d8b1eee5c0e7",
+            "title": "A superior loading control for the cellular thermal shift assay - Nature",
+            "authors": [],
+            "year": null,
+            "venue": "www.nature.com",
+            "url": "https://www.nature.com/articles/s41598-022-10653-7",
+            "doi": null,
+            "source": "protocol_repository",
+            "relevance_reason": "Protocol repository match via Tavily",
+            "relevance_score": 0.29997736199999997,
+            "evidence_type": "protocol"
+          },
+          {
+            "id": "ref_5012663d3fa12044",
+            "title": "Synthetic super-enhancers enable precision viral immunotherapy - Nature",
+            "authors": [],
+            "year": null,
+            "venue": "www.nature.com",
+            "url": "https://www.nature.com/articles/s41586-026-10329-6",
+            "doi": null,
+            "source": "tavily",
+            "relevance_reason": "Recent news/preprint discussion (≤90 days) via Tavily",
+            "relevance_score": 0.26349427799999997,
+            "evidence_type": "review"
+          },
+          {
+            "id": "ref_b4578fc764fdd906",
+            "title": "Distinct Roles<i>In Vivo</i>for the Ubiquitin–Proteasome System and the Autophagy–Lysosomal Pathway in the Degradation of α-Synuclein",
+            "authors": [
+              "Darius Ebrahimi‐Fakhari",
+              "Ippolita Cantuti‐Castelvetri",
+              "Zhanyun Fan",
+              "Edward Rockenstein",
+              "Eliezer Masliah",
+              "Bradley T. Hyman"
+            ],
+            "year": 2011,
+            "venue": "Journal of Neuroscience",
+            "url": "https://doi.org/10.1523/jneurosci.1560-11.2011",
+            "doi": "10.1523/jneurosci.1560-11.2011",
+            "source": "openalex",
+            "relevance_reason": "OpenAlex match",
+            "relevance_score": 0.165,
+            "evidence_type": "literature"
+          },
+          {
+            "id": "ref_21086dec1e15de7a",
+            "title": "Discovery of small molecule inhibitors that effectively disrupt ...",
+            "authors": [],
+            "year": null,
+            "venue": "www.nature.com",
+            "url": "https://www.nature.com/articles/s41598-022-21342-w",
+            "doi": null,
+            "source": "protocol_repository",
+            "relevance_reason": "Protocol repository match via Tavily",
+            "relevance_score": 0.299654568,
+            "evidence_type": "protocol"
+          }
+        ]
+      },
+      "applied_feedback": [],
+      "executive_summary": {
+        "objective": "To determine if vehicle-matched DMSO controls reduce variability in HEK293 cytotoxicity assays compared to standard DMSO protocols.",
+        "experimental_strategy": "Conduct parallel cytotoxicity assays using HEK293 cells with vehicle-matched DMSO controls and standard DMSO protocols, measuring variability in cytotoxicity.",
+        "expected_result": "Vehicle-matched DMSO controls will reduce variability in cytotoxicity assays.",
+        "major_risks": [
+          "Inconsistent DMSO concentrations",
+          "Cell line contamination"
+        ],
+        "decision_gate": "Determine if variability is significantly reduced with vehicle-matched controls."
+      },
+      "safety_ethics_compliance": {
+        "overall_risk_level": "medium",
+        "biosafety_level_assumption": "BSL-1",
+        "human_subjects_or_samples": "none",
+        "animal_work": "none",
+        "environmental_or_gmo_considerations": "none",
+        "required_approvals": [
+          "Chemical safety review"
+        ],
+        "ppe": [
+          "Lab coat",
+          "Gloves",
+          "Safety goggles"
+        ],
+        "waste_disposal": [
+          "Dispose of DMSO waste according to chemical waste guidelines"
+        ],
+        "critical_warnings": [
+          "Ensure proper ventilation when handling DMSO"
+        ],
+        "expert_review_required": true
+      },
+      "protocol": [
+        {
+          "id": "step_01",
+          "title": "Cell Culture Preparation",
+          "purpose": "To prepare HEK293 cells for cytotoxicity assays.",
+          "instructions": [
+            "Thaw HEK293 cells and culture in DMEM with 10% heat-inactivated FBS (Sigma-Aldrich, catalog F4135).",
+            "Maintain cells at 37°C in a 5% CO2 incubator until 80% confluence."
+          ],
+          "parameters": {
+            "reagent_amounts": [
+              "10% FBS"
+            ],
+            "concentrations": [
+              "10% FBS"
+            ],
+            "temperatures": [
+              "37°C"
+            ],
+            "durations": [
+              "Until 80% confluence"
+            ],
+            "volumes": [],
+            "equipment_settings": [],
+            "environmental_conditions": [
+              "5% CO2"
+            ]
+          },
+          "acceptance_criteria": [
+            "Cells reach 80% confluence without contamination."
+          ],
+          "common_failure_modes": [
+            "Contamination",
+            "Over-confluence"
+          ],
+          "troubleshooting": [
+            "If contamination occurs, discard and restart with new cells."
+          ],
+          "safety_notes": [
+            "Handle all cell culture materials in a biosafety cabinet."
+          ],
+          "source_reference_ids": [
+            "doc_f72ec50c108f47b7"
+          ],
+          "editable": true
+        },
+        {
+          "id": "step_02",
+          "title": "DMSO Control Preparation",
+          "purpose": "To prepare vehicle-matched and standard DMSO controls.",
+          "instructions": [
+            "Prepare DMSO solutions matching the vehicle used in the experimental arm.",
+            "Ensure DMSO concentration does not exceed 0.5% v/v."
+          ],
+          "parameters": {
+            "reagent_amounts": [
+              "0.5% DMSO"
+            ],
+            "concentrations": [
+              "0.5% DMSO"
+            ],
+            "temperatures": [],
+            "durations": [],
+            "volumes": [],
+            "equipment_settings": [],
+            "environmental_conditions": []
+          },
+          "acceptance_criteria": [
+            "DMSO concentration is consistent across all samples."
+          ],
+          "common_failure_modes": [
+            "Incorrect DMSO concentration"
+          ],
+          "troubleshooting": [
+            "Verify DMSO concentration with a spectrophotometer if discrepancies are suspected."
+          ],
+          "safety_notes": [
+            "Use PPE when handling DMSO."
+          ],
+          "source_reference_ids": [
+            "ev_418578ef2ebb26b2",
+            "ev_785b80172bb16568"
+          ],
+          "editable": true
+        },
+        {
+          "id": "step_03",
+          "title": "Cytotoxicity Assay Execution",
+          "purpose": "To measure cytotoxicity in HEK293 cells with different DMSO controls.",
+          "instructions": [
+            "Treat HEK293 cells with test compounds and corresponding DMSO controls.",
+            "Incubate for 24 hours at 37°C.",
+            "Measure cell viability using a suitable assay (e.g., MTT or Alamar Blue)."
+          ],
+          "parameters": {
+            "reagent_amounts": [],
+            "concentrations": [],
+            "temperatures": [
+              "37°C"
+            ],
+            "durations": [
+              "24 hours"
+            ],
+            "volumes": [],
+            "equipment_settings": [],
+            "environmental_conditions": []
+          },
+          "acceptance_criteria": [
+            "Viability measurements are consistent with expected control values."
+          ],
+          "common_failure_modes": [
+            "Inconsistent viability results"
+          ],
+          "troubleshooting": [
+            "Ensure all reagents are fresh and properly prepared."
+          ],
+          "safety_notes": [
+            "Dispose of waste according to chemical safety guidelines."
+          ],
+          "source_reference_ids": [
+            "ev_9443ac4eaeb3c752"
+          ],
+          "editable": true
+        }
+      ],
+      "materials": [
+        {
+          "id": "mat_01",
+          "name": "HEK293 Cells",
+          "purpose": "Cell line for cytotoxicity assays.",
+          "supplier": "www.promega.com",
+          "catalog_number": "N2672",
+          "pack_size": "1 vial",
+          "quantity_needed": "1 vial",
+          "unit_cost": 500,
+          "estimated_cost": 500,
+          "currency": "USD",
+          "source_url": "https://www.promega.com/-/media/files/resources/protocols/technical-manuals/500/tm620-hek293-lgbit-cell-line-and-lgbit-expression-vector-protocol.pdf?la=en",
+          "confidence": "low",
+          "substitution_options": [],
+          "notes": "Ensure cells are authenticated and mycoplasma-free. Matched live supplier evidence: [PDF] HEK293 LgBiT Cell Line and LgBiT Expression Vector. Verify catalog and pricing before ordering. Matched live supplier evidence: [PDF] HEK293 LgBiT Cell Line and LgBiT Expression Vector. Verify catalog and pricing before ordering. [approx_estimate] ~$400-$600 — 1 vial from ATCC or Thermo Fisher Verify with a real vendor quote before ordering.",
+          "editable": true
+        },
+        {
+          "id": "mat_02",
+          "name": "DMSO",
+          "purpose": "Solvent for vehicle controls.",
+          "supplier": "www.promega.com",
+          "catalog_number": "N2672",
+          "pack_size": "100 ml",
+          "quantity_needed": "10 ml",
+          "unit_cost": 50,
+          "estimated_cost": 50,
+          "currency": "USD",
+          "source_url": "https://www.promega.com/-/media/files/resources/protocols/technical-manuals/500/tm620-hek293-lgbit-cell-line-and-lgbit-expression-vector-protocol.pdf?la=en",
+          "confidence": "low",
+          "substitution_options": [],
+          "notes": "Ensure DMSO is of cell culture grade. Matched live supplier evidence: [PDF] HEK293 LgBiT Cell Line and LgBiT Expression Vector. Verify catalog and pricing before ordering. Matched live supplier evidence: [PDF] HEK293 LgBiT Cell Line and LgBiT Expression Vector. Verify catalog and pricing before ordering. [approx_estimate] ~$40-$60 — 100 ml from Sigma-Aldrich or Thermo Fisher Verify with a real vendor quote before ordering.",
+          "editable": true
+        },
+        {
+          "id": "mat_03",
+          "name": "Heat-inactivated FBS",
+          "purpose": "Supplement for cell culture media.",
+          "supplier": "www.promega.com",
+          "catalog_number": "N2672",
+          "pack_size": "500 ml",
+          "quantity_needed": "500 ml",
+          "unit_cost": 300,
+          "estimated_cost": 300,
+          "currency": "USD",
+          "source_url": "https://www.promega.com/-/media/files/resources/protocols/technical-manuals/500/tm620-hek293-lgbit-cell-line-and-lgbit-expression-vector-protocol.pdf?la=en",
+          "confidence": "low",
+          "substitution_options": [],
+          "notes": "Document lot number in bench notebook. Matched live supplier evidence: [PDF] HEK293 LgBiT Cell Line and LgBiT Expression Vector. Verify catalog and pricing before ordering. Matched live supplier evidence: [PDF] HEK293 LgBiT Cell Line and LgBiT Expression Vector. Verify catalog and pricing before ordering. [approx_estimate] ~$250-$350 — 500 ml from Sigma-Aldrich or Thermo Fisher Verify with a real vendor quote before ordering.",
+          "editable": true
+        }
+      ],
+      "equipment": [
+        {
+          "id": "eq_01",
+          "name": "CO2 Incubator",
+          "purpose": "To maintain cell culture conditions.",
+          "required_or_optional": "required",
+          "estimated_cost_if_not_available": null,
+          "availability_assumption": "Available in lab",
+          "notes": "Ensure regular calibration and maintenance.",
+          "editable": true
+        },
+        {
+          "id": "eq_02",
+          "name": "Biosafety Cabinet",
+          "purpose": "To provide a sterile environment for cell culture.",
+          "required_or_optional": "required",
+          "estimated_cost_if_not_available": null,
+          "availability_assumption": "Available in lab",
+          "notes": "Use for all cell culture manipulations.",
+          "editable": true
+        },
+        {
+          "id": "eq_03",
+          "name": "Spectrophotometer",
+          "purpose": "To verify DMSO concentration.",
+          "required_or_optional": "optional",
+          "estimated_cost_if_not_available": 5000,
+          "availability_assumption": "May need to purchase",
+          "notes": "Useful for troubleshooting concentration issues.",
+          "editable": true
+        }
+      ],
+      "budget": {
+        "currency": "USD",
+        "material_line_items_total": 850,
+        "equipment_line_items_total_if_needed": 5000,
+        "labor_or_service_estimate": null,
+        "contingency_percent": 15,
+        "contingency_amount": 877.5,
+        "estimated_total": 6727.5,
+        "calculation_notes": "3/3 materials use AI-estimated approximations (verify before ordering).  3/3 material costs known. Subtotal sums known costs only. 1 equipment item(s) assumed not available; cost added to budget. Contingency: 15%.",
+        "low_confidence_items": [
+          "HEK293 Cells (www.promega.com)",
+          "DMSO (www.promega.com)",
+          "Heat-inactivated FBS (www.promega.com)"
+        ],
+        "editable": true
+      },
+      "timeline": [
+        {
+          "id": "phase_01",
+          "name": "Preparation Phase",
+          "duration": "1 week",
+          "dependencies": [],
+          "deliverables": [
+            "Prepared HEK293 cells",
+            "DMSO solutions"
+          ],
+          "decision_gate": "Verify cell confluence and DMSO preparation",
+          "risks_to_schedule": [
+            "Delayed cell growth",
+            "DMSO preparation errors"
+          ],
+          "editable": true
+        },
+        {
+          "id": "phase_02",
+          "name": "Execution Phase",
+          "duration": "2 weeks",
+          "dependencies": [
+            "phase_01"
+          ],
+          "deliverables": [
+            "Cytotoxicity assay data"
+          ],
+          "decision_gate": "Complete data collection",
+          "risks_to_schedule": [
+            "Equipment failure",
+            "Assay variability"
+          ],
+          "editable": true
+        },
+        {
+          "id": "phase_03",
+          "name": "Analysis Phase",
+          "duration": "1 week",
+          "dependencies": [
+            "phase_02"
+          ],
+          "deliverables": [
+            "Data analysis report"
+          ],
+          "decision_gate": "Data analysis complete",
+          "risks_to_schedule": [
+            "Data analysis software issues"
+          ],
+          "editable": true
+        }
+      ],
+      "validation": {
+        "primary_readout": "Cell viability",
+        "secondary_readouts": [
+          "DMSO concentration consistency",
+          "Assay variability"
+        ],
+        "controls": [
+          {
+            "id": "ctrl_01",
+            "name": "Vehicle-matched DMSO control",
+            "control_type": "vehicle",
+            "purpose": "To match the vehicle used in the experimental arm.",
+            "expected_result": "Consistent viability with reduced variability.",
+            "editable": true
+          },
+          {
+            "id": "ctrl_02",
+            "name": "Standard DMSO control",
+            "control_type": "vehicle",
+            "purpose": "To provide a baseline for comparison.",
+            "expected_result": "Higher variability in viability.",
+            "editable": true
+          }
+        ],
+        "replicate_strategy": "Triplicate wells for each condition.",
+        "sample_size_rationale": "Triplicates ensure statistical power to detect variability differences.",
+        "randomization_blinding": "Randomize plate layout; blinding not applicable.",
+        "statistical_analysis": "ANOVA to compare variability between controls.",
+        "success_criteria": [
+          "Significant reduction in variability with vehicle-matched controls."
+        ],
+        "failure_criteria": [
+          "No significant difference in variability."
+        ],
+        "data_quality_checks": [
+          "Check for outliers and consistency across replicates."
+        ],
+        "editable": true
+      },
+      "risks_and_mitigations": [
+        {
+          "id": "risk_01",
+          "risk": "Inconsistent DMSO concentrations",
+          "severity": "medium",
+          "likelihood": "medium",
+          "mitigation": "Verify concentrations with spectrophotometer.",
+          "detection_signal": "Unexpected assay variability",
+          "editable": true
+        },
+        {
+          "id": "risk_02",
+          "risk": "Cell line contamination",
+          "severity": "high",
+          "likelihood": "low",
+          "mitigation": "Use aseptic techniques and regular mycoplasma testing.",
+          "detection_signal": "Visual inspection and growth rate anomalies",
+          "editable": true
+        }
+      ],
+      "assumptions": [
+        {
+          "id": "assume_01",
+          "assumption": "HEK293 cells will grow to confluence in one week.",
+          "impact_if_wrong": "Delays in experiment start.",
+          "how_to_verify": "Monitor cell growth daily.",
+          "editable": true
+        },
+        {
+          "id": "assume_02",
+          "assumption": "DMSO concentration can be accurately prepared.",
+          "impact_if_wrong": "Increased variability in results.",
+          "how_to_verify": "Measure concentration with spectrophotometer.",
+          "editable": true
+        }
+      ],
+      "evidence_quality": {
+        "literature_coverage": "low",
+        "supplier_data_confidence": "medium",
+        "protocol_grounding_confidence": "medium",
+        "overall_plan_confidence": "medium",
+        "known_gaps": [
+          "Lack of direct literature on vehicle-matched DMSO controls in HEK293 assays."
+        ],
+        "evidence_cards": [
+          {
+            "id": "ev_418578ef2ebb26b2",
+            "title": "Swertiamarin fails to induce cytotoxicity in colon cancer cell lines",
+            "source_name": "pmc.ncbi.nlm.nih.gov",
+            "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12991280/",
+            "source_type": "protocol",
+            "snippet": "The final DMSO concentration varied depending on the drug concentration, with a maximum of 0.4% v/v. Vehicle control groups containing",
+            "extracted_facts": [
+              "The final DMSO concentration varied depending on the drug concentration, with a maximum of 0.4% v/v."
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:20.804Z"
+          },
+          {
+            "id": "ev_004a007406b675cd",
+            "title": "Heterogeneous Off-Target Effects of Ultra-Low Dose Dimethyl ... - PMC",
+            "source_name": "pmc.ncbi.nlm.nih.gov",
+            "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8001778/",
+            "source_type": "protocol",
+            "snippet": "The DMSO effect was heterogeneous across cell lines and varied based on concentration, exposure time, and cell line. Of the 187 proteins measured, all were",
+            "extracted_facts": [
+              "Of the 187 proteins measured, all were"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:20.804Z"
+          },
+          {
+            "id": "ev_785b80172bb16568",
+            "title": "Optimization of cell viability assays to improve replicability ... - PMC",
+            "source_name": "pmc.ncbi.nlm.nih.gov",
+            "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7118156/",
+            "source_type": "protocol",
+            "snippet": "In contrast, matched DMSO concentration controls are highly recommended as they reduce the risk of dose curves starting at >100% viability. Due",
+            "extracted_facts": [
+              "In contrast, matched DMSO concentration controls are highly recommended as they reduce the risk of dose curves starting at >100% viability."
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:20.804Z"
+          },
+          {
+            "id": "ev_6e0bb2cb6e5c575a",
+            "title": "Integrated Genotoxicity Testing of three anti-infective drugs using the ...",
+            "source_name": "pmc.ncbi.nlm.nih.gov",
+            "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9540394/",
+            "source_type": "protocol",
+            "snippet": "The dashed line represents the cytotoxicity threshold of 50% cell viability relative to each chemical's matched vehicle control. Dimethyl sulfoxide, acetic",
+            "extracted_facts": [
+              "The dashed line represents the cytotoxicity threshold of 50% cell viability relative to each chemical's matched vehicle control."
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:20.804Z"
+          },
+          {
+            "id": "ev_7fb2cb12492c0c1b",
+            "title": "2.8. Whole Cell and Mitochondrial Isolation Prep for ... - Bio-protocol",
+            "source_name": "bio-protocol.org",
+            "source_url": "https://bio-protocol.org/exchange/minidetail?id=21095195&type=30",
+            "source_type": "protocol",
+            "snippet": "Cells were plated in a 10 cm TC dish and, 16 h later, treated with 25 uM tigecycline or matched DMSO vehicle control. After 72 h, media were removed and",
+            "extracted_facts": [
+              "concentration: 25 uM",
+              "Cells were plated in a 10 cm TC dish and, 16 h later, treated with 25 uM tigecycline or matched DMSO vehicle control.",
+              "After 72 h, media were removed and"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:20.804Z"
+          },
+          {
+            "id": "ev_b06ec89f8335c6d4",
+            "title": "GSM884985 - GEO Accession viewer - NIH",
+            "source_name": "www.ncbi.nlm.nih.gov",
+            "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM884985",
+            "source_type": "protocol",
+            "snippet": "When the cells were 80% confluent, the medium was replaced with fresh medium containing either 2 µM BaP or the vehicle control (0.5% DMSO) ... step",
+            "extracted_facts": [
+              "concentration: 2 µM",
+              "When the cells were 80% confluent, the medium was replaced with fresh medium containing either 2 µM BaP or the vehicle control (0.5% DMSO) ..."
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:20.804Z"
+          },
+          {
+            "id": "ev_089732941ae15c68",
+            "title": "Transcriptional and Epigenetic Consequences of DMSO Treatment ...",
+            "source_name": "pmc.ncbi.nlm.nih.gov",
+            "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9331440/",
+            "source_type": "protocol",
+            "snippet": "Dimethyl sulfoxide (DMSO) is used to sustain or favor hepatocyte differentiation in vitro. Thus, DMSO is used in the differentiation protocol of the HepaRG",
+            "extracted_facts": [],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:20.804Z"
+          },
+          {
+            "id": "ev_b316843dc818adc4",
+            "title": "[PDF] Optimized SYBR Green qRT PCR Workflow for Pharmacologic ...",
+            "source_name": "www.protocols.io",
+            "source_url": "https://www.protocols.io/view/optimized-sybr-green-qrt-pcr-workflow-for-pharmaco-hrg9b53z7.pdf",
+            "source_type": "protocol",
+            "snippet": "Unlike general qPCR methods, this workflow is optimized for comparative toxicology, emphasizing strict matched-vehicle controls, light-sensitive",
+            "extracted_facts": [],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:20.804Z"
+          },
+          {
+            "id": "ev_9443ac4eaeb3c752",
+            "title": "Gain More Informative Data by Multiplexing a Fluorescent Real-Time Cytotoxicity Assay with Luminescent, Fluorescent or Colorimetric Viability Assays",
+            "source_name": "www.promega.com",
+            "source_url": "https://www.promega.com/resources/pubhub/multiplexing-a-fluorescent-real-time-cytotoxicity-assay-with-luminescent-fluorescent-or-colorimetric/",
+            "source_type": "supplier_page",
+            "snippet": "Figure 4. Multiplexed assays using CellTiter 96® AQueous One Solution Cell Proliferation Assay and CellTox™ Green Cytotoxicity Assay. HEK 293 cells were treated for 14 hours with a serial dilution of terfenadine, followed by either a 1-hour (Panel A) or 4-hour (Panel B) treatment with CellTiter 96® AQueous One Solution Reagent and tested for viability and cytotoxicity. CellTox™ Green Dye was incorporated into the medium (no-step method) for half of the samples (+ CellTox™ Green Cytotoxicity Assay). Right axis represents fluorescent signal from CellTox™ Green Dye in relative fluorescent units …",
+            "extracted_facts": [
+              "catalog: Cat.# G8741",
+              "catalog: Cat.# G7570",
+              "catalog: Cat.# G6080",
+              "catalog: Cat.# G3582",
+              "catalog: Cat.# B9510",
+              "catalog: Cat.# T9652"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:28.025Z"
+          },
+          {
+            "id": "ev_f23e6c3723eec3b2",
+            "title": "Differentiating Changes in Glutathione Levels from Cytotoxic Events Using Multiplexed Assays",
+            "source_name": "www.promega.com",
+            "source_url": "https://www.promega.com/resources/pubhub/differentiating-changes-in-glutathione-levels-from-cytotoxic-events/",
+            "source_type": "supplier_page",
+            "snippet": "To observe GSH changes on adherent HEK-293 cells dosed with l-Buthionine Sulfoximine (BSO), we used the GSH/GSSG-Glo™ Assay to monitor total GSH levels (Figure 5). BSO is a known inhibitor of the synthesis of cellular GSH. Cells also were assayed for cytotoxicity effects of BSO using the CellTox™ Green Cytotoxicity Assay. Cells dosed with a serial dilution of BSO showed no cytotoxicity compared to the vehicle control, indicating that the compound did not kill the cells (Figure 5, Panel A). Adding the positive control, digitonin, resulted in a large increase in cytotoxic signal. [...] | | | | …",
+            "extracted_facts": [
+              "catalog: Cat.# B9510",
+              "catalog: B9510",
+              "concentration: 30µg/ml",
+              "concentration: 25µM",
+              "concentration: 15.6µM",
+              "concentration: 500µM"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:28.026Z"
+          },
+          {
+            "id": "ev_bc7f68e581037f99",
+            "title": "[PDF] HEK293 LgBiT Cell Line and LgBiT Expression Vector",
+            "source_name": "www.promega.com",
+            "source_url": "https://www.promega.com/-/media/files/resources/protocols/technical-manuals/500/tm620-hek293-lgbit-cell-line-and-lgbit-expression-vector-protocol.pdf?la=en",
+            "source_type": "supplier_page",
+            "snippet": "Assay or CellTox™ Green Cell Toxicity Assay to assess the effect of test compounds on cell viability. \u0007 Insufficient cell number per well can lead to low luminescence. Handle and plate cells as instructed to ensure sufficient number of viable cells per well. \u0007 To confirm LgBiT expression in the HEK293 LgBiT Stable Cell Line or in cells transfected with the LgBiT Expression Vector, measure luminescence using the Nano-Glo® HiBiT Lytic Detection System (Cat.# N3030) with the HiBiT Control Protein (Cat.# N3010) in place of the LgBiT Protein. See the Nano-Glo® HiBiT Lytic Detection System Technica…",
+            "extracted_facts": [
+              "catalog: N2672",
+              "catalog: N2681",
+              "catalog: N2391",
+              "catalog: N2401",
+              "catalog: N2361",
+              "catalog: N2371"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:28.027Z"
+          },
+          {
+            "id": "ev_22ceba4444de9d5e",
+            "title": "Making Sense of Your Genetic Reporter Data Through Assay Multiplexing",
+            "source_name": "www.promega.com",
+            "source_url": "https://www.promega.com/resources/pubhub/making-sense-of-genetic-reporter-data-through-assay-multiplexing/",
+            "source_type": "supplier_page",
+            "snippet": "The graphs reveal the inverse concordance that is expected from the multiplex of the CellTox™ Green Cytotoxicity Assay (fluorescence, RFU) and the luciferase reporter assay (luminescence, RLU). Luminescent signal declines as cells die and produce less protein. Fluorescent signal rises as the cell membrane becomes compromised, allowing the CellTox™ Green Dye to bind to the DNA. Panels A, B, and C are the Bright-Glo™, Steady-Glo®, and ONE-Glo™ Assays performed on HEK293 cells producing firefly luciferase constitutively; panel D is the Renilla-Glo™ assay performed on HEK293 cells producing Renil…",
+            "extracted_facts": [
+              "pack: 50μl",
+              "pack: 4μl",
+              "pack: 500μl",
+              "pack: 20μl",
+              "pack: 2ml",
+              "temperature: 37°C"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:28.029Z"
+          },
+          {
+            "id": "ev_bc317d119bace751",
+            "title": "IL-6 human, Interleukin-6, recombinant, expressed in HEK 293 cells ...",
+            "source_name": "www.sigmaaldrich.com",
+            "source_url": "https://www.sigmaaldrich.com/US/en/product/sigma/h7416?srsltid=AfmBOorx5ymqLINx7AeY1iILeSuI1wvPNVd-DARknHSFhacQs4R2Ow9M",
+            "source_type": "supplier_page",
+            "snippet": "Human Interleukin-6 (IL-6) recombinant expressed in HEK293 for cell culture; lyophilized powder. Order bulk and prepack at Sigmaaldrich.com.",
+            "extracted_facts": [
+              "Human Interleukin-6 (IL-6) recombinant expressed in HEK293 for cell culture; lyophilized powder."
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:56.234Z"
+          },
+          {
+            "id": "ev_d75cca020de31b3d",
+            "title": "[PDF] protein-extraction-technical-handbook.pdf - Thermo Fisher Scientific",
+            "source_name": "documents.thermofisher.com",
+            "source_url": "https://documents.thermofisher.com/TFS-Assets/BID/Handbooks/protein-extraction-technical-handbook.pdf",
+            "source_type": "supplier_page",
+            "snippet": "Primary Neurons -Yes Yes Yes Syn-PER Reagent 87793 Brain Tissue and Primary Neurons Yes NE-PER Reagent 78833 78835 Heart, Liver, Kidney and Lung Tissue and HeLa, NIH 3T3, A549, C6, Jurkat and Cos7 cells CER Yes, dilute 1:4 Yes, dilute 1:4 Yes Yes NER Yes Yes Yes Yes Mem-PER Plus Reagent 89843 Brain, Heart, Liver and Kidney Tissue and HeLa, A431, A549, HEK293, Jurkat, FM2, HEPG2 and HCT116 cells PB Yes Yes Yes SB Yes Yes Yes Cell Surface Protein Isolation Kit 89881 HeLa, NIH 3T3, A431 and C6 cells No No No No Subcellular Fractionation Kit for Cultured Mammalian Cells or Tissues 78840 HeLa, NIH…",
+            "extracted_facts": [
+              "concentration: 17 M",
+              "pack: 40mL",
+              "Table 1 describes the most common methods for protein extraction, as well as the advantages and disadvantages of each method."
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:56.234Z"
+          },
+          {
+            "id": "ev_237d484f0fde4259",
+            "title": "ExpressionWorld Webcasts | Thermo Fisher Scientific - UK",
+            "source_name": "www.thermofisher.com",
+            "source_url": "https://www.thermofisher.com/us/en/home/life-science/protein-biology/protein-biology-learning-center/protein-biology-resource-library/expressionworld-webcasts.html",
+            "source_type": "supplier_page",
+            "snippet": "#### Abstract HEK293 and CHO cells are the primary cell lines used in rapid, scalable suspension culture systems for transient protein expression. This presentation provides a primer on fundamental concepts and materials used for transient expression and key differences to consider when using 293 or CHO cells. Henry Chiou #### Biography [...] CHO cells are the predominant host for biotherapeutic protein expression with approximately 70% of licensed biologics manufactured in Chinese Hamster Ovary (CHO) cells. The ability to express therapeutic candidates in CHO cells early in the drug developm…",
+            "extracted_facts": [
+              "duration: 4 weeks"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:56.234Z"
+          },
+          {
+            "id": "ev_60f7523c6128f775",
+            "title": "Sigma Aldrich Fine Chemicals Biosciences Dimethyl sulfoxide, 67-68-5, MFCD00002089, | Fisher Scientific",
+            "source_name": "www.fishersci.com",
+            "source_url": "https://www.fishersci.com/shop/products/dimethyl-sulfoxide-344/501657128",
+            "source_type": "supplier_page",
+            "snippet": "Fisher Scientific - part of Thermo Fisher Scientific We keep science moving forward by offering over 2.5 million products and extensive support services to the research, production, healthcare, and science education markets. Count on us for an unrivaled selection of lab, life sciences, safety, and facility management supplies—including chemicals, equipment, instruments, diagnostics, and much more—along with exceptional customer care from an industry-leading team that’s proud to be part of Thermo Fisher Scientific. [...] Linear Formula (CH3)2SO, ≥99.5% (GC), Molecular Weight 78.13, plant cell …",
+            "extracted_facts": [
+              "catalog: VN00037649-",
+              "catalog: D4540-",
+              "catalog: D4540100ML",
+              "pack: 100ML"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:56.235Z"
+          },
+          {
+            "id": "ev_a2c98d1e9c8b5068",
+            "title": "Sigma Aldrich Fine Chemicals Biosciences Dimethyl sulfoxide | 67-68-5 | | Fisher Scientific",
+            "source_name": "www.fishersci.com",
+            "source_url": "https://www.fishersci.com/shop/products/dimethyl-sulfoxide-500ml-4/NC0592255",
+            "source_type": "supplier_page",
+            "snippet": "Fisher Scientific - part of Thermo Fisher Scientific We keep science moving forward by offering over 2.5 million products and extensive support services to the research, production, healthcare, and science education markets. Count on us for an unrivaled selection of lab, life sciences, safety, and facility management supplies—including chemicals, equipment, instruments, diagnostics, and much more—along with exceptional customer care from an industry-leading team that’s proud to be part of Thermo Fisher Scientific. [...] Dimethyl sulfoxide | Purity: ≥99.7% | Mol Wt: 78.13 | 67-68-5 | MFCD00002…",
+            "extracted_facts": [
+              "catalog: VN00037649-",
+              "catalog: NC0592255",
+              "pack: 500ML",
+              "pack: 500 mL",
+              "pack: 34869500ML"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:56.235Z"
+          },
+          {
+            "id": "ev_f77708df13f97ec2",
+            "title": "Sigma Aldrich Fine Chemicals Biosciences Dimethyl sulfoxide, 67 ...",
+            "source_name": "www.fishersci.com",
+            "source_url": "https://www.fishersci.com/shop/products/dimethyl-sulfoxide-352/501657126",
+            "source_type": "supplier_page",
+            "snippet": "Linear Formula (CH3)2SO, ≥99.9%, Molecular Weight 78.13, ACS reagent, Synonym: DMSO Catalog No. 50-165-7126 ## Description TRUSTED_SUSTAINABILITY ## Product Suggestions ## Documents ### Promotions By clicking Submit, you acknowledge that you may be contacted by Fisher Scientific in regards to the feedback you have provided in this form. We will not share your information for any other purposes. All contact information provided shall also be maintained in accordance with our Privacy Policy. ### About Us ### Programs and Services ### Customer Support ### Connect with Us Fisher Scientific - part…",
+            "extracted_facts": [
+              "catalog: VN00037649-",
+              "pack: 100ML",
+              "pack: 472301100ML"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:56.235Z"
+          },
+          {
+            "id": "ev_6df77ea431215a07",
+            "title": "Fetal Bovine Serum USA origin, Heat Inactivated, sterile-filtered ...",
+            "source_name": "www.sigmaaldrich.com",
+            "source_url": "https://www.sigmaaldrich.com/US/en/product/sigma/12106c?srsltid=AfmBOoo6ee0nfuCoET0U1B5blZyIJ_5eU4CuoLobB6fsyZ5SRiC4cn93",
+            "source_type": "supplier_page",
+            "snippet": "Skip to Content Merck ### Key Documents COA COO View All Documentation 12106C Sigma-Aldrich # Fetal Bovine Serum ## USA origin, Heat Inactivated, sterile-filtered, suitable for cell culture Synonym(s): HI FBS, HI FCS, HI Fetal Bovine Sera, HI Fetal Bovine Serum, FBS, FCS, sera, serum Sign In to View Organizational & Contract Pricing. ### Select a Size Change View ### About This Item UNSPSC Code: 12352207 NACRES: NA.71 MDL number: MFCD00132239 Biological source: bovine fetus Origin: USA origin Sterility: sterile-filtered Shipped in: dry ice Technical Service Need help? Our team of experienced …",
+            "extracted_facts": [
+              "pack: 20 mg",
+              "temperature: 20°C",
+              "temperature: 56°C",
+              "duration: 30 minutes"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:56.235Z"
+          },
+          {
+            "id": "ev_eb8fa95ae9c930a6",
+            "title": "Fetal Bovine Serum USA origin, Heat Inactivated, sterile-filtered ...",
+            "source_name": "www.sigmaaldrich.com",
+            "source_url": "https://www.sigmaaldrich.com/US/en/product/sigma/12106c?srsltid=AfmBOorzOwGwogeQLjF5kkdpUF3o6lH-Z__bmNdtQS2fHwQYwn6bOFPU",
+            "source_type": "supplier_page",
+            "snippet": "Skip to Content Merck ### Key Documents COA COO View All Documentation 12106C Sigma-Aldrich # Fetal Bovine Serum ## USA origin, Heat Inactivated, sterile-filtered, suitable for cell culture Synonym(s): HI FBS, HI FCS, HI Fetal Bovine Sera, HI Fetal Bovine Serum, FBS, FCS, sera, serum Sign In to View Organizational & Contract Pricing. ### Select a Size Change View ### About This Item UNSPSC Code: 12352207 NACRES: NA.71 MDL number: MFCD00132239 Biological source: bovine fetus Origin: USA origin Sterility: sterile-filtered Shipped in: dry ice Technical Service Need help? Our team of experienced …",
+            "extracted_facts": [
+              "pack: 20 mg",
+              "temperature: 20°C",
+              "temperature: 56°C",
+              "duration: 30 minutes"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:56.235Z"
+          },
+          {
+            "id": "ev_8641fd9213ccd0ef",
+            "title": "Fetal Bovine Serum USA origin, Heat Inactivated, sterile-filtered ...",
+            "source_name": "www.sigmaaldrich.com",
+            "source_url": "https://www.sigmaaldrich.com/US/en/product/sigma/12106c?srsltid=AfmBOorBYEKK8K3fUmBqr2rGfJcME8yllY3aUkEgU54ux18_RcGV7Pjv",
+            "source_type": "supplier_page",
+            "snippet": "Skip to Content Merck ### Key Documents COA COO View All Documentation 12106C Sigma-Aldrich # Fetal Bovine Serum ## USA origin, Heat Inactivated, sterile-filtered, suitable for cell culture Synonym(s): HI FBS, HI FCS, HI Fetal Bovine Sera, HI Fetal Bovine Serum, FBS, FCS, sera, serum Sign In to View Organizational & Contract Pricing. ### Select a Size Change View ### About This Item UNSPSC Code: 12352207 NACRES: NA.71 MDL number: MFCD00132239 Biological source: bovine fetus Origin: USA origin Sterility: sterile-filtered Shipped in: dry ice Technical Service Need help? Our team of experienced …",
+            "extracted_facts": [
+              "pack: 20 mg",
+              "temperature: 20°C",
+              "temperature: 56°C",
+              "duration: 30 minutes"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:56.236Z"
+          }
+        ]
+      }
+    },
+    "feedback_used": [],
+    "created_at": "2026-04-26T10:18:08.160Z",
+    "updated_at": "2026-04-26T10:18:08.160Z"
+  },
+  {
+    "id": "plan_7eec93c4b860e2cf",
+    "organization_id": "doctest",
+    "category_id": "cell_biology",
+    "continue_from_plan_id": null,
+    "title": "vehicle-matched DMSO controls",
+    "hypothesis": "Test whether vehicle-matched DMSO controls reduce variability in HEK293 cytotoxicity assays.",
+    "parsed_hypothesis": {
+      "domain": "biological sciences",
+      "experiment_type": "cytotoxicity assay",
+      "organism_or_system": "HEK293 cells",
+      "intervention": "vehicle-matched DMSO controls",
+      "comparator": "standard DMSO protocol",
+      "primary_outcome": "variability in cytotoxicity assays",
+      "quantitative_target": "",
+      "mechanism": "",
+      "implied_controls": [
+        "vehicle-matched DMSO controls"
+      ],
+      "key_variables": [
+        "DMSO concentration",
+        "vehicle matching",
+        "cytotoxicity"
+      ],
+      "key_measurements": [
+        "variability in cytotoxicity",
+        "cell viability"
+      ],
+      "safety_flags": [
+        "chemical hazards"
+      ]
+    },
+    "literature_qc": {
+      "parsed_hypothesis": {
+        "domain": "biological sciences",
+        "experiment_type": "cytotoxicity assay",
+        "organism_or_system": "HEK293 cells",
+        "intervention": "vehicle-matched DMSO controls",
+        "comparator": "standard DMSO protocol",
+        "primary_outcome": "variability in cytotoxicity assays",
+        "quantitative_target": "",
+        "mechanism": "",
+        "implied_controls": [
+          "vehicle-matched DMSO controls"
+        ],
+        "key_variables": [
+          "DMSO concentration",
+          "vehicle matching",
+          "cytotoxicity"
+        ],
+        "key_measurements": [
+          "variability in cytotoxicity",
+          "cell viability"
+        ],
+        "safety_flags": [
+          "chemical hazards"
+        ]
+      },
+      "novelty": {
+        "signal": "not_found",
+        "confidence": 0.4,
+        "rationale": "The provided references do not contain any studies directly related to the use of vehicle-matched DMSO controls in HEK293 cytotoxicity assays. The references cover a range of topics including viral immunotherapy, protein degradation pathways, and various cellular mechanisms, but none address the specific hypothesis regarding DMSO controls and assay variability.",
+        "references": [
+          {
+            "id": "ref_e0758878a3ccca39",
+            "title": "Cathepsin L plays a key role in SARS-CoV-2 infection in humans and humanized mice and is a promising target for new drug development",
+            "authors": [
+              "Miaomiao Zhao",
+              "Weili Yang",
+              "Fangyuan Yang",
+              "Li Zhang",
+              "Weijin Huang",
+              "Wei Hou"
+            ],
+            "year": 2021,
+            "venue": "Signal Transduction and Targeted Therapy",
+            "url": "https://doi.org/10.1038/s41392-021-00558-8",
+            "doi": "10.1038/s41392-021-00558-8",
+            "source": "openalex",
+            "relevance_reason": "OpenAlex match",
+            "relevance_score": 0.165,
+            "evidence_type": "literature"
+          },
+          {
+            "id": "ref_df66d8b1eee5c0e7",
+            "title": "A superior loading control for the cellular thermal shift assay - Nature",
+            "authors": [],
+            "year": null,
+            "venue": "www.nature.com",
+            "url": "https://www.nature.com/articles/s41598-022-10653-7",
+            "doi": null,
+            "source": "protocol_repository",
+            "relevance_reason": "Protocol repository match via Tavily",
+            "relevance_score": 0.29997736199999997,
+            "evidence_type": "protocol"
+          },
+          {
+            "id": "ref_5012663d3fa12044",
+            "title": "Synthetic super-enhancers enable precision viral immunotherapy - Nature",
+            "authors": [],
+            "year": null,
+            "venue": "www.nature.com",
+            "url": "https://www.nature.com/articles/s41586-026-10329-6",
+            "doi": null,
+            "source": "tavily",
+            "relevance_reason": "Recent news/preprint discussion (≤90 days) via Tavily",
+            "relevance_score": 0.26349427799999997,
+            "evidence_type": "review"
+          },
+          {
+            "id": "ref_b4578fc764fdd906",
+            "title": "Distinct Roles<i>In Vivo</i>for the Ubiquitin–Proteasome System and the Autophagy–Lysosomal Pathway in the Degradation of α-Synuclein",
+            "authors": [
+              "Darius Ebrahimi‐Fakhari",
+              "Ippolita Cantuti‐Castelvetri",
+              "Zhanyun Fan",
+              "Edward Rockenstein",
+              "Eliezer Masliah",
+              "Bradley T. Hyman"
+            ],
+            "year": 2011,
+            "venue": "Journal of Neuroscience",
+            "url": "https://doi.org/10.1523/jneurosci.1560-11.2011",
+            "doi": "10.1523/jneurosci.1560-11.2011",
+            "source": "openalex",
+            "relevance_reason": "OpenAlex match",
+            "relevance_score": 0.165,
+            "evidence_type": "literature"
+          },
+          {
+            "id": "ref_21086dec1e15de7a",
+            "title": "Discovery of small molecule inhibitors that effectively disrupt ...",
+            "authors": [],
+            "year": null,
+            "venue": "www.nature.com",
+            "url": "https://www.nature.com/articles/s41598-022-21342-w",
+            "doi": null,
+            "source": "protocol_repository",
+            "relevance_reason": "Protocol repository match via Tavily",
+            "relevance_score": 0.299654568,
+            "evidence_type": "protocol"
+          }
+        ],
+        "search_queries_used": [
+          "hek293 cells vehicle-matched dmso controls variability cytotoxicity assays standard protocol",
+          "vehicle-matched DMSO controls HEK293 cells",
+          "vehicle-matched DMSO controls variability in cytotoxicity assays",
+          "HEK293 cells variability in cytotoxicity assays",
+          "Test whether vehicle-matched DMSO controls reduce variability in HEK293 cytotoxicity assays."
+        ],
+        "coverage_warnings": [
+          "The references provided do not cover cytotoxicity assays or the specific use of DMSO controls in HEK293 cells, leading to low confidence in the assessment."
+        ]
+      }
+    },
+    "plan": {
+      "plan_id": "plan_20aa839aace05b80",
+      "created_at": "2026-04-26T10:16:49.887Z",
+      "hypothesis": {
+        "raw": "Test whether vehicle-matched DMSO controls reduce variability in HEK293 cytotoxicity assays.",
+        "parsed": {
+          "domain": "biological sciences",
+          "experiment_type": "cytotoxicity assay",
+          "organism_or_system": "HEK293 cells",
+          "intervention": "vehicle-matched DMSO controls",
+          "comparator": "standard DMSO protocol",
+          "primary_outcome": "variability in cytotoxicity assays",
+          "quantitative_target": "",
+          "mechanism": "",
+          "implied_controls": [
+            "vehicle-matched DMSO controls"
+          ],
+          "key_variables": [
+            "DMSO concentration",
+            "vehicle matching",
+            "cytotoxicity"
+          ],
+          "key_measurements": [
+            "variability in cytotoxicity",
+            "cell viability"
+          ],
+          "safety_flags": [
+            "chemical hazards"
+          ]
+        }
+      },
+      "novelty": {
+        "signal": "not_found",
+        "confidence": 0.4,
+        "rationale": "The provided references do not contain any studies directly related to the use of vehicle-matched DMSO controls in HEK293 cytotoxicity assays. The references cover a range of topics including viral immunotherapy, protein degradation pathways, and various cellular mechanisms, but none address the specific hypothesis regarding DMSO controls and assay variability.",
+        "references": [
+          {
+            "id": "ref_e0758878a3ccca39",
+            "title": "Cathepsin L plays a key role in SARS-CoV-2 infection in humans and humanized mice and is a promising target for new drug development",
+            "authors": [
+              "Miaomiao Zhao",
+              "Weili Yang",
+              "Fangyuan Yang",
+              "Li Zhang",
+              "Weijin Huang",
+              "Wei Hou"
+            ],
+            "year": 2021,
+            "venue": "Signal Transduction and Targeted Therapy",
+            "url": "https://doi.org/10.1038/s41392-021-00558-8",
+            "doi": "10.1038/s41392-021-00558-8",
+            "source": "openalex",
+            "relevance_reason": "OpenAlex match",
+            "relevance_score": 0.165,
+            "evidence_type": "literature"
+          },
+          {
+            "id": "ref_df66d8b1eee5c0e7",
+            "title": "A superior loading control for the cellular thermal shift assay - Nature",
+            "authors": [],
+            "year": null,
+            "venue": "www.nature.com",
+            "url": "https://www.nature.com/articles/s41598-022-10653-7",
+            "doi": null,
+            "source": "protocol_repository",
+            "relevance_reason": "Protocol repository match via Tavily",
+            "relevance_score": 0.29997736199999997,
+            "evidence_type": "protocol"
+          },
+          {
+            "id": "ref_5012663d3fa12044",
+            "title": "Synthetic super-enhancers enable precision viral immunotherapy - Nature",
+            "authors": [],
+            "year": null,
+            "venue": "www.nature.com",
+            "url": "https://www.nature.com/articles/s41586-026-10329-6",
+            "doi": null,
+            "source": "tavily",
+            "relevance_reason": "Recent news/preprint discussion (≤90 days) via Tavily",
+            "relevance_score": 0.26349427799999997,
+            "evidence_type": "review"
+          },
+          {
+            "id": "ref_b4578fc764fdd906",
+            "title": "Distinct Roles<i>In Vivo</i>for the Ubiquitin–Proteasome System and the Autophagy–Lysosomal Pathway in the Degradation of α-Synuclein",
+            "authors": [
+              "Darius Ebrahimi‐Fakhari",
+              "Ippolita Cantuti‐Castelvetri",
+              "Zhanyun Fan",
+              "Edward Rockenstein",
+              "Eliezer Masliah",
+              "Bradley T. Hyman"
+            ],
+            "year": 2011,
+            "venue": "Journal of Neuroscience",
+            "url": "https://doi.org/10.1523/jneurosci.1560-11.2011",
+            "doi": "10.1523/jneurosci.1560-11.2011",
+            "source": "openalex",
+            "relevance_reason": "OpenAlex match",
+            "relevance_score": 0.165,
+            "evidence_type": "literature"
+          },
+          {
+            "id": "ref_21086dec1e15de7a",
+            "title": "Discovery of small molecule inhibitors that effectively disrupt ...",
+            "authors": [],
+            "year": null,
+            "venue": "www.nature.com",
+            "url": "https://www.nature.com/articles/s41598-022-21342-w",
+            "doi": null,
+            "source": "protocol_repository",
+            "relevance_reason": "Protocol repository match via Tavily",
+            "relevance_score": 0.299654568,
+            "evidence_type": "protocol"
+          }
+        ]
+      },
+      "applied_feedback": [],
+      "executive_summary": {
+        "objective": "To determine if vehicle-matched DMSO controls reduce variability in HEK293 cytotoxicity assays compared to standard DMSO protocols.",
+        "experimental_strategy": "Conduct parallel cytotoxicity assays using HEK293 cells with vehicle-matched DMSO controls and standard DMSO protocols, measuring variability in cytotoxicity.",
+        "expected_result": "Vehicle-matched DMSO controls will reduce variability in cytotoxicity assays.",
+        "major_risks": [
+          "Inconsistent DMSO concentrations",
+          "Cell line contamination"
+        ],
+        "decision_gate": "Determine if variability is significantly reduced with vehicle-matched controls."
+      },
+      "safety_ethics_compliance": {
+        "overall_risk_level": "medium",
+        "biosafety_level_assumption": "BSL-1",
+        "human_subjects_or_samples": "none",
+        "animal_work": "none",
+        "environmental_or_gmo_considerations": "none",
+        "required_approvals": [
+          "Chemical safety review"
+        ],
+        "ppe": [
+          "Lab coat",
+          "Gloves",
+          "Safety goggles"
+        ],
+        "waste_disposal": [
+          "Dispose of DMSO waste according to chemical waste guidelines"
+        ],
+        "critical_warnings": [
+          "Ensure proper ventilation when handling DMSO"
+        ],
+        "expert_review_required": true
+      },
+      "protocol": [
+        {
+          "id": "step_01",
+          "title": "Cell Culture Preparation",
+          "purpose": "To prepare HEK293 cells for cytotoxicity assays.",
+          "instructions": [
+            "Thaw HEK293 cells and culture in DMEM with 10% heat-inactivated FBS (Sigma-Aldrich, catalog F4135).",
+            "Maintain cells at 37°C in a 5% CO2 incubator until 80% confluence."
+          ],
+          "parameters": {
+            "reagent_amounts": [
+              "10% FBS"
+            ],
+            "concentrations": [
+              "10% FBS"
+            ],
+            "temperatures": [
+              "37°C"
+            ],
+            "durations": [
+              "Until 80% confluence"
+            ],
+            "volumes": [],
+            "equipment_settings": [],
+            "environmental_conditions": [
+              "5% CO2"
+            ]
+          },
+          "acceptance_criteria": [
+            "Cells reach 80% confluence without contamination."
+          ],
+          "common_failure_modes": [
+            "Contamination",
+            "Over-confluence"
+          ],
+          "troubleshooting": [
+            "If contamination occurs, discard and restart with new cells."
+          ],
+          "safety_notes": [
+            "Handle all cell culture materials in a biosafety cabinet."
+          ],
+          "source_reference_ids": [
+            "doc_f72ec50c108f47b7"
+          ],
+          "editable": true
+        },
+        {
+          "id": "step_02",
+          "title": "DMSO Control Preparation",
+          "purpose": "To prepare vehicle-matched and standard DMSO controls.",
+          "instructions": [
+            "Prepare DMSO solutions matching the vehicle used in the experimental arm.",
+            "Ensure DMSO concentration does not exceed 0.5% v/v."
+          ],
+          "parameters": {
+            "reagent_amounts": [
+              "0.5% DMSO"
+            ],
+            "concentrations": [
+              "0.5% DMSO"
+            ],
+            "temperatures": [],
+            "durations": [],
+            "volumes": [],
+            "equipment_settings": [],
+            "environmental_conditions": []
+          },
+          "acceptance_criteria": [
+            "DMSO concentration is consistent across all samples."
+          ],
+          "common_failure_modes": [
+            "Incorrect DMSO concentration"
+          ],
+          "troubleshooting": [
+            "Verify DMSO concentration with a spectrophotometer if discrepancies are suspected."
+          ],
+          "safety_notes": [
+            "Use PPE when handling DMSO."
+          ],
+          "source_reference_ids": [
+            "ev_418578ef2ebb26b2",
+            "ev_785b80172bb16568"
+          ],
+          "editable": true
+        },
+        {
+          "id": "step_03",
+          "title": "Cytotoxicity Assay Execution",
+          "purpose": "To measure cytotoxicity in HEK293 cells with different DMSO controls.",
+          "instructions": [
+            "Treat HEK293 cells with test compounds and corresponding DMSO controls.",
+            "Incubate for 24 hours at 37°C.",
+            "Measure cell viability using a suitable assay (e.g., MTT or Alamar Blue)."
+          ],
+          "parameters": {
+            "reagent_amounts": [],
+            "concentrations": [],
+            "temperatures": [
+              "37°C"
+            ],
+            "durations": [
+              "24 hours"
+            ],
+            "volumes": [],
+            "equipment_settings": [],
+            "environmental_conditions": []
+          },
+          "acceptance_criteria": [
+            "Viability measurements are consistent with expected control values."
+          ],
+          "common_failure_modes": [
+            "Inconsistent viability results"
+          ],
+          "troubleshooting": [
+            "Ensure all reagents are fresh and properly prepared."
+          ],
+          "safety_notes": [
+            "Dispose of waste according to chemical safety guidelines."
+          ],
+          "source_reference_ids": [
+            "ev_9443ac4eaeb3c752"
+          ],
+          "editable": true
+        }
+      ],
+      "materials": [
+        {
+          "id": "mat_01",
+          "name": "HEK293 Cells",
+          "purpose": "Cell line for cytotoxicity assays.",
+          "supplier": "www.promega.com",
+          "catalog_number": "N2672",
+          "pack_size": "1 vial",
+          "quantity_needed": "1 vial",
+          "unit_cost": 500,
+          "estimated_cost": 500,
+          "currency": "USD",
+          "source_url": "https://www.promega.com/-/media/files/resources/protocols/technical-manuals/500/tm620-hek293-lgbit-cell-line-and-lgbit-expression-vector-protocol.pdf?la=en",
+          "confidence": "low",
+          "substitution_options": [],
+          "notes": "Ensure cells are authenticated and mycoplasma-free. Matched live supplier evidence: [PDF] HEK293 LgBiT Cell Line and LgBiT Expression Vector. Verify catalog and pricing before ordering. Matched live supplier evidence: [PDF] HEK293 LgBiT Cell Line and LgBiT Expression Vector. Verify catalog and pricing before ordering. [approx_estimate] ~$400-$600 — 1 vial from ATCC or Thermo Fisher Verify with a real vendor quote before ordering.",
+          "editable": true
+        },
+        {
+          "id": "mat_02",
+          "name": "DMSO",
+          "purpose": "Solvent for vehicle controls.",
+          "supplier": "www.promega.com",
+          "catalog_number": "N2672",
+          "pack_size": "100 ml",
+          "quantity_needed": "10 ml",
+          "unit_cost": 50,
+          "estimated_cost": 50,
+          "currency": "USD",
+          "source_url": "https://www.promega.com/-/media/files/resources/protocols/technical-manuals/500/tm620-hek293-lgbit-cell-line-and-lgbit-expression-vector-protocol.pdf?la=en",
+          "confidence": "low",
+          "substitution_options": [],
+          "notes": "Ensure DMSO is of cell culture grade. Matched live supplier evidence: [PDF] HEK293 LgBiT Cell Line and LgBiT Expression Vector. Verify catalog and pricing before ordering. Matched live supplier evidence: [PDF] HEK293 LgBiT Cell Line and LgBiT Expression Vector. Verify catalog and pricing before ordering. [approx_estimate] ~$40-$60 — 100 ml from Sigma-Aldrich or Thermo Fisher Verify with a real vendor quote before ordering.",
+          "editable": true
+        },
+        {
+          "id": "mat_03",
+          "name": "Heat-inactivated FBS",
+          "purpose": "Supplement for cell culture media.",
+          "supplier": "www.promega.com",
+          "catalog_number": "N2672",
+          "pack_size": "500 ml",
+          "quantity_needed": "500 ml",
+          "unit_cost": 300,
+          "estimated_cost": 300,
+          "currency": "USD",
+          "source_url": "https://www.promega.com/-/media/files/resources/protocols/technical-manuals/500/tm620-hek293-lgbit-cell-line-and-lgbit-expression-vector-protocol.pdf?la=en",
+          "confidence": "low",
+          "substitution_options": [],
+          "notes": "Document lot number in bench notebook. Matched live supplier evidence: [PDF] HEK293 LgBiT Cell Line and LgBiT Expression Vector. Verify catalog and pricing before ordering. Matched live supplier evidence: [PDF] HEK293 LgBiT Cell Line and LgBiT Expression Vector. Verify catalog and pricing before ordering. [approx_estimate] ~$250-$350 — 500 ml from Sigma-Aldrich or Thermo Fisher Verify with a real vendor quote before ordering.",
+          "editable": true
+        }
+      ],
+      "equipment": [
+        {
+          "id": "eq_01",
+          "name": "CO2 Incubator",
+          "purpose": "To maintain cell culture conditions.",
+          "required_or_optional": "required",
+          "estimated_cost_if_not_available": null,
+          "availability_assumption": "Available in lab",
+          "notes": "Ensure regular calibration and maintenance.",
+          "editable": true
+        },
+        {
+          "id": "eq_02",
+          "name": "Biosafety Cabinet",
+          "purpose": "To provide a sterile environment for cell culture.",
+          "required_or_optional": "required",
+          "estimated_cost_if_not_available": null,
+          "availability_assumption": "Available in lab",
+          "notes": "Use for all cell culture manipulations.",
+          "editable": true
+        },
+        {
+          "id": "eq_03",
+          "name": "Spectrophotometer",
+          "purpose": "To verify DMSO concentration.",
+          "required_or_optional": "optional",
+          "estimated_cost_if_not_available": 5000,
+          "availability_assumption": "May need to purchase",
+          "notes": "Useful for troubleshooting concentration issues.",
+          "editable": true
+        }
+      ],
+      "budget": {
+        "currency": "USD",
+        "material_line_items_total": 850,
+        "equipment_line_items_total_if_needed": 5000,
+        "labor_or_service_estimate": null,
+        "contingency_percent": 15,
+        "contingency_amount": 877.5,
+        "estimated_total": 6727.5,
+        "calculation_notes": "3/3 materials use AI-estimated approximations (verify before ordering).  3/3 material costs known. Subtotal sums known costs only. 1 equipment item(s) assumed not available; cost added to budget. Contingency: 15%.",
+        "low_confidence_items": [
+          "HEK293 Cells (www.promega.com)",
+          "DMSO (www.promega.com)",
+          "Heat-inactivated FBS (www.promega.com)"
+        ],
+        "editable": true
+      },
+      "timeline": [
+        {
+          "id": "phase_01",
+          "name": "Preparation Phase",
+          "duration": "1 week",
+          "dependencies": [],
+          "deliverables": [
+            "Prepared HEK293 cells",
+            "DMSO solutions"
+          ],
+          "decision_gate": "Verify cell confluence and DMSO preparation",
+          "risks_to_schedule": [
+            "Delayed cell growth",
+            "DMSO preparation errors"
+          ],
+          "editable": true
+        },
+        {
+          "id": "phase_02",
+          "name": "Execution Phase",
+          "duration": "2 weeks",
+          "dependencies": [
+            "phase_01"
+          ],
+          "deliverables": [
+            "Cytotoxicity assay data"
+          ],
+          "decision_gate": "Complete data collection",
+          "risks_to_schedule": [
+            "Equipment failure",
+            "Assay variability"
+          ],
+          "editable": true
+        },
+        {
+          "id": "phase_03",
+          "name": "Analysis Phase",
+          "duration": "1 week",
+          "dependencies": [
+            "phase_02"
+          ],
+          "deliverables": [
+            "Data analysis report"
+          ],
+          "decision_gate": "Data analysis complete",
+          "risks_to_schedule": [
+            "Data analysis software issues"
+          ],
+          "editable": true
+        }
+      ],
+      "validation": {
+        "primary_readout": "Cell viability",
+        "secondary_readouts": [
+          "DMSO concentration consistency",
+          "Assay variability"
+        ],
+        "controls": [
+          {
+            "id": "ctrl_01",
+            "name": "Vehicle-matched DMSO control",
+            "control_type": "vehicle",
+            "purpose": "To match the vehicle used in the experimental arm.",
+            "expected_result": "Consistent viability with reduced variability.",
+            "editable": true
+          },
+          {
+            "id": "ctrl_02",
+            "name": "Standard DMSO control",
+            "control_type": "vehicle",
+            "purpose": "To provide a baseline for comparison.",
+            "expected_result": "Higher variability in viability.",
+            "editable": true
+          }
+        ],
+        "replicate_strategy": "Triplicate wells for each condition.",
+        "sample_size_rationale": "Triplicates ensure statistical power to detect variability differences.",
+        "randomization_blinding": "Randomize plate layout; blinding not applicable.",
+        "statistical_analysis": "ANOVA to compare variability between controls.",
+        "success_criteria": [
+          "Significant reduction in variability with vehicle-matched controls."
+        ],
+        "failure_criteria": [
+          "No significant difference in variability."
+        ],
+        "data_quality_checks": [
+          "Check for outliers and consistency across replicates."
+        ],
+        "editable": true
+      },
+      "risks_and_mitigations": [
+        {
+          "id": "risk_01",
+          "risk": "Inconsistent DMSO concentrations",
+          "severity": "medium",
+          "likelihood": "medium",
+          "mitigation": "Verify concentrations with spectrophotometer.",
+          "detection_signal": "Unexpected assay variability",
+          "editable": true
+        },
+        {
+          "id": "risk_02",
+          "risk": "Cell line contamination",
+          "severity": "high",
+          "likelihood": "low",
+          "mitigation": "Use aseptic techniques and regular mycoplasma testing.",
+          "detection_signal": "Visual inspection and growth rate anomalies",
+          "editable": true
+        }
+      ],
+      "assumptions": [
+        {
+          "id": "assume_01",
+          "assumption": "HEK293 cells will grow to confluence in one week.",
+          "impact_if_wrong": "Delays in experiment start.",
+          "how_to_verify": "Monitor cell growth daily.",
+          "editable": true
+        },
+        {
+          "id": "assume_02",
+          "assumption": "DMSO concentration can be accurately prepared.",
+          "impact_if_wrong": "Increased variability in results.",
+          "how_to_verify": "Measure concentration with spectrophotometer.",
+          "editable": true
+        }
+      ],
+      "evidence_quality": {
+        "literature_coverage": "low",
+        "supplier_data_confidence": "medium",
+        "protocol_grounding_confidence": "medium",
+        "overall_plan_confidence": "medium",
+        "known_gaps": [
+          "Lack of direct literature on vehicle-matched DMSO controls in HEK293 assays."
+        ],
+        "evidence_cards": [
+          {
+            "id": "ev_418578ef2ebb26b2",
+            "title": "Swertiamarin fails to induce cytotoxicity in colon cancer cell lines",
+            "source_name": "pmc.ncbi.nlm.nih.gov",
+            "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12991280/",
+            "source_type": "protocol",
+            "snippet": "The final DMSO concentration varied depending on the drug concentration, with a maximum of 0.4% v/v. Vehicle control groups containing",
+            "extracted_facts": [
+              "The final DMSO concentration varied depending on the drug concentration, with a maximum of 0.4% v/v."
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:20.804Z"
+          },
+          {
+            "id": "ev_004a007406b675cd",
+            "title": "Heterogeneous Off-Target Effects of Ultra-Low Dose Dimethyl ... - PMC",
+            "source_name": "pmc.ncbi.nlm.nih.gov",
+            "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8001778/",
+            "source_type": "protocol",
+            "snippet": "The DMSO effect was heterogeneous across cell lines and varied based on concentration, exposure time, and cell line. Of the 187 proteins measured, all were",
+            "extracted_facts": [
+              "Of the 187 proteins measured, all were"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:20.804Z"
+          },
+          {
+            "id": "ev_785b80172bb16568",
+            "title": "Optimization of cell viability assays to improve replicability ... - PMC",
+            "source_name": "pmc.ncbi.nlm.nih.gov",
+            "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7118156/",
+            "source_type": "protocol",
+            "snippet": "In contrast, matched DMSO concentration controls are highly recommended as they reduce the risk of dose curves starting at >100% viability. Due",
+            "extracted_facts": [
+              "In contrast, matched DMSO concentration controls are highly recommended as they reduce the risk of dose curves starting at >100% viability."
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:20.804Z"
+          },
+          {
+            "id": "ev_6e0bb2cb6e5c575a",
+            "title": "Integrated Genotoxicity Testing of three anti-infective drugs using the ...",
+            "source_name": "pmc.ncbi.nlm.nih.gov",
+            "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9540394/",
+            "source_type": "protocol",
+            "snippet": "The dashed line represents the cytotoxicity threshold of 50% cell viability relative to each chemical's matched vehicle control. Dimethyl sulfoxide, acetic",
+            "extracted_facts": [
+              "The dashed line represents the cytotoxicity threshold of 50% cell viability relative to each chemical's matched vehicle control."
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:20.804Z"
+          },
+          {
+            "id": "ev_7fb2cb12492c0c1b",
+            "title": "2.8. Whole Cell and Mitochondrial Isolation Prep for ... - Bio-protocol",
+            "source_name": "bio-protocol.org",
+            "source_url": "https://bio-protocol.org/exchange/minidetail?id=21095195&type=30",
+            "source_type": "protocol",
+            "snippet": "Cells were plated in a 10 cm TC dish and, 16 h later, treated with 25 uM tigecycline or matched DMSO vehicle control. After 72 h, media were removed and",
+            "extracted_facts": [
+              "concentration: 25 uM",
+              "Cells were plated in a 10 cm TC dish and, 16 h later, treated with 25 uM tigecycline or matched DMSO vehicle control.",
+              "After 72 h, media were removed and"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:20.804Z"
+          },
+          {
+            "id": "ev_b06ec89f8335c6d4",
+            "title": "GSM884985 - GEO Accession viewer - NIH",
+            "source_name": "www.ncbi.nlm.nih.gov",
+            "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM884985",
+            "source_type": "protocol",
+            "snippet": "When the cells were 80% confluent, the medium was replaced with fresh medium containing either 2 µM BaP or the vehicle control (0.5% DMSO) ... step",
+            "extracted_facts": [
+              "concentration: 2 µM",
+              "When the cells were 80% confluent, the medium was replaced with fresh medium containing either 2 µM BaP or the vehicle control (0.5% DMSO) ..."
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:20.804Z"
+          },
+          {
+            "id": "ev_089732941ae15c68",
+            "title": "Transcriptional and Epigenetic Consequences of DMSO Treatment ...",
+            "source_name": "pmc.ncbi.nlm.nih.gov",
+            "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9331440/",
+            "source_type": "protocol",
+            "snippet": "Dimethyl sulfoxide (DMSO) is used to sustain or favor hepatocyte differentiation in vitro. Thus, DMSO is used in the differentiation protocol of the HepaRG",
+            "extracted_facts": [],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:20.804Z"
+          },
+          {
+            "id": "ev_b316843dc818adc4",
+            "title": "[PDF] Optimized SYBR Green qRT PCR Workflow for Pharmacologic ...",
+            "source_name": "www.protocols.io",
+            "source_url": "https://www.protocols.io/view/optimized-sybr-green-qrt-pcr-workflow-for-pharmaco-hrg9b53z7.pdf",
+            "source_type": "protocol",
+            "snippet": "Unlike general qPCR methods, this workflow is optimized for comparative toxicology, emphasizing strict matched-vehicle controls, light-sensitive",
+            "extracted_facts": [],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:20.804Z"
+          },
+          {
+            "id": "ev_9443ac4eaeb3c752",
+            "title": "Gain More Informative Data by Multiplexing a Fluorescent Real-Time Cytotoxicity Assay with Luminescent, Fluorescent or Colorimetric Viability Assays",
+            "source_name": "www.promega.com",
+            "source_url": "https://www.promega.com/resources/pubhub/multiplexing-a-fluorescent-real-time-cytotoxicity-assay-with-luminescent-fluorescent-or-colorimetric/",
+            "source_type": "supplier_page",
+            "snippet": "Figure 4. Multiplexed assays using CellTiter 96® AQueous One Solution Cell Proliferation Assay and CellTox™ Green Cytotoxicity Assay. HEK 293 cells were treated for 14 hours with a serial dilution of terfenadine, followed by either a 1-hour (Panel A) or 4-hour (Panel B) treatment with CellTiter 96® AQueous One Solution Reagent and tested for viability and cytotoxicity. CellTox™ Green Dye was incorporated into the medium (no-step method) for half of the samples (+ CellTox™ Green Cytotoxicity Assay). Right axis represents fluorescent signal from CellTox™ Green Dye in relative fluorescent units …",
+            "extracted_facts": [
+              "catalog: Cat.# G8741",
+              "catalog: Cat.# G7570",
+              "catalog: Cat.# G6080",
+              "catalog: Cat.# G3582",
+              "catalog: Cat.# B9510",
+              "catalog: Cat.# T9652"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:28.025Z"
+          },
+          {
+            "id": "ev_f23e6c3723eec3b2",
+            "title": "Differentiating Changes in Glutathione Levels from Cytotoxic Events Using Multiplexed Assays",
+            "source_name": "www.promega.com",
+            "source_url": "https://www.promega.com/resources/pubhub/differentiating-changes-in-glutathione-levels-from-cytotoxic-events/",
+            "source_type": "supplier_page",
+            "snippet": "To observe GSH changes on adherent HEK-293 cells dosed with l-Buthionine Sulfoximine (BSO), we used the GSH/GSSG-Glo™ Assay to monitor total GSH levels (Figure 5). BSO is a known inhibitor of the synthesis of cellular GSH. Cells also were assayed for cytotoxicity effects of BSO using the CellTox™ Green Cytotoxicity Assay. Cells dosed with a serial dilution of BSO showed no cytotoxicity compared to the vehicle control, indicating that the compound did not kill the cells (Figure 5, Panel A). Adding the positive control, digitonin, resulted in a large increase in cytotoxic signal. [...] | | | | …",
+            "extracted_facts": [
+              "catalog: Cat.# B9510",
+              "catalog: B9510",
+              "concentration: 30µg/ml",
+              "concentration: 25µM",
+              "concentration: 15.6µM",
+              "concentration: 500µM"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:28.026Z"
+          },
+          {
+            "id": "ev_bc7f68e581037f99",
+            "title": "[PDF] HEK293 LgBiT Cell Line and LgBiT Expression Vector",
+            "source_name": "www.promega.com",
+            "source_url": "https://www.promega.com/-/media/files/resources/protocols/technical-manuals/500/tm620-hek293-lgbit-cell-line-and-lgbit-expression-vector-protocol.pdf?la=en",
+            "source_type": "supplier_page",
+            "snippet": "Assay or CellTox™ Green Cell Toxicity Assay to assess the effect of test compounds on cell viability. \u0007 Insufficient cell number per well can lead to low luminescence. Handle and plate cells as instructed to ensure sufficient number of viable cells per well. \u0007 To confirm LgBiT expression in the HEK293 LgBiT Stable Cell Line or in cells transfected with the LgBiT Expression Vector, measure luminescence using the Nano-Glo® HiBiT Lytic Detection System (Cat.# N3030) with the HiBiT Control Protein (Cat.# N3010) in place of the LgBiT Protein. See the Nano-Glo® HiBiT Lytic Detection System Technica…",
+            "extracted_facts": [
+              "catalog: N2672",
+              "catalog: N2681",
+              "catalog: N2391",
+              "catalog: N2401",
+              "catalog: N2361",
+              "catalog: N2371"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:28.027Z"
+          },
+          {
+            "id": "ev_22ceba4444de9d5e",
+            "title": "Making Sense of Your Genetic Reporter Data Through Assay Multiplexing",
+            "source_name": "www.promega.com",
+            "source_url": "https://www.promega.com/resources/pubhub/making-sense-of-genetic-reporter-data-through-assay-multiplexing/",
+            "source_type": "supplier_page",
+            "snippet": "The graphs reveal the inverse concordance that is expected from the multiplex of the CellTox™ Green Cytotoxicity Assay (fluorescence, RFU) and the luciferase reporter assay (luminescence, RLU). Luminescent signal declines as cells die and produce less protein. Fluorescent signal rises as the cell membrane becomes compromised, allowing the CellTox™ Green Dye to bind to the DNA. Panels A, B, and C are the Bright-Glo™, Steady-Glo®, and ONE-Glo™ Assays performed on HEK293 cells producing firefly luciferase constitutively; panel D is the Renilla-Glo™ assay performed on HEK293 cells producing Renil…",
+            "extracted_facts": [
+              "pack: 50μl",
+              "pack: 4μl",
+              "pack: 500μl",
+              "pack: 20μl",
+              "pack: 2ml",
+              "temperature: 37°C"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:28.029Z"
+          },
+          {
+            "id": "ev_bc317d119bace751",
+            "title": "IL-6 human, Interleukin-6, recombinant, expressed in HEK 293 cells ...",
+            "source_name": "www.sigmaaldrich.com",
+            "source_url": "https://www.sigmaaldrich.com/US/en/product/sigma/h7416?srsltid=AfmBOorx5ymqLINx7AeY1iILeSuI1wvPNVd-DARknHSFhacQs4R2Ow9M",
+            "source_type": "supplier_page",
+            "snippet": "Human Interleukin-6 (IL-6) recombinant expressed in HEK293 for cell culture; lyophilized powder. Order bulk and prepack at Sigmaaldrich.com.",
+            "extracted_facts": [
+              "Human Interleukin-6 (IL-6) recombinant expressed in HEK293 for cell culture; lyophilized powder."
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:56.234Z"
+          },
+          {
+            "id": "ev_d75cca020de31b3d",
+            "title": "[PDF] protein-extraction-technical-handbook.pdf - Thermo Fisher Scientific",
+            "source_name": "documents.thermofisher.com",
+            "source_url": "https://documents.thermofisher.com/TFS-Assets/BID/Handbooks/protein-extraction-technical-handbook.pdf",
+            "source_type": "supplier_page",
+            "snippet": "Primary Neurons -Yes Yes Yes Syn-PER Reagent 87793 Brain Tissue and Primary Neurons Yes NE-PER Reagent 78833 78835 Heart, Liver, Kidney and Lung Tissue and HeLa, NIH 3T3, A549, C6, Jurkat and Cos7 cells CER Yes, dilute 1:4 Yes, dilute 1:4 Yes Yes NER Yes Yes Yes Yes Mem-PER Plus Reagent 89843 Brain, Heart, Liver and Kidney Tissue and HeLa, A431, A549, HEK293, Jurkat, FM2, HEPG2 and HCT116 cells PB Yes Yes Yes SB Yes Yes Yes Cell Surface Protein Isolation Kit 89881 HeLa, NIH 3T3, A431 and C6 cells No No No No Subcellular Fractionation Kit for Cultured Mammalian Cells or Tissues 78840 HeLa, NIH…",
+            "extracted_facts": [
+              "concentration: 17 M",
+              "pack: 40mL",
+              "Table 1 describes the most common methods for protein extraction, as well as the advantages and disadvantages of each method."
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:56.234Z"
+          },
+          {
+            "id": "ev_237d484f0fde4259",
+            "title": "ExpressionWorld Webcasts | Thermo Fisher Scientific - UK",
+            "source_name": "www.thermofisher.com",
+            "source_url": "https://www.thermofisher.com/us/en/home/life-science/protein-biology/protein-biology-learning-center/protein-biology-resource-library/expressionworld-webcasts.html",
+            "source_type": "supplier_page",
+            "snippet": "#### Abstract HEK293 and CHO cells are the primary cell lines used in rapid, scalable suspension culture systems for transient protein expression. This presentation provides a primer on fundamental concepts and materials used for transient expression and key differences to consider when using 293 or CHO cells. Henry Chiou #### Biography [...] CHO cells are the predominant host for biotherapeutic protein expression with approximately 70% of licensed biologics manufactured in Chinese Hamster Ovary (CHO) cells. The ability to express therapeutic candidates in CHO cells early in the drug developm…",
+            "extracted_facts": [
+              "duration: 4 weeks"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:56.234Z"
+          },
+          {
+            "id": "ev_60f7523c6128f775",
+            "title": "Sigma Aldrich Fine Chemicals Biosciences Dimethyl sulfoxide, 67-68-5, MFCD00002089, | Fisher Scientific",
+            "source_name": "www.fishersci.com",
+            "source_url": "https://www.fishersci.com/shop/products/dimethyl-sulfoxide-344/501657128",
+            "source_type": "supplier_page",
+            "snippet": "Fisher Scientific - part of Thermo Fisher Scientific We keep science moving forward by offering over 2.5 million products and extensive support services to the research, production, healthcare, and science education markets. Count on us for an unrivaled selection of lab, life sciences, safety, and facility management supplies—including chemicals, equipment, instruments, diagnostics, and much more—along with exceptional customer care from an industry-leading team that’s proud to be part of Thermo Fisher Scientific. [...] Linear Formula (CH3)2SO, ≥99.5% (GC), Molecular Weight 78.13, plant cell …",
+            "extracted_facts": [
+              "catalog: VN00037649-",
+              "catalog: D4540-",
+              "catalog: D4540100ML",
+              "pack: 100ML"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:56.235Z"
+          },
+          {
+            "id": "ev_a2c98d1e9c8b5068",
+            "title": "Sigma Aldrich Fine Chemicals Biosciences Dimethyl sulfoxide | 67-68-5 | | Fisher Scientific",
+            "source_name": "www.fishersci.com",
+            "source_url": "https://www.fishersci.com/shop/products/dimethyl-sulfoxide-500ml-4/NC0592255",
+            "source_type": "supplier_page",
+            "snippet": "Fisher Scientific - part of Thermo Fisher Scientific We keep science moving forward by offering over 2.5 million products and extensive support services to the research, production, healthcare, and science education markets. Count on us for an unrivaled selection of lab, life sciences, safety, and facility management supplies—including chemicals, equipment, instruments, diagnostics, and much more—along with exceptional customer care from an industry-leading team that’s proud to be part of Thermo Fisher Scientific. [...] Dimethyl sulfoxide | Purity: ≥99.7% | Mol Wt: 78.13 | 67-68-5 | MFCD00002…",
+            "extracted_facts": [
+              "catalog: VN00037649-",
+              "catalog: NC0592255",
+              "pack: 500ML",
+              "pack: 500 mL",
+              "pack: 34869500ML"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:56.235Z"
+          },
+          {
+            "id": "ev_f77708df13f97ec2",
+            "title": "Sigma Aldrich Fine Chemicals Biosciences Dimethyl sulfoxide, 67 ...",
+            "source_name": "www.fishersci.com",
+            "source_url": "https://www.fishersci.com/shop/products/dimethyl-sulfoxide-352/501657126",
+            "source_type": "supplier_page",
+            "snippet": "Linear Formula (CH3)2SO, ≥99.9%, Molecular Weight 78.13, ACS reagent, Synonym: DMSO Catalog No. 50-165-7126 ## Description TRUSTED_SUSTAINABILITY ## Product Suggestions ## Documents ### Promotions By clicking Submit, you acknowledge that you may be contacted by Fisher Scientific in regards to the feedback you have provided in this form. We will not share your information for any other purposes. All contact information provided shall also be maintained in accordance with our Privacy Policy. ### About Us ### Programs and Services ### Customer Support ### Connect with Us Fisher Scientific - part…",
+            "extracted_facts": [
+              "catalog: VN00037649-",
+              "pack: 100ML",
+              "pack: 472301100ML"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:56.235Z"
+          },
+          {
+            "id": "ev_6df77ea431215a07",
+            "title": "Fetal Bovine Serum USA origin, Heat Inactivated, sterile-filtered ...",
+            "source_name": "www.sigmaaldrich.com",
+            "source_url": "https://www.sigmaaldrich.com/US/en/product/sigma/12106c?srsltid=AfmBOoo6ee0nfuCoET0U1B5blZyIJ_5eU4CuoLobB6fsyZ5SRiC4cn93",
+            "source_type": "supplier_page",
+            "snippet": "Skip to Content Merck ### Key Documents COA COO View All Documentation 12106C Sigma-Aldrich # Fetal Bovine Serum ## USA origin, Heat Inactivated, sterile-filtered, suitable for cell culture Synonym(s): HI FBS, HI FCS, HI Fetal Bovine Sera, HI Fetal Bovine Serum, FBS, FCS, sera, serum Sign In to View Organizational & Contract Pricing. ### Select a Size Change View ### About This Item UNSPSC Code: 12352207 NACRES: NA.71 MDL number: MFCD00132239 Biological source: bovine fetus Origin: USA origin Sterility: sterile-filtered Shipped in: dry ice Technical Service Need help? Our team of experienced …",
+            "extracted_facts": [
+              "pack: 20 mg",
+              "temperature: 20°C",
+              "temperature: 56°C",
+              "duration: 30 minutes"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:56.235Z"
+          },
+          {
+            "id": "ev_eb8fa95ae9c930a6",
+            "title": "Fetal Bovine Serum USA origin, Heat Inactivated, sterile-filtered ...",
+            "source_name": "www.sigmaaldrich.com",
+            "source_url": "https://www.sigmaaldrich.com/US/en/product/sigma/12106c?srsltid=AfmBOorzOwGwogeQLjF5kkdpUF3o6lH-Z__bmNdtQS2fHwQYwn6bOFPU",
+            "source_type": "supplier_page",
+            "snippet": "Skip to Content Merck ### Key Documents COA COO View All Documentation 12106C Sigma-Aldrich # Fetal Bovine Serum ## USA origin, Heat Inactivated, sterile-filtered, suitable for cell culture Synonym(s): HI FBS, HI FCS, HI Fetal Bovine Sera, HI Fetal Bovine Serum, FBS, FCS, sera, serum Sign In to View Organizational & Contract Pricing. ### Select a Size Change View ### About This Item UNSPSC Code: 12352207 NACRES: NA.71 MDL number: MFCD00132239 Biological source: bovine fetus Origin: USA origin Sterility: sterile-filtered Shipped in: dry ice Technical Service Need help? Our team of experienced …",
+            "extracted_facts": [
+              "pack: 20 mg",
+              "temperature: 20°C",
+              "temperature: 56°C",
+              "duration: 30 minutes"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:56.235Z"
+          },
+          {
+            "id": "ev_8641fd9213ccd0ef",
+            "title": "Fetal Bovine Serum USA origin, Heat Inactivated, sterile-filtered ...",
+            "source_name": "www.sigmaaldrich.com",
+            "source_url": "https://www.sigmaaldrich.com/US/en/product/sigma/12106c?srsltid=AfmBOorBYEKK8K3fUmBqr2rGfJcME8yllY3aUkEgU54ux18_RcGV7Pjv",
+            "source_type": "supplier_page",
+            "snippet": "Skip to Content Merck ### Key Documents COA COO View All Documentation 12106C Sigma-Aldrich # Fetal Bovine Serum ## USA origin, Heat Inactivated, sterile-filtered, suitable for cell culture Synonym(s): HI FBS, HI FCS, HI Fetal Bovine Sera, HI Fetal Bovine Serum, FBS, FCS, sera, serum Sign In to View Organizational & Contract Pricing. ### Select a Size Change View ### About This Item UNSPSC Code: 12352207 NACRES: NA.71 MDL number: MFCD00132239 Biological source: bovine fetus Origin: USA origin Sterility: sterile-filtered Shipped in: dry ice Technical Service Need help? Our team of experienced …",
+            "extracted_facts": [
+              "pack: 20 mg",
+              "temperature: 20°C",
+              "temperature: 56°C",
+              "duration: 30 minutes"
+            ],
+            "confidence": "medium",
+            "retrieved_at": "2026-04-26T10:16:56.236Z"
+          }
+        ]
+      }
+    },
+    "feedback_used": [],
+    "created_at": "2026-04-26T10:18:15.483Z",
+    "updated_at": "2026-04-26T10:18:15.483Z"
+  }
+]

@@ -1,8 +1,10 @@
+import { getCategory } from "@/lib/category-store";
 import { getEnv } from "@/lib/env";
-import { retrieveRelevantFeedback } from "@/lib/feedback-retrieval";
+import { getActiveFeedbackContext } from "@/lib/feedback-retrieval";
 import { mergeEvidenceCards } from "@/lib/evidence";
 import { generateExperimentPlan } from "@/lib/plan-generation";
 import { critiquePlan } from "@/lib/plan-critic";
+import { readOrganizationId } from "@/lib/org-server";
 import { searchProtocols } from "@/lib/protocol-search";
 import { searchRegulatory } from "@/lib/regulatory-search";
 import { searchSuppliers } from "@/lib/supplier-search";
@@ -60,17 +62,26 @@ export async function POST(req: Request) {
   try {
     const env = getEnv();
     const tavilyConfigured = Boolean(env.tavilyApiKey);
-    const body = validate(GeneratePlanRequestSchema, await req.json());
+    const json = await req.json();
+    const organizationId = readOrganizationId(req, json);
+    const body = validate(GeneratePlanRequestSchema, json);
     const literatureQC = LiteratureQCSchema.parse(body.literature_qc);
     const parsed = literatureQC.parsed_hypothesis;
+    const categoryId = body.category_id || "other";
+    const continueFromPlanId = body.continue_from_plan_id ?? null;
 
     const evidenceStats: EvidenceSourceStat[] = [];
 
-    const [feedback, proto, supp, reg] = await Promise.all([
-      retrieveRelevantFeedback({
+    const categoryRecord = await getCategory(organizationId, categoryId);
+    const categoryName = categoryRecord?.name || null;
+
+    const [feedbackContext, proto, supp, reg] = await Promise.all([
+      getActiveFeedbackContext({
+        organization_id: organizationId,
+        category_id: categoryId,
         hypothesis: body.hypothesis,
         parsed_hypothesis: parsed,
-        limit: 7
+        continue_from_plan_id: continueFromPlanId
       }),
       tavilyConfigured
         ? timed("tavily_protocols", () => searchProtocols(body.hypothesis, parsed), [])
@@ -128,7 +139,11 @@ export async function POST(req: Request) {
       parsed,
       literatureQC,
       evidenceCards,
-      feedback
+      feedback: [],
+      feedbackContext,
+      categoryId,
+      categoryName,
+      continueFromPlanId
     });
     const validated = ExperimentPlanSchema.parse(plan);
     // Run a critic pass over the validated plan. AI-first, heuristic fallback.
@@ -152,7 +167,13 @@ export async function POST(req: Request) {
         regulatoryReasons,
         cardCount: evidenceCards.length
       },
-      _critique: critique
+      _critique: critique,
+      _context: {
+        organization_id: organizationId,
+        category_id: categoryId,
+        category_name: categoryName,
+        continue_from_plan_id: continueFromPlanId
+      }
     });
   } catch (err) {
     return jsonError(err);

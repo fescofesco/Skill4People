@@ -2,10 +2,13 @@
   {
     "id": "fbk_94d7387c8f227ed6",
     "created_at": "2026-04-26T05:46:48.814Z",
+    "organization_id": "default",
     "source_plan_id": "seed",
     "hypothesis": "CRP whole-blood biosensor",
     "domain": "diagnostics",
     "experiment_type": "biosensor development and validation",
+    "category_id": null,
+    "scope": "category",
     "item_type": "validation",
     "item_id": "seed_diagnostics",
     "original_context": "Claim ELISA-equivalent performance from buffer calibration.",
@@ -13,6 +16,7 @@
     "reason": "Buffer-only calibration does not prove whole-blood performance.",
     "rating_before": 2,
     "derived_rule": "For CRP whole-blood biosensor validation, include matrix-effect controls and compare against a reference ELISA; do not claim ELISA-equivalent performance from buffer-only calibration.",
+    "applicable_rule": "For CRP whole-blood biosensor validation, include matrix-effect controls and compare against a reference ELISA; do not claim ELISA-equivalent performance from buffer-only calibration.",
     "tags": [
       "diagnostics",
       "biosensor",
@@ -28,10 +32,13 @@
   {
     "id": "fbk_c4c1c66a5c09faad",
     "created_at": "2026-04-26T05:46:48.814Z",
+    "organization_id": "default",
     "source_plan_id": "seed",
     "hypothesis": "LGG C57BL/6 FITC-dextran study",
     "domain": "gut health",
     "experiment_type": "in vivo mouse probiotic supplementation study",
+    "category_id": null,
+    "scope": "category",
     "item_type": "validation",
     "item_id": "seed_gut",
     "original_context": "Use n=3 mice per group.",
@@ -39,6 +46,7 @@
     "reason": "Mouse permeability studies have substantial biological and cage-level variance.",
     "rating_before": 2,
     "derived_rule": "For C57BL/6 FITC-dextran intestinal permeability studies, include randomization, cage-effect awareness, and a justified group size; avoid underpowered n=3 designs.",
+    "applicable_rule": "For C57BL/6 FITC-dextran intestinal permeability studies, include randomization, cage-effect awareness, and a justified group size; avoid underpowered n=3 designs.",
     "tags": [
       "gut health",
       "mouse",
@@ -53,10 +61,13 @@
   {
     "id": "fbk_0f3f0ddca7e027d2",
     "created_at": "2026-04-26T05:46:48.814Z",
+    "organization_id": "default",
     "source_plan_id": "seed",
     "hypothesis": "HeLa cryopreservation trehalose",
     "domain": "cell biology",
     "experiment_type": "cryopreservation comparison study",
+    "category_id": null,
+    "scope": "category",
     "item_type": "validation",
     "item_id": "seed_cell",
     "original_context": "Compare trehalose without DMSO standard or cell QC.",
@@ -64,6 +75,7 @@
     "reason": "Cell-line quality and standard control are necessary to interpret cryopreservation comparisons.",
     "rating_before": 3,
     "derived_rule": "For HeLa cryopreservation comparisons, include DMSO standard control, post-thaw recovery timepoint, cell-line authentication, and mycoplasma testing.",
+    "applicable_rule": "For HeLa cryopreservation comparisons, include DMSO standard control, post-thaw recovery timepoint, cell-line authentication, and mycoplasma testing.",
     "tags": [
       "cell biology",
       "hela",
@@ -78,10 +90,13 @@
   {
     "id": "fbk_9abfbd65d162b585",
     "created_at": "2026-04-26T05:46:48.814Z",
+    "organization_id": "default",
     "source_plan_id": "seed",
     "hypothesis": "Sporomusa ovata bioelectrochemical acetate",
     "domain": "climate",
     "experiment_type": "bioelectrochemical CO2 fixation",
+    "category_id": null,
+    "scope": "category",
     "item_type": "validation",
     "item_id": "seed_climate",
     "original_context": "Report acetate rate without normalization.",
@@ -89,6 +104,7 @@
     "reason": "Benchmarking is misleading without normalization and potential calibration.",
     "rating_before": 3,
     "derived_rule": "For Sporomusa ovata bioelectrochemical acetate production, normalize acetate rate to reactor volume, electrode area, and biomass where possible, and verify cathode potential against SHE.",
+    "applicable_rule": "For Sporomusa ovata bioelectrochemical acetate production, normalize acetate rate to reactor volume, electrode area, and biomass where possible, and verify cathode potential against SHE.",
     "tags": [
       "climate",
       "bioelectrochemical",
@@ -103,6 +119,7 @@
   {
     "id": "fbk_d9e68337f10d9b19",
     "created_at": "2026-04-26T09:29:29.064Z",
+    "organization_id": "default",
     "source_plan_id": "plan_003bcb789f3b080c",
     "hypothesis": "Synthesis of a novel yolk-shell nanoparticle architecture comprising a 1.0 micron ellipsoidal hematite alpha-Fe2O3 core and a 100 nm amorphous silica SiO2 shell, separated by a discrete 20 nm interstitial aqueous gap. The protocol must utilize a sacrificial organic interlayer like polystyrene or tpm to define the void space. The final plan must ensure the structural integrity of the silica shell remains intact during the removal of the sacrificial layer, resulting in a core that is physically detached from the shell interior.",
     "parsed_hypothesis": {
@@ -132,6 +149,8 @@
     },
     "domain": "Nanotechnology",
     "experiment_type": "Synthesis",
+    "category_id": null,
+    "scope": "category",
     "item_type": "protocol",
     "item_id": "step_01",
     "original_context": "{\n  \"id\": \"step_01\",\n  \"title\": \"Preparation of Hematite Core\",\n  \"purpose\": \"To synthesize the 1.0 micron ellipsoidal hematite core.\",\n  \"instructions\": [\n    \"Dissolve iron(III) chloride in deionized water.\",\n    \"Add sodium hydroxide solution to precipitate iron hydroxide.\",\n    \"Heat the mixture to 90°C for 2 hours to form hematite particles.\",\n    \"Wash and dry the particles.\"\n  ],\n  \"parameters\": {\n    \"reagent_amounts\": [\n      \"Iron(III) chloride: 10 g\",\n      \"Sodium hydroxide: 5 g\"\n    ],\n    \"concentrations\": [\n      \"Iron(III) chloride: 0.1 M\"\n    ],\n    \"temperatures\": [\n      \"90°C\"\n    ],\n    \"durations\": [\n      \"2 hours\"\n    ],\n    \"volumes\": [\n      \"Deionized water: 100 mL\"\n    ],\n    \"equipment_settings\": [],\n    \"environmental_conditions\": [\n      \"Room temperature\"\n    ]\n  },\n  \"acceptance_criteria\": [\n    \"Hematite particles are ellipsoidal and 1.0 micron in size.\"\n  ],\n  \"common_failure_modes\": [\n    \"Non-uniform particle size\"\n  ],\n  \"troubleshooting\": [\n    \"Adjust reaction time or temperature if particles are not the correct size.\"\n  ],\n  \"safety_notes\": [\n    \"Handle chemicals with care and use appropriate PPE.\"\n  ],\n  \"source_reference_ids\": [\n    \"ev_9\",\n    \"ev_10\"\n  ],\n  \"editable\": true\n}",
@@ -139,6 +158,7 @@
     "reason": "this reaction is easier",
     "rating_before": 3,
     "derived_rule": "For synthesizing hematite particles in nanotechnology experiments, consider using 6M NaOH and 2M FeCl3 at 100°C for 7 days to obtain 1.2 micron hematite cubes, as this method may simplify the reaction process.",
+    "applicable_rule": "For synthesizing hematite particles in nanotechnology experiments, consider using 6M NaOH and 2M FeCl3 at 100°C for 7 days to obtain 1.2 micron hematite cubes, as this method may simplify the reaction process.",
     "tags": [
       "synthesis",
       "nanotechnology",

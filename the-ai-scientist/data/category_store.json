@@ -1,0 +1,308 @@
+{
+  "default": [
+    {
+      "id": "chemical_synthesis",
+      "name": "Chemical synthesis",
+      "description": "Reactions, purifications, and structural characterisation of small molecules.",
+      "created_at": "2026-04-26T09:56:48.558Z",
+      "builtin": true
+    },
+    {
+      "id": "colloidal_synthesis",
+      "name": "Colloidal synthesis",
+      "description": "Nanoparticle / nanocrystal synthesis, ligand exchange, and dispersion stability.",
+      "created_at": "2026-04-26T09:56:48.558Z",
+      "builtin": true
+    },
+    {
+      "id": "mechanical_setup",
+      "name": "Mechanical setup building",
+      "description": "Building or modifying experimental rigs, jigs, or instrument hardware.",
+      "created_at": "2026-04-26T09:56:48.558Z",
+      "builtin": true
+    },
+    {
+      "id": "cell_biology",
+      "name": "Cell biology / culture",
+      "description": "Cell-line work, transfection, cytotoxicity, microscopy of live or fixed cells.",
+      "created_at": "2026-04-26T09:56:48.558Z",
+      "builtin": true
+    },
+    {
+      "id": "electrochemistry",
+      "name": "Electrochemistry",
+      "description": "Cyclic voltammetry, EIS, electrolytic / fuel-cell work, bioelectrochemistry.",
+      "created_at": "2026-04-26T09:56:48.558Z",
+      "builtin": true
+    },
+    {
+      "id": "analytical",
+      "name": "Analytical / characterisation",
+      "description": "HPLC, MS, NMR, XRD, microscopy, and other characterisation workflows.",
+      "created_at": "2026-04-26T09:56:48.558Z",
+      "builtin": true
+    },
+    {
+      "id": "other",
+      "name": "Other",
+      "description": "Use this for anything that doesn't fit the above process buckets.",
+      "created_at": "2026-04-26T09:56:48.558Z",
+      "builtin": true
+    }
+  ],
+  "smoke": [
+    {
+      "id": "chemical_synthesis",
+      "name": "Chemical synthesis",
+      "description": "Reactions, purifications, and structural characterisation of small molecules.",
+      "created_at": "2026-04-26T10:00:55.003Z",
+      "builtin": true
+    },
+    {
+      "id": "colloidal_synthesis",
+      "name": "Colloidal synthesis",
+      "description": "Nanoparticle / nanocrystal synthesis, ligand exchange, and dispersion stability.",
+      "created_at": "2026-04-26T10:00:55.003Z",
+      "builtin": true
+    },
+    {
+      "id": "mechanical_setup",
+      "name": "Mechanical setup building",
+      "description": "Building or modifying experimental rigs, jigs, or instrument hardware.",
+      "created_at": "2026-04-26T10:00:55.003Z",
+      "builtin": true
+    },
+    {
+      "id": "cell_biology",
+      "name": "Cell biology / culture",
+      "description": "Cell-line work, transfection, cytotoxicity, microscopy of live or fixed cells.",
+      "created_at": "2026-04-26T10:00:55.003Z",
+      "builtin": true
+    },
+    {
+      "id": "electrochemistry",
+      "name": "Electrochemistry",
+      "description": "Cyclic voltammetry, EIS, electrolytic / fuel-cell work, bioelectrochemistry.",
+      "created_at": "2026-04-26T10:00:55.003Z",
+      "builtin": true
+    },
+    {
+      "id": "analytical",
+      "name": "Analytical / characterisation",
+      "description": "HPLC, MS, NMR, XRD, microscopy, and other characterisation workflows.",
+      "created_at": "2026-04-26T10:00:55.003Z",
+      "builtin": true
+    },
+    {
+      "id": "other",
+      "name": "Other",
+      "description": "Use this for anything that doesn't fit the above process buckets.",
+      "created_at": "2026-04-26T10:00:55.003Z",
+      "builtin": true
+    }
+  ],
+  "acme": [
+    {
+      "id": "chemical_synthesis",
+      "name": "Chemical synthesis",
+      "description": "Reactions, purifications, and structural characterisation of small molecules.",
+      "created_at": "2026-04-26T10:01:41.822Z",
+      "builtin": true
+    },
+    {
+      "id": "colloidal_synthesis",
+      "name": "Colloidal synthesis",
+      "description": "Nanoparticle / nanocrystal synthesis, ligand exchange, and dispersion stability.",
+      "created_at": "2026-04-26T10:01:41.822Z",
+      "builtin": true
+    },
+    {
+      "id": "mechanical_setup",
+      "name": "Mechanical setup building",
+      "description": "Building or modifying experimental rigs, jigs, or instrument hardware.",
+      "created_at": "2026-04-26T10:01:41.822Z",
+      "builtin": true
+    },
+    {
+      "id": "cell_biology",
+      "name": "Cell biology / culture",
+      "description": "Cell-line work, transfection, cytotoxicity, microscopy of live or fixed cells.",
+      "created_at": "2026-04-26T10:01:41.822Z",
+      "builtin": true
+    },
+    {
+      "id": "electrochemistry",
+      "name": "Electrochemistry",
+      "description": "Cyclic voltammetry, EIS, electrolytic / fuel-cell work, bioelectrochemistry.",
+      "created_at": "2026-04-26T10:01:41.822Z",
+      "builtin": true
+    },
+    {
+      "id": "analytical",
+      "name": "Analytical / characterisation",
+      "description": "HPLC, MS, NMR, XRD, microscopy, and other characterisation workflows.",
+      "created_at": "2026-04-26T10:01:41.822Z",
+      "builtin": true
+    },
+    {
+      "id": "other",
+      "name": "Other",
+      "description": "Use this for anything that doesn't fit the above process buckets.",
+      "created_at": "2026-04-26T10:01:41.822Z",
+      "builtin": true
+    }
+  ],
+  "e2e-org": [
+    {
+      "id": "chemical_synthesis",
+      "name": "Chemical synthesis",
+      "description": "Reactions, purifications, and structural characterisation of small molecules.",
+      "created_at": "2026-04-26T10:02:17.199Z",
+      "builtin": true
+    },
+    {
+      "id": "colloidal_synthesis",
+      "name": "Colloidal synthesis",
+      "description": "Nanoparticle / nanocrystal synthesis, ligand exchange, and dispersion stability.",
+      "created_at": "2026-04-26T10:02:17.199Z",
+      "builtin": true
+    },
+    {
+      "id": "mechanical_setup",
+      "name": "Mechanical setup building",
+      "description": "Building or modifying experimental rigs, jigs, or instrument hardware.",
+      "created_at": "2026-04-26T10:02:17.199Z",
+      "builtin": true
+    },
+    {
+      "id": "cell_biology",
+      "name": "Cell biology / culture",
+      "description": "Cell-line work, transfection, cytotoxicity, microscopy of live or fixed cells.",
+      "created_at": "2026-04-26T10:02:17.199Z",
+      "builtin": true
+    },
+    {
+      "id": "electrochemistry",
+      "name": "Electrochemistry",
+      "description": "Cyclic voltammetry, EIS, electrolytic / fuel-cell work, bioelectrochemistry.",
+      "created_at": "2026-04-26T10:02:17.199Z",
+      "builtin": true
+    },
+    {
+      "id": "analytical",
+      "name": "Analytical / characterisation",
+      "description": "HPLC, MS, NMR, XRD, microscopy, and other characterisation workflows.",
+      "created_at": "2026-04-26T10:02:17.199Z",
+      "builtin": true
+    },
+    {
+      "id": "other",
+      "name": "Other",
+      "description": "Use this for anything that doesn't fit the above process buckets.",
+      "created_at": "2026-04-26T10:02:17.199Z",
+      "builtin": true
+    }
+  ],
+  "doctest": [
+    {
+      "id": "chemical_synthesis",
+      "name": "Chemical synthesis",
+      "description": "Reactions, purifications, and structural characterisation of small molecules.",
+      "created_at": "2026-04-26T10:16:13.065Z",
+      "builtin": true
+    },
+    {
+      "id": "colloidal_synthesis",
+      "name": "Colloidal synthesis",
+      "description": "Nanoparticle / nanocrystal synthesis, ligand exchange, and dispersion stability.",
+      "created_at": "2026-04-26T10:16:13.065Z",
+      "builtin": true
+    },
+    {
+      "id": "mechanical_setup",
+      "name": "Mechanical setup building",
+      "description": "Building or modifying experimental rigs, jigs, or instrument hardware.",
+      "created_at": "2026-04-26T10:16:13.065Z",
+      "builtin": true
+    },
+    {
+      "id": "cell_biology",
+      "name": "Cell biology / culture",
+      "description": "Cell-line work, transfection, cytotoxicity, microscopy of live or fixed cells.",
+      "created_at": "2026-04-26T10:16:13.065Z",
+      "builtin": true
+    },
+    {
+      "id": "electrochemistry",
+      "name": "Electrochemistry",
+      "description": "Cyclic voltammetry, EIS, electrolytic / fuel-cell work, bioelectrochemistry.",
+      "created_at": "2026-04-26T10:16:13.065Z",
+      "builtin": true
+    },
+    {
+      "id": "analytical",
+      "name": "Analytical / characterisation",
+      "description": "HPLC, MS, NMR, XRD, microscopy, and other characterisation workflows.",
+      "created_at": "2026-04-26T10:16:13.065Z",
+      "builtin": true
+    },
+    {
+      "id": "other",
+      "name": "Other",
+      "description": "Use this for anything that doesn't fit the above process buckets.",
+      "created_at": "2026-04-26T10:16:13.065Z",
+      "builtin": true
+    }
+  ],
+  "emptyorg": [
+    {
+      "id": "chemical_synthesis",
+      "name": "Chemical synthesis",
+      "description": "Reactions, purifications, and structural characterisation of small molecules.",
+      "created_at": "2026-04-26T10:17:09.926Z",
+      "builtin": true
+    },
+    {
+      "id": "colloidal_synthesis",
+      "name": "Colloidal synthesis",
+      "description": "Nanoparticle / nanocrystal synthesis, ligand exchange, and dispersion stability.",
+      "created_at": "2026-04-26T10:17:09.926Z",
+      "builtin": true
+    },
+    {
+      "id": "mechanical_setup",
+      "name": "Mechanical setup building",
+      "description": "Building or modifying experimental rigs, jigs, or instrument hardware.",
+      "created_at": "2026-04-26T10:17:09.926Z",
+      "builtin": true
+    },
+    {
+      "id": "cell_biology",
+      "name": "Cell biology / culture",
+      "description": "Cell-line work, transfection, cytotoxicity, microscopy of live or fixed cells.",
+      "created_at": "2026-04-26T10:17:09.926Z",
+      "builtin": true
+    },
+    {
+      "id": "electrochemistry",
+      "name": "Electrochemistry",
+      "description": "Cyclic voltammetry, EIS, electrolytic / fuel-cell work, bioelectrochemistry.",
+      "created_at": "2026-04-26T10:17:09.926Z",
+      "builtin": true
+    },
+    {
+      "id": "analytical",
+      "name": "Analytical / characterisation",
+      "description": "HPLC, MS, NMR, XRD, microscopy, and other characterisation workflows.",
+      "created_at": "2026-04-26T10:17:09.926Z",
+      "builtin": true
+    },
+    {
+      "id": "other",
+      "name": "Other",
+      "description": "Use this for anything that doesn't fit the above process buckets.",
+      "created_at": "2026-04-26T10:17:09.926Z",
+      "builtin": true
+    }
+  ]
+}

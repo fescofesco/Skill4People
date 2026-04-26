@@ -1,5 +1,5 @@
 import { EvidenceCard, LiteratureQC, ParsedHypothesis, RetrievedFeedback } from "./schemas";
-import { summarizeFeedbackForPrompt } from "./feedback-retrieval";
+import { ActiveFeedbackContext, summarizeFeedbackForPrompt } from "./feedback-retrieval";
 import { truncate } from "./utils";
 
 export const PLAN_SYSTEM_PROMPT = `You are The AI Scientist planning engine.
@@ -26,6 +26,9 @@ export function buildPlanUserPrompt(args: {
   literatureQC: LiteratureQC;
   evidenceCards: EvidenceCard[];
   feedback: RetrievedFeedback[];
+  feedbackContext?: ActiveFeedbackContext;
+  categoryName?: string | null;
+  continueFromPlanId?: string | null;
   schemaHint: string;
   validationErrorHint?: string;
 }): string {
@@ -42,7 +45,12 @@ export function buildPlanUserPrompt(args: {
     )
     .join("\n");
 
-  const feedbackBlock = summarizeFeedbackForPrompt(args.feedback);
+  const feedbackBlock = args.feedbackContext
+    ? summarizeFeedbackForPrompt(args.feedbackContext, {
+        categoryName: args.categoryName,
+        continueFromPlanId: args.continueFromPlanId
+      })
+    : summarizeFeedbackForPrompt(args.feedback);
 
   const validationHint = args.validationErrorHint
     ? `\n\nPrevious attempt failed schema validation. Fix these issues precisely:\n${args.validationErrorHint}\n`
@@ -68,7 +76,13 @@ ${refs || "(no references retrieved)"}
 Evidence cards (use these exact evidence IDs when grounding protocol/material decisions; do NOT invent new ones):
 ${evidence || "(no evidence cards retrieved)"}
 
-Relevant prior scientist feedback (apply where appropriate; include in applied_feedback with feedback_id, derived_rule, similarity_score, reason_applied, source_item_type, severity):
+Relevant prior scientist feedback (apply where appropriate; include in applied_feedback with feedback_id, derived_rule, similarity_score, reason_applied, source_item_type, severity).
+
+The block below has THREE sections, presented in priority order:
+- ORGANIZATION POLICIES — must apply to every plan in this organisation; treat them as hard constraints unless they conflict with safety, in which case escalate.
+- CATEGORY RULES — apply whenever the plan is in the listed category. Treat as strong defaults.
+- EXPERIMENT-SPECIFIC LEARNED RULES — apply when continuing from a previously generated plan. They reflect lessons learned on that exact experiment.
+
 ${feedbackBlock}
 
 Task:

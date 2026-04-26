@@ -5,6 +5,9 @@ export function buildSeedFeedback(now = new Date().toISOString()): ScientistFeed
   const base = {
     created_at: now,
     source_plan_id: "seed",
+    organization_id: "default",
+    scope: "category" as const,
+    category_id: null,
     confidence: 0.9,
     embedding_model: undefined,
     embedding: undefined

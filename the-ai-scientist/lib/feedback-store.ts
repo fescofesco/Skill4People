@@ -1,9 +1,41 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { ScientistFeedback, ScientistFeedbackSchema } from "./schemas";
+import { DEFAULT_ORGANIZATION_ID } from "./org-constants";
 
 const STORE_DIR = path.join(process.cwd(), "data");
 const STORE_FILE = path.join(STORE_DIR, "feedback_store.json");
+
+/**
+ * Backfill the new three-bucket fields on legacy entries that were saved
+ * before the schema had `organization_id`, `scope`, `category_id`, or
+ * `applicable_rule`. The mapping uses the legacy `applicability` to pick
+ * a sane default scope, leaves `category_id` null (it will be applied at
+ * the org/experiment level until the user re-tags it), and defaults
+ * `applicable_rule` to whatever `derived_rule` already has so retrieval
+ * still works on the imperative path.
+ */
+function migrateLegacyEntry(entry: any): any {
+  if (!entry || typeof entry !== "object") return entry;
+  const next = { ...entry };
+  if (typeof next.organization_id !== "string" || next.organization_id.length === 0) {
+    next.organization_id = DEFAULT_ORGANIZATION_ID;
+  }
+  if (!next.scope) {
+    if (next.applicability === "broad_rule") next.scope = "organization";
+    else if (next.applicability === "similar_experiment_type") next.scope = "category";
+    else next.scope = "experiment";
+  }
+  if (next.category_id === undefined) {
+    next.category_id = null;
+  }
+  if (typeof next.applicable_rule !== "string" || next.applicable_rule.length === 0) {
+    if (typeof next.derived_rule === "string" && next.derived_rule.length > 0) {
+      next.applicable_rule = next.derived_rule;
+    }
+  }
+  return next;
+}
 
 async function ensureStore(): Promise<void> {
   try {
@@ -32,6 +64,8 @@ export async function feedbackStoreStatus(): Promise<{
   }
 }
 
+let migrationDone = false;
+
 export async function readAllFeedback(): Promise<ScientistFeedback[]> {
   await ensureStore();
   const raw = await fs.readFile(STORE_FILE, "utf8");
@@ -47,11 +81,37 @@ export async function readAllFeedback(): Promise<ScientistFeedback[]> {
     return [];
   }
   const valid: ScientistFeedback[] = [];
+  let needsMigration = false;
   for (const entry of parsed) {
-    const result = ScientistFeedbackSchema.safeParse(entry);
+    const original = entry && typeof entry === "object" ? entry : null;
+    const beforeMissing =
+      !original ||
+      typeof original.organization_id !== "string" ||
+      !original.scope ||
+      original.category_id === undefined ||
+      typeof original.applicable_rule !== "string";
+    const migrated = migrateLegacyEntry(entry);
+    if (beforeMissing) needsMigration = true;
+    const result = ScientistFeedbackSchema.safeParse(migrated);
     if (result.success) valid.push(result.data);
   }
+  if (needsMigration && !migrationDone) {
+    migrationDone = true;
+    void persistMigratedEntries(valid).catch(() => {
+      migrationDone = false;
+    });
+  }
   return valid;
+}
+
+async function persistMigratedEntries(items: ScientistFeedback[]): Promise<void> {
+  const next = writeLock.then(async () => {
+    const tmp = STORE_FILE + ".tmp";
+    await fs.writeFile(tmp, JSON.stringify(items, null, 2) + "\n", "utf8");
+    await fs.rename(tmp, STORE_FILE);
+  });
+  writeLock = next.catch(() => undefined);
+  await next;
 }
 
 async function quarantineCorrupt(raw: string): Promise<void> {

@@ -1,6 +1,7 @@
 import { recomputeBudget } from "./budget";
 import { detectDemoTopic, demoEvidenceCards } from "./demo-fallbacks";
 import { getEnv } from "./env";
+import { ActiveFeedbackContext, flattenActiveContext } from "./feedback-retrieval";
 import {
   newAssumptionId,
   newControlId,
@@ -43,6 +44,10 @@ export type GeneratePlanArgs = {
   literatureQC: LiteratureQC;
   evidenceCards: EvidenceCard[];
   feedback: RetrievedFeedback[];
+  feedbackContext?: ActiveFeedbackContext;
+  categoryId?: string;
+  categoryName?: string | null;
+  continueFromPlanId?: string | null;
 };
 
 export type PlanGenerationSource =
@@ -55,6 +60,12 @@ export type PlanGenerationMeta = {
   model: string | null;
   attempts: number;
   errors: string[];
+  feedback_used: string[];
+  feedback_buckets: {
+    organization_count: number;
+    category_count: number;
+    experiment_count: number;
+  };
 };
 
 export type GeneratePlanResult = {
@@ -99,6 +110,8 @@ type PlanContent = {
 };
 
 export async function generateExperimentPlan(args: GeneratePlanArgs): Promise<GeneratePlanResult> {
+  const buckets = bucketCounts(args);
+  const feedbackUsed = collectFeedbackUsedIds(args);
   const safety = assessSafety(args.hypothesis, args.parsed);
   if (safety.unsafe) {
     return {
@@ -107,7 +120,9 @@ export async function generateExperimentPlan(args: GeneratePlanArgs): Promise<Ge
         source: "safety_restricted",
         model: null,
         attempts: 0,
-        errors: [safety.reason || "Request is outside safe scope."]
+        errors: [safety.reason || "Request is outside safe scope."],
+        feedback_used: [],
+        feedback_buckets: buckets
       }
     };
   }
@@ -121,7 +136,9 @@ export async function generateExperimentPlan(args: GeneratePlanArgs): Promise<Ge
         source: "openai",
         model: getOpenAIModel(),
         attempts: ai.attempts,
-        errors: [...ai.errors, ...enriched.errors]
+        errors: [...ai.errors, ...enriched.errors],
+        feedback_used: feedbackUsed,
+        feedback_buckets: buckets
       }
     };
   }
@@ -134,9 +151,47 @@ export async function generateExperimentPlan(args: GeneratePlanArgs): Promise<Ge
       source: "deterministic_fallback",
       model: null,
       attempts: ai.attempts,
-      errors: [...ai.errors, ...enriched.errors]
+      errors: [...ai.errors, ...enriched.errors],
+      feedback_used: feedbackUsed,
+      feedback_buckets: buckets
     }
   };
+}
+
+function bucketCounts(args: GeneratePlanArgs): PlanGenerationMeta["feedback_buckets"] {
+  if (args.feedbackContext) {
+    return {
+      organization_count: args.feedbackContext.organization_rules.length,
+      category_count: args.feedbackContext.category_rules.length,
+      experiment_count: args.feedbackContext.experiment_rules.length
+    };
+  }
+  return { organization_count: 0, category_count: 0, experiment_count: args.feedback.length };
+}
+
+function collectFeedbackUsedIds(args: GeneratePlanArgs): string[] {
+  const ids: string[] = [];
+  if (args.feedbackContext) {
+    for (const rule of args.feedbackContext.organization_rules) ids.push(rule.id);
+    for (const rule of args.feedbackContext.category_rules) ids.push(rule.id);
+    for (const rule of args.feedbackContext.experiment_rules) ids.push(rule.feedback.id);
+  } else {
+    for (const f of args.feedback) ids.push(f.feedback.id);
+  }
+  return Array.from(new Set(ids));
+}
+
+/**
+ * The deterministic fallback and AI normaliser still want a single
+ * `RetrievedFeedback[]` because that's how `applied_feedback` is built.
+ * If a three-bucket context is provided, flatten it for those code paths
+ * but keep the explicit bucket counts for telemetry/UI.
+ */
+function effectiveFeedback(args: GeneratePlanArgs): RetrievedFeedback[] {
+  if (args.feedbackContext) {
+    return flattenActiveContext(args.feedbackContext);
+  }
+  return args.feedback;
 }
 
 /**
@@ -277,7 +332,10 @@ async function aiGeneratePlan(args: GeneratePlanArgs): Promise<{
         parsed: args.parsed,
         literatureQC: args.literatureQC,
         evidenceCards: args.evidenceCards,
-        feedback: args.feedback,
+        feedback: effectiveFeedback(args),
+        feedbackContext: args.feedbackContext,
+        categoryName: args.categoryName,
+        continueFromPlanId: args.continueFromPlanId,
         schemaHint: SCHEMA_HINT,
         validationErrorHint
       });
@@ -333,9 +391,9 @@ function normalizeAiPlan(raw: unknown, args: GeneratePlanArgs): unknown {
     references: args.literatureQC.novelty.references
   };
 
-  plan.applied_feedback = args.feedback.map((item) => ({
+  plan.applied_feedback = effectiveFeedback(args).map((item) => ({
     feedback_id: item.feedback.id,
-    derived_rule: item.feedback.derived_rule,
+    derived_rule: item.feedback.applicable_rule || item.feedback.derived_rule,
     similarity_score: item.similarity_score,
     reason_applied:
       item.reason || "Matched by domain, experiment type, tags, or keyword overlap.",
@@ -438,7 +496,10 @@ function deterministicReviewPlan(args: GeneratePlanArgs): ExperimentPlan {
   const safety = assessSafety(args.hypothesis, args.parsed);
   const content = buildUniversalContent(args, safety);
 
-  const feedbackRules = args.feedback.map((item) => item.feedback.derived_rule);
+  const flatFeedback = effectiveFeedback(args);
+  const feedbackRules = flatFeedback.map(
+    (item) => item.feedback.applicable_rule || item.feedback.derived_rule
+  );
   const feedbackNote = feedbackRules.length
     ? ` Prior scientist feedback to apply: ${feedbackRules.join(" ")}`
     : "";
@@ -474,9 +535,9 @@ function deterministicReviewPlan(args: GeneratePlanArgs): ExperimentPlan {
       rationale: args.literatureQC.novelty.rationale,
       references: args.literatureQC.novelty.references
     },
-    applied_feedback: args.feedback.map((item) => ({
+    applied_feedback: flatFeedback.map((item) => ({
       feedback_id: item.feedback.id,
-      derived_rule: item.feedback.derived_rule,
+      derived_rule: item.feedback.applicable_rule || item.feedback.derived_rule,
       similarity_score: item.similarity_score,
       reason_applied: item.reason || "Matched by domain, experiment type, tags, or keyword overlap.",
       source_item_type: item.feedback.item_type,
