@@ -16,9 +16,18 @@ export type TavilySearchResponse = {
 
 const ENDPOINT = "https://api.tavily.com/search";
 
+export type TavilySearchOptions = {
+  maxResults?: number;
+  includeDomains?: string[];
+  searchDepth?: "basic" | "advanced";
+  /** Include the full raw page content per result. Costs more credits but
+   *  unlocks price/catalog extraction from product pages. */
+  includeRawContent?: boolean;
+};
+
 export async function tavilySearch(
   query: string,
-  opts: { maxResults?: number; includeDomains?: string[]; searchDepth?: "basic" | "advanced" } = {}
+  opts: TavilySearchOptions = {}
 ): Promise<TavilySearchResponse | null> {
   const env = getEnv();
   if (!env.tavilyApiKey) return null;
@@ -28,7 +37,7 @@ export async function tavilySearch(
     search_depth: opts.searchDepth || "basic",
     max_results: opts.maxResults ?? 5,
     include_answer: false,
-    include_raw_content: false,
+    include_raw_content: opts.includeRawContent ?? false,
     include_domains: opts.includeDomains
   };
   try {
@@ -53,7 +62,7 @@ export async function tavilySearch(
 
 export async function tavilyMultiSearch(
   queries: string[],
-  opts: { maxResults?: number; includeDomains?: string[]; searchDepth?: "basic" | "advanced" } = {}
+  opts: TavilySearchOptions = {}
 ): Promise<TavilySearchResult[]> {
   const out: TavilySearchResult[] = [];
   for (const q of queries) {

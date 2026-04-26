@@ -1,9 +1,13 @@
-import { detectDemoTopic } from "./demo-fallbacks";
 import { getEnv } from "./env";
 import { EvidenceCard, ParsedHypothesis } from "./schemas";
 import { tavilyMultiSearch } from "./tavily";
 import { tavilyToEvidenceCard } from "./evidence";
 
+/**
+ * Vendors, repositories, and biospecimen registries we want Tavily to prefer
+ * when searching for materials/reagents/equipment. These are passed as
+ * include_domains so Tavily limits results to product/catalog pages.
+ */
 const SUPPLIER_DOMAINS = [
   "thermofisher.com",
   "sigmaaldrich.com",
@@ -19,48 +23,91 @@ const SUPPLIER_DOMAINS = [
   "neb.com",
   "rndsystems.com",
   "dsmz.de",
-  "lonza.com"
+  "lonza.com",
+  "fishersci.com",
+  "vwr.com",
+  "vlab.io",
+  "biotechrabbit.com",
+  "biorad.com",
+  "biocompare.com",
+  "labx.com",
+  "newark.com",
+  "mouser.com",
+  "digikey.com",
+  "thorlabs.com",
+  "edmundoptics.com",
+  "ossila.com"
 ];
 
-export function buildSupplierQueries(parsed: ParsedHypothesis, hypothesis: string): string[] {
-  const topic = detectDemoTopic(hypothesis);
-  const queries: string[] = [];
-  switch (topic) {
-    case "diagnostics":
-      queries.push(
-        "Sigma anti-CRP antibody catalog number",
-        "Thermo Fisher CRP ELISA kit catalog",
-        "screen-printed carbon electrode catalog"
-      );
-      break;
-    case "gut_health":
-      queries.push(
-        "Sigma FITC-dextran 4 kDa catalog number",
-        "ATCC Lactobacillus rhamnosus GG catalog",
-        "Abcam claudin-1 occludin antibody catalog"
-      );
-      break;
-    case "cell_biology":
-      queries.push(
-        "ATCC HeLa cells handling cryopreservation",
-        "Sigma trehalose dihydrate molecular biology grade catalog",
-        "Sigma DMSO Hybri-Max cryoprotectant catalog"
-      );
-      break;
-    case "climate":
-      queries.push(
-        "DSMZ Sporomusa ovata strain catalog",
-        "Sigma sodium bicarbonate anaerobic culture catalog",
-        "graphite felt electrode bioelectrochemical reactor catalog"
-      );
-      break;
-    default: {
-      const baseTerms = [parsed.intervention, parsed.organism_or_system].filter(Boolean).join(" ");
-      if (baseTerms) queries.push(`${baseTerms} catalog supplier`);
-      break;
-    }
+/** Lightweight stop-words list used to extract "salient terms" from parsed fields. */
+const STOP = new Set([
+  "the","a","an","and","or","of","in","on","for","to","with","by","into","from","over",
+  "is","are","was","were","be","being","been","this","that","these","those","than","then",
+  "as","at","its","it","we","our","their","such","using","based","at","via","per","across",
+  "study","experiment","analysis","approach","method","detect","detection","measure",
+  "compared","comparison","control","controls","without","appropriate","baseline","reference"
+]);
+
+/** Pull 1-3 word salient phrases from a parsed-hypothesis field. */
+function salientTerms(text: string | undefined | null, limit = 4): string[] {
+  if (!text) return [];
+  const cleaned = text
+    .toLowerCase()
+    .replace(/[\(\)\[\]\{\}":;,\.!?]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!cleaned) return [];
+  const tokens = cleaned.split(" ").filter((w) => w.length > 2 && !STOP.has(w));
+  // bigrams that look like compound nouns (rough heuristic): consecutive non-stop tokens
+  const bigrams: string[] = [];
+  for (let i = 0; i < tokens.length - 1; i++) {
+    bigrams.push(`${tokens[i]} ${tokens[i + 1]}`);
   }
-  return queries.slice(0, 4);
+  // unigrams as fallback
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const phrase of [...bigrams, ...tokens]) {
+    if (seen.has(phrase)) continue;
+    seen.add(phrase);
+    out.push(phrase);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+/**
+ * Build supplier queries for ANY hypothesis by composing salient terms from
+ * intervention / organism_or_system / key_variables with catalog vocabulary.
+ * No topic switch, no hard-coded products — purely derived from parsed fields.
+ */
+export function buildSupplierQueries(parsed: ParsedHypothesis, _hypothesis: string): string[] {
+  const interventionTerms = salientTerms(parsed.intervention, 3);
+  const systemTerms = salientTerms(parsed.organism_or_system, 2);
+  const variableTerms = (parsed.key_variables || [])
+    .flatMap((v) => salientTerms(v, 1))
+    .slice(0, 4);
+
+  const seen = new Set<string>();
+  const queries: string[] = [];
+  const push = (q: string) => {
+    const k = q.toLowerCase().trim();
+    if (!k || seen.has(k)) return;
+    seen.add(k);
+    queries.push(q);
+  };
+
+  // Catalog/price-oriented queries on the most specific terms
+  for (const term of interventionTerms) push(`${term} catalog number price supplier`);
+  for (const term of systemTerms) push(`${term} reagent catalog`);
+  for (const term of variableTerms.slice(0, 3)) push(`${term} catalog antibody reagent`);
+
+  // Brand-anchored fallbacks so Tavily's supplier-domain filter actually returns hits.
+  if (interventionTerms[0]) {
+    push(`Sigma Aldrich ${interventionTerms[0]} catalog`);
+    push(`Thermo Fisher ${interventionTerms[0]} catalog`);
+  }
+
+  return queries.slice(0, 5);
 }
 
 export async function searchSuppliers(
@@ -70,9 +117,14 @@ export async function searchSuppliers(
   const env = getEnv();
   if (!env.tavilyApiKey) return [];
   const queries = buildSupplierQueries(parsed, hypothesis);
+  if (queries.length === 0) return [];
   const results = await tavilyMultiSearch(queries, {
     maxResults: 4,
-    includeDomains: SUPPLIER_DOMAINS
+    includeDomains: SUPPLIER_DOMAINS,
+    // Advanced + raw content lets us extract real catalog numbers and prices
+    // from product pages (worth the extra Tavily credits for the budget step).
+    searchDepth: "advanced",
+    includeRawContent: true
   });
   return results.map((r) => tavilyToEvidenceCard(r, "supplier_page")).slice(0, 8);
 }

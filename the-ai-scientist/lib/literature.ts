@@ -347,9 +347,9 @@ export async function searchProtocolRepositories(queries: string[]): Promise<Ref
     "openwetware.org",
     "nature.com"
   ];
-  const builtQueries = queries
-    .slice(0, 3)
-    .map((q) => `${q} site:${sites.join(" OR site:")}`);
+  // include_domains already restricts results to these sites, so do not add
+  // duplicate `site:` operators which can confuse Tavily's relevance ranking.
+  const builtQueries = queries.slice(0, 3);
   const results = await tavilyMultiSearch(builtQueries, {
     maxResults: 4,
     includeDomains: sites

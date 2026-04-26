@@ -10,6 +10,7 @@ import {
   newRiskId,
   newTimelineId
 } from "./ids";
+import { enrichMaterialsFromEvidence } from "./material-enrichment";
 import { chatCompletionsJson, getOpenAIClient, getOpenAIModel } from "./openai";
 import { PLAN_SYSTEM_PROMPT, SCHEMA_HINT, buildPlanUserPrompt } from "./plan-prompts";
 import {
@@ -276,6 +277,15 @@ function normalizeAiPlan(raw: unknown, args: GeneratePlanArgs): unknown {
   // Recompute budget to keep totals consistent with the materials/equipment emitted.
   if (Array.isArray(plan.materials) && Array.isArray(plan.equipment)) {
     try {
+      const enrichment = enrichMaterialsFromEvidence(
+        plan.materials as Material[],
+        args.evidenceCards
+      );
+      plan.materials = enrichment.materials;
+      const enrichmentNote =
+        enrichment.matched > 0
+          ? `Live Tavily supplier evidence matched ${enrichment.matched}/${plan.materials.length} materials (${enrichment.withPrice} with parsed prices). `
+          : "";
       plan.budget = recomputeBudget({
         materials: plan.materials as Material[],
         equipment: plan.equipment as Equipment[],
@@ -286,6 +296,7 @@ function normalizeAiPlan(raw: unknown, args: GeneratePlanArgs): unknown {
             ? plan.budget.labor_or_service_estimate
             : null,
         notesPrefix:
+          enrichmentNote +
           "AI-generated materials. Catalog numbers and prices recomputed; verify with live supplier evidence before ordering."
       });
     } catch {
@@ -308,14 +319,21 @@ function deterministicReviewPlan(args: GeneratePlanArgs): ExperimentPlan {
     ? ` Prior scientist feedback to apply: ${feedbackRules.join(" ")}`
     : "";
 
-  const materials = makeMaterials(content.materials);
+  const baseMaterials = makeMaterials(content.materials);
   const equipment = makeEquipment(content.equipment);
+  const enrichment = enrichMaterialsFromEvidence(baseMaterials, args.evidenceCards);
+  const materials = enrichment.materials;
+  const enrichmentNote =
+    enrichment.matched > 0
+      ? `Live Tavily supplier evidence matched ${enrichment.matched}/${materials.length} materials (${enrichment.withPrice} with parsed prices). `
+      : "";
   const budget = recomputeBudget({
     materials,
     equipment,
     currency: "USD",
     contingencyPercent: 15,
     notesPrefix:
+      enrichmentNote +
       "Catalog numbers and prices are only included when verified by live supplier evidence; otherwise they remain not_found/null."
   });
 

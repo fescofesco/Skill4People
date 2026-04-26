@@ -80,8 +80,26 @@ type PlanGenerationMeta = {
   errors: string[];
 };
 
+type EvidenceSourceStat = {
+  name: string;
+  status: "ok" | "empty" | "error" | "skipped";
+  count: number;
+  durationMs: number;
+  error: string | null;
+};
+
+type EvidenceMeta = {
+  tavilyConfigured: boolean;
+  sourceStats: EvidenceSourceStat[];
+  regulatoryReasons: string[];
+  cardCount: number;
+};
+
 type LiteratureQCWithMeta = LiteratureQC & { _diagnostics?: LiteratureDiagnostics };
-type ExperimentPlanWithMeta = ExperimentPlan & { _generation?: PlanGenerationMeta };
+type ExperimentPlanWithMeta = ExperimentPlan & {
+  _generation?: PlanGenerationMeta;
+  _evidence?: EvidenceMeta;
+};
 
 export default function Home() {
   const [hypothesis, setHypothesis] = useState(samples[0].text);
@@ -91,6 +109,7 @@ export default function Home() {
   const [litDiag, setLitDiag] = useState<LiteratureDiagnostics | null>(null);
   const [plan, setPlan] = useState<ExperimentPlan | null>(null);
   const [genMeta, setGenMeta] = useState<PlanGenerationMeta | null>(null);
+  const [evidenceMeta, setEvidenceMeta] = useState<EvidenceMeta | null>(null);
   const [feedbackCount, setFeedbackCount] = useState(0);
   const [recentFeedback, setRecentFeedback] = useState<ScientistFeedback[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -125,6 +144,7 @@ export default function Home() {
     setStage("literature_loading");
     setPlan(null);
     setGenMeta(null);
+    setEvidenceMeta(null);
     setLitDiag(null);
     setSavedSincePlan(false);
     try {
@@ -161,9 +181,10 @@ export default function Home() {
         error?: { message?: string };
       };
       if (!res.ok) throw new Error(json?.error?.message || "Plan generation failed");
-      const { _generation, ...planOnly } = json;
+      const { _generation, _evidence, ...planOnly } = json;
       setPlan(planOnly as ExperimentPlan);
       setGenMeta(_generation ?? null);
+      setEvidenceMeta(_evidence ?? null);
       setStage("plan_ready");
       setSavedSincePlan(false);
       void refreshHealthAndFeedback();
@@ -373,6 +394,7 @@ export default function Home() {
               <PlanDashboard
                 plan={plan}
                 generation={genMeta}
+                evidence={evidenceMeta}
                 savedSincePlan={savedSincePlan}
                 onRegenerate={generatePlan}
                 onEdit={setTarget}
@@ -583,12 +605,14 @@ function LiteratureCard({
 function PlanDashboard({
   plan,
   generation,
+  evidence,
   savedSincePlan,
   onRegenerate,
   onEdit
 }: {
   plan: ExperimentPlan;
   generation: PlanGenerationMeta | null;
+  evidence: EvidenceMeta | null;
   savedSincePlan: boolean;
   onRegenerate: () => void;
   onEdit: (target: FeedbackTarget) => void;
@@ -635,6 +659,7 @@ function PlanDashboard({
                 )}
               </div>
             )}
+            {evidence && <EvidenceDiagnosticsPanel evidence={evidence} />}
           </div>
           <div className="flex flex-wrap gap-2">
             <button
@@ -1026,6 +1051,73 @@ function MiniField({ label, value }: { label: string; value: string }) {
     <div className="rounded-xl bg-slate-50 p-3">
       <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</div>
       <div className="mt-1 text-sm leading-5 text-slate-800">{value}</div>
+    </div>
+  );
+}
+
+function EvidenceDiagnosticsPanel({ evidence }: { evidence: EvidenceMeta }) {
+  const labelMap: Record<string, string> = {
+    tavily_protocols: "Protocols (protocols.io / JoVE / etc.)",
+    tavily_suppliers: "Suppliers (Sigma / Thermo / Abcam / etc.)",
+    tavily_regulatory: "Regulatory (IRB / IACUC / IBC)"
+  };
+  const toneFor = (s: EvidenceSourceStat["status"]): "emerald" | "slate" | "red" | "amber" => {
+    switch (s) {
+      case "ok":
+        return "emerald";
+      case "empty":
+        return "slate";
+      case "error":
+        return "red";
+      case "skipped":
+      default:
+        return "amber";
+    }
+  };
+  return (
+    <div className="mt-3 space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge tone={evidence.tavilyConfigured ? "emerald" : "amber"}>
+          Tavily {evidence.tavilyConfigured ? "configured" : "not configured"}
+        </Badge>
+        <Badge tone="slate">{evidence.cardCount} evidence card{evidence.cardCount === 1 ? "" : "s"}</Badge>
+        {evidence.regulatoryReasons.length > 0 && (
+          <Badge tone="amber">
+            Oversight: {evidence.regulatoryReasons.length} flag
+            {evidence.regulatoryReasons.length === 1 ? "" : "s"}
+          </Badge>
+        )}
+      </div>
+      <div className="grid gap-2 sm:grid-cols-3">
+        {evidence.sourceStats.map((s) => (
+          <div key={s.name} className="rounded-lg border border-slate-200 bg-white p-2 text-xs">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-semibold text-slate-700">{labelMap[s.name] ?? s.name}</span>
+              <Badge tone={toneFor(s.status)}>{s.status}</Badge>
+            </div>
+            <div className="mt-1 text-slate-500">
+              {s.count} hit{s.count === 1 ? "" : "s"} · {s.durationMs} ms
+            </div>
+            {s.error && (
+              <div className="mt-1 line-clamp-2 text-rose-600" title={s.error}>
+                {s.error}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      {evidence.regulatoryReasons.length > 0 && (
+        <details className="text-xs text-amber-800">
+          <summary className="cursor-pointer underline">
+            Why oversight evidence was searched
+          </summary>
+          <ul className="mt-1 list-disc pl-5">
+            {evidence.regulatoryReasons.map((r) => (
+              <li key={r}>{r}</li>
+            ))}
+          </ul>
+        </details>
+      )}
     </div>
   );
 }

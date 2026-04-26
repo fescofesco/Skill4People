@@ -9,6 +9,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "smoke": "tsx scripts/smoke-test.ts",
+    "smoke:tavily": "tsx scripts/smoke-tavily.ts",
     "feedback:reset": "tsx scripts/reset-feedback.ts",
     "feedback:seed": "tsx scripts/seed-feedback.ts"
   },
