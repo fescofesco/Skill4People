@@ -37,7 +37,11 @@ export type VercelRuntimeInfo = {
 };
 
 export function getVercelInfo(): VercelRuntimeInfo {
-  const sha = process.env.VERCEL_GIT_COMMIT_SHA || null;
+  // Prefer Vercel's auto-injected SHA (GitHub integration). Fall back to a
+  // build-time SHA captured by next.config.mjs so CLI deploys also display
+  // the right commit. Local dev shows the local git HEAD via the same path.
+  const sha = process.env.VERCEL_GIT_COMMIT_SHA || process.env.BUILD_SHA || null;
+  const ref = process.env.VERCEL_GIT_COMMIT_REF || process.env.BUILD_REF || null;
   const envName = (process.env.VERCEL_ENV as VercelRuntimeInfo["env"]) || null;
   return {
     onVercel: Boolean(process.env.VERCEL || process.env.VERCEL_URL),
@@ -46,7 +50,7 @@ export function getVercelInfo(): VercelRuntimeInfo {
     region: process.env.VERCEL_REGION || null,
     gitCommitSha: sha,
     gitCommitShortSha: sha ? sha.slice(0, 7) : null,
-    gitCommitRef: process.env.VERCEL_GIT_COMMIT_REF || null,
+    gitCommitRef: ref,
     gitProvider: process.env.VERCEL_GIT_PROVIDER || null,
     gitRepoOwner: process.env.VERCEL_GIT_REPO_OWNER || null,
     gitRepoSlug: process.env.VERCEL_GIT_REPO_SLUG || null
