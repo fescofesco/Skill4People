@@ -338,6 +338,31 @@ export function dedupeReferences(refs: Reference[]): Reference[] {
   return out;
 }
 
+/**
+ * Round-robin merge across source-grouped reference lists, with each list
+ * pre-sorted by relevance_score desc. Produces a final ordering that always
+ * preserves diversity even when one source returns many more hits than the
+ * others (e.g. arXiv flooding when Semantic Scholar 429s).
+ *
+ * Within each round we walk the sources in their declared priority order.
+ * Empty lists are skipped silently; iteration stops when every list is
+ * exhausted.
+ */
+export function interleaveReferences(...lists: Reference[][]): Reference[] {
+  const sorted = lists.map((list) =>
+    [...list].sort((a, b) => (b.relevance_score ?? 0) - (a.relevance_score ?? 0))
+  );
+  const out: Reference[] = [];
+  let idx = 0;
+  while (sorted.some((l) => idx < l.length)) {
+    for (const l of sorted) {
+      if (idx < l.length) out.push(l[idx]);
+    }
+    idx += 1;
+  }
+  return out;
+}
+
 export async function searchProtocolRepositories(queries: string[]): Promise<Reference[]> {
   const env = getEnv();
   if (!env.tavilyApiKey) return [];
@@ -579,7 +604,12 @@ export async function runLiteratureQC(hypothesis: string): Promise<{
       : skipped("tavily_news", "skipped: TAVILY_API_KEY missing", sourceStats)
   ]);
 
-  const refs = dedupeReferences([...ssRefs, ...axRefs, ...pmRefs, ...prRefs, ...oaRefs, ...nwRefs]).slice(0, 12);
+  // Interleave by source so the top-5 (and top-12) always shows diversity
+  // even when Semantic Scholar 429s or PubMed comes back empty. Order
+  // expresses priority: peer-reviewed first (SS, OpenAlex, PubMed), then
+  // preprints (arXiv), then protocols, then recent news/preprint coverage.
+  const merged = interleaveReferences(ssRefs, oaRefs, pmRefs, axRefs, prRefs, nwRefs);
+  const refs = dedupeReferences(merged).slice(0, 12);
   const sourcesUsed = sourceStats.filter((s) => s.status === "ok").map((s) => s.name);
 
   // Demo fallback only fires when OpenAI is not configured AND demo is explicitly enabled.

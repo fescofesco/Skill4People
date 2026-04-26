@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
   Beaker,
@@ -8,7 +8,9 @@ import {
   BrainCircuit,
   CheckCircle2,
   ClipboardCheck,
+  ExternalLink,
   FlaskConical,
+  Newspaper,
   RefreshCw,
   Save,
   Search,
@@ -20,6 +22,7 @@ import type {
   ExperimentPlan,
   HealthResponse,
   LiteratureQC,
+  Reference,
   ScientistFeedback
 } from "@/lib/schemas";
 
@@ -146,7 +149,24 @@ export default function Home() {
     void refreshHealthAndFeedback();
   }, []);
 
+  // Auto-dismiss toasts after 5s so the success/info banner doesn't linger.
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 5000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
   const validation = useMemo(() => validateHypothesis(hypothesis), [hypothesis]);
+
+  function resetDownstream() {
+    setLiteratureQC(null);
+    setLitDiag(null);
+    setPlan(null);
+    setGenMeta(null);
+    setEvidenceMeta(null);
+    setCritique(null);
+    setSavedSincePlan(false);
+  }
 
   async function refreshHealthAndFeedback() {
     const [healthRes, fbRes] = await Promise.allSettled([
@@ -167,12 +187,7 @@ export default function Home() {
     }
     setError(null);
     setStage("literature_loading");
-    setPlan(null);
-    setGenMeta(null);
-    setEvidenceMeta(null);
-    setCritique(null);
-    setLitDiag(null);
-    setSavedSincePlan(false);
+    resetDownstream();
     try {
       const res = await fetch("/api/literature", {
         method: "POST",
@@ -271,7 +286,7 @@ export default function Home() {
   return (
     <main className="min-h-screen px-4 py-8 md:px-8">
       <div className="mx-auto max-w-7xl">
-        <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <header className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border bg-white px-3 py-1 text-sm text-slate-600 shadow-sm">
               <Sparkles className="h-4 w-4 text-blue-600" /> Hackathon prototype
@@ -279,12 +294,14 @@ export default function Home() {
             <h1 className="mt-4 text-4xl font-bold tracking-tight text-slate-950 md:text-5xl">
               The AI Scientist
             </h1>
-            <p className="mt-2 text-lg text-slate-600">
+            <p className="mt-2 text-base text-slate-600 md:text-lg">
               From scientific hypothesis to operational experiment plan
             </p>
           </div>
           <StatusBadges health={health} feedbackCount={feedbackCount} />
         </header>
+        <StageProgress stage={stage} />
+
 
         {toast && (
           <div className="mb-4 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
@@ -372,11 +389,11 @@ export default function Home() {
                 {samples.map((sample) => (
                   <button
                     key={sample.label}
-                    className="rounded-full border bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:bg-blue-50"
+                    className="rounded-full border bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-blue-300 hover:bg-blue-50"
                     onClick={() => {
                       setHypothesis(sample.text);
-                      setLiteratureQC(null);
-                      setPlan(null);
+                      resetDownstream();
+                      setError(null);
                       setStage("input");
                     }}
                   >
@@ -406,7 +423,18 @@ export default function Home() {
               </button>
             </Card>
 
-            {stage === "literature_loading" && <LoadingCard label="Searching literature and parsing hypothesis..." />}
+            {stage === "literature_loading" && (
+              <LoadingCard
+                label="Searching literature and parsing hypothesis..."
+                steps={[
+                  "Parsing intervention, system, and outcome with the AI parser",
+                  "Querying Semantic Scholar, OpenAlex, PubMed, arXiv in parallel",
+                  "Pulling recent preprints and breakthrough coverage via Tavily news",
+                  "Surfacing protocol references from protocols.io and JoVE",
+                  "Classifying novelty signal and de-duplicating references"
+                ]}
+              />
+            )}
             {literatureQC && (
               <LiteratureCard
                 qc={literatureQC}
@@ -415,7 +443,20 @@ export default function Home() {
                 loading={stage === "plan_loading"}
               />
             )}
-            {stage === "plan_loading" && <LoadingCard label="Retrieving feedback and generating plan..." />}
+            {stage === "plan_loading" && (
+              <LoadingCard
+                label="Retrieving feedback and generating plan..."
+                steps={[
+                  "Refining supplier queries with the AI agent",
+                  "Pulling Sigma / Thermo / Abcam catalog pages via Tavily",
+                  "Pulling protocols and regulatory guidance",
+                  "Extracting catalog numbers, prices, and concentrations",
+                  "Retrieving relevant scientist feedback from past plans",
+                  "Generating the executive summary, protocol, and budget",
+                  "Running the AI plan critic for methodological gaps"
+                ]}
+              />
+            )}
             {error && <ErrorBox message={error} />}
             {plan && (
               <PlanDashboard
@@ -545,11 +586,138 @@ function StatusBadges({ health, feedbackCount }: { health: HealthResponse | null
   const env = health?.env;
   return (
     <div className="flex flex-wrap gap-2">
-      <Badge tone={env?.openaiConfigured ? "emerald" : "amber"}>OpenAI {env?.openaiConfigured ? "on" : "fallback"}</Badge>
-      <Badge tone={env?.tavilyConfigured ? "emerald" : "amber"}>Tavily {env?.tavilyConfigured ? "on" : "fallback"}</Badge>
-      <Badge tone={env?.semanticScholarConfigured ? "emerald" : "amber"}>Semantic Scholar {env?.semanticScholarConfigured ? "keyed" : "public/fallback"}</Badge>
-      <Badge tone={health?.feedbackStore.readable ? "emerald" : "red"}>Feedback {feedbackCount}</Badge>
-      <Badge tone={env?.demoFallbackEnabled ? "blue" : "slate"}>Demo fallback {env?.demoFallbackEnabled ? "on" : "off"}</Badge>
+      <Badge tone={env?.openaiConfigured ? "emerald" : "amber"}>
+        OpenAI {env?.openaiConfigured ? "on" : "fallback"}
+      </Badge>
+      <Badge tone={env?.tavilyConfigured ? "emerald" : "amber"}>
+        Tavily {env?.tavilyConfigured ? "on" : "fallback"}
+      </Badge>
+      <Badge tone={env?.semanticScholarConfigured ? "emerald" : "slate"}>
+        Semantic Scholar {env?.semanticScholarConfigured ? "keyed" : "public"}
+      </Badge>
+      <Badge tone={health?.feedbackStore.readable ? "emerald" : "red"}>
+        Feedback {feedbackCount}
+      </Badge>
+      {env?.demoFallbackEnabled && <Badge tone="blue">Demo fallback on</Badge>}
+    </div>
+  );
+}
+
+type ReferenceGroupKey = "peer_reviewed" | "preprint" | "protocol" | "news_blog";
+
+const REFERENCE_GROUP_META: Record<
+  ReferenceGroupKey,
+  { label: string; tone: "blue" | "amber" | "emerald" | "slate"; icon: React.ComponentType<{ className?: string }> }
+> = {
+  peer_reviewed: { label: "Peer-reviewed", tone: "blue", icon: BookOpen },
+  preprint: { label: "Preprint", tone: "amber", icon: FlaskConical },
+  protocol: { label: "Protocol / repository", tone: "emerald", icon: ClipboardCheck },
+  news_blog: { label: "News & coverage", tone: "slate", icon: Newspaper }
+};
+
+function classifyReference(ref: Reference): ReferenceGroupKey {
+  if (ref.source === "arxiv") return "preprint";
+  if (ref.source === "protocol_repository") return "protocol";
+  if (ref.source === "tavily") {
+    if (ref.evidence_type === "protocol") return "protocol";
+    return "news_blog";
+  }
+  return "peer_reviewed";
+}
+
+function sourceLabel(ref: Reference): string {
+  const map: Record<string, string> = {
+    semantic_scholar: "Semantic Scholar",
+    arxiv: "arXiv",
+    pubmed: "PubMed",
+    openalex: "OpenAlex",
+    crossref: "Crossref",
+    tavily: "Tavily web",
+    protocol_repository: "Protocol repo",
+    supplier: "Supplier",
+    manual: "Manual",
+    demo_fallback: "Demo"
+  };
+  return map[ref.source] ?? ref.source;
+}
+
+function ReferenceList({ references }: { references: Reference[] }) {
+  if (references.length === 0) {
+    return (
+      <div className="mt-4">
+        <h3 className="font-semibold text-slate-900">References</h3>
+        <p className="mt-2 text-sm text-slate-500">No references retrieved.</p>
+      </div>
+    );
+  }
+  const groups = (Object.keys(REFERENCE_GROUP_META) as ReferenceGroupKey[])
+    .map((key) => ({
+      key,
+      meta: REFERENCE_GROUP_META[key],
+      items: references.filter((r) => classifyReference(r) === key)
+    }))
+    .filter((g) => g.items.length > 0);
+
+  return (
+    <div className="mt-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="font-semibold text-slate-900">
+          References <span className="font-normal text-slate-500">({references.length})</span>
+        </h3>
+        <span className="text-xs text-slate-500">Click any title to open the source.</span>
+      </div>
+      <div className="mt-3 space-y-4">
+        {groups.map(({ key, meta, items }) => {
+          const Icon = meta.icon;
+          return (
+            <div key={key}>
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <Icon className="h-3.5 w-3.5" />
+                <span>{meta.label}</span>
+                <span className="text-slate-400">· {items.length}</span>
+              </div>
+              <div className="mt-2 space-y-2">
+                {items.map((ref) => {
+                  const hasUrl = ref.url && ref.url !== "not_found";
+                  const Wrapper = hasUrl ? "a" : "div";
+                  const wrapperProps = hasUrl
+                    ? {
+                        href: ref.url,
+                        target: "_blank",
+                        rel: "noopener noreferrer",
+                        className:
+                          "group block rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm transition-colors hover:border-blue-300 hover:bg-white"
+                      }
+                    : { className: "block rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm" };
+                  return (
+                    <Wrapper key={ref.id} {...(wrapperProps as Record<string, unknown>)}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="font-medium text-slate-900 group-hover:text-blue-700">
+                          {ref.title}
+                        </div>
+                        {hasUrl && (
+                          <ExternalLink className="mt-1 h-4 w-4 shrink-0 text-slate-400 group-hover:text-blue-600" />
+                        )}
+                      </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500">
+                        <Badge tone={meta.tone}>{sourceLabel(ref)}</Badge>
+                        {ref.year && <span>{ref.year}</span>}
+                        {ref.venue && <span>· {ref.venue}</span>}
+                        {ref.relevance_score > 0 && (
+                          <span>· score {Math.round(ref.relevance_score * 100) / 100}</span>
+                        )}
+                      </div>
+                      {ref.relevance_reason && (
+                        <p className="mt-1 text-xs leading-5 text-slate-600">{ref.relevance_reason}</p>
+                      )}
+                    </Wrapper>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -643,21 +811,7 @@ function LiteratureCard({
         <MiniField label="System" value={qc.parsed_hypothesis.organism_or_system} />
         <MiniField label="Outcome" value={qc.parsed_hypothesis.primary_outcome} />
       </div>
-      <div className="mt-4">
-        <h3 className="font-semibold text-slate-900">References</h3>
-        <div className="mt-2 space-y-2">
-          {qc.novelty.references.length === 0 ? (
-            <p className="text-sm text-slate-500">No references retrieved.</p>
-          ) : (
-            qc.novelty.references.map((ref) => (
-              <div key={ref.id} className="rounded-xl border bg-slate-50 p-3 text-sm">
-                <div className="font-medium text-slate-900">{ref.title}</div>
-                <div className="mt-1 text-slate-500">{ref.source} · {ref.year || "year unknown"} · {ref.relevance_reason}</div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
+      <ReferenceList references={qc.novelty.references} />
       {qc.novelty.coverage_warnings.length > 0 && (
         <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
           <div className="font-semibold">Coverage warnings</div>
@@ -737,14 +891,22 @@ function PlanDashboard({
                 )}
               </div>
             )}
-            {evidence && <EvidenceDiagnosticsPanel evidence={evidence} />}
           </div>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() =>
                 downloadText(
                   `${plan.plan_id}.json`,
-                  JSON.stringify(plan, null, 2),
+                  JSON.stringify(
+                    {
+                      ...plan,
+                      _generation: generation ?? undefined,
+                      _evidence: evidence ?? undefined,
+                      _critique: critique ?? undefined
+                    },
+                    null,
+                    2
+                  ),
                   "application/json"
                 )
               }
@@ -754,7 +916,11 @@ function PlanDashboard({
             </button>
             <button
               onClick={() =>
-                downloadText(`${plan.plan_id}.md`, planToMarkdown(plan), "text/markdown")
+                downloadText(
+                  `${plan.plan_id}.md`,
+                  planToMarkdown(plan, critique),
+                  "text/markdown"
+                )
               }
               className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
             >
@@ -802,6 +968,8 @@ function PlanDashboard({
         </div>
         <p className="mt-4 text-sm leading-6 text-slate-700">{plan.executive_summary.experimental_strategy}</p>
       </Card>
+
+      {evidence && <EvidenceDiagnosticsCard evidence={evidence} />}
 
       {critique && <PlanCritiquePanel critique={critique} />}
 
@@ -1039,6 +1207,30 @@ function FeedbackModal({
   const [severity, setSeverity] = useState<ScientistFeedback["severity"]>("important");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const correctionRef = useRef<HTMLTextAreaElement>(null);
+
+  // Lock body scroll while the modal is open so the page underneath doesn't
+  // scroll along with it on touch devices.
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
+  // Close on Escape and autofocus the first input.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    correctionRef.current?.focus();
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   async function submit() {
     if (!correction.trim() || !reason.trim()) {
@@ -1065,22 +1257,49 @@ function FeedbackModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="feedback-modal-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div className="max-h-[90vh] w-full max-w-2xl overflow-auto rounded-2xl bg-white p-6 shadow-2xl">
-        <h2 className="text-xl font-semibold text-slate-950">Scientist correction</h2>
+        <h2 id="feedback-modal-title" className="text-xl font-semibold text-slate-950">
+          Scientist correction
+        </h2>
         <p className="mt-1 text-sm text-slate-600">
           Turn expert review into reusable guidance for future similar plans.
         </p>
         <div className="mt-4 rounded-xl border bg-slate-50 p-3">
           <div className="text-sm font-semibold text-slate-900">{target.label}</div>
-          <pre className="mt-2 whitespace-pre-wrap text-xs leading-5 text-slate-600">
+          <pre className="mt-2 max-h-32 overflow-auto whitespace-pre-wrap text-xs leading-5 text-slate-600">
             {target.original_context}
           </pre>
         </div>
-        <label className="mt-4 block text-sm font-medium text-slate-700">Corrected text</label>
-        <textarea className="mt-1 w-full rounded-xl border p-3 text-sm" rows={4} value={correction} onChange={(e) => setCorrection(e.target.value)} />
-        <label className="mt-4 block text-sm font-medium text-slate-700">Reason</label>
-        <textarea className="mt-1 w-full rounded-xl border p-3 text-sm" rows={3} value={reason} onChange={(e) => setReason(e.target.value)} />
+        <label className="mt-4 block text-sm font-medium text-slate-700" htmlFor="feedback-correction">
+          Corrected text
+        </label>
+        <textarea
+          id="feedback-correction"
+          ref={correctionRef}
+          className="mt-1 w-full rounded-xl border p-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+          rows={4}
+          value={correction}
+          onChange={(e) => setCorrection(e.target.value)}
+        />
+        <label className="mt-4 block text-sm font-medium text-slate-700" htmlFor="feedback-reason">
+          Reason
+        </label>
+        <textarea
+          id="feedback-reason"
+          className="mt-1 w-full rounded-xl border p-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+          rows={3}
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+        />
         <div className="mt-4 grid gap-3 md:grid-cols-4">
           <Select label="Rating" value={rating} onChange={setRating} options={["1", "2", "3", "4", "5"]} />
           <Select label="Applicability" value={applicability} onChange={(v) => setApplicability(v as ScientistFeedback["applicability"])} options={["only_this_plan", "similar_experiment_type", "broad_rule"]} />
@@ -1201,11 +1420,16 @@ function PlanCritiquePanel({ critique }: { critique: PlanCritiqueMeta }) {
   );
 }
 
-function EvidenceDiagnosticsPanel({ evidence }: { evidence: EvidenceMeta }) {
+function EvidenceDiagnosticsCard({ evidence }: { evidence: EvidenceMeta }) {
   const labelMap: Record<string, string> = {
-    tavily_protocols: "Protocols (protocols.io / JoVE / etc.)",
-    tavily_suppliers: "Suppliers (Sigma / Thermo / Abcam / etc.)",
-    tavily_regulatory: "Regulatory (IRB / IACUC / IBC)"
+    tavily_protocols: "Protocols",
+    tavily_suppliers: "Suppliers",
+    tavily_regulatory: "Regulatory"
+  };
+  const subtitleMap: Record<string, string> = {
+    tavily_protocols: "protocols.io · JoVE · Bio-protocol · STAR Protocols",
+    tavily_suppliers: "Sigma · Thermo Fisher · Abcam · Bio-Rad · Tocris",
+    tavily_regulatory: "IRB · IACUC · IBC · CDC · NIH · FDA"
   };
   const toneFor = (s: EvidenceSourceStat["status"]): "emerald" | "slate" | "red" | "amber" => {
     switch (s) {
@@ -1221,27 +1445,44 @@ function EvidenceDiagnosticsPanel({ evidence }: { evidence: EvidenceMeta }) {
     }
   };
   return (
-    <div className="mt-3 space-y-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <Badge tone={evidence.tavilyConfigured ? "emerald" : "amber"}>
-          Tavily {evidence.tavilyConfigured ? "configured" : "not configured"}
-        </Badge>
-        <Badge tone="slate">{evidence.cardCount} evidence card{evidence.cardCount === 1 ? "" : "s"}</Badge>
-        {evidence.regulatoryReasons.length > 0 && (
-          <Badge tone="amber">
-            Oversight: {evidence.regulatoryReasons.length} flag
-            {evidence.regulatoryReasons.length === 1 ? "" : "s"}
+    <Card>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-950">
+            <BookOpen className="h-5 w-5 text-blue-600" /> Evidence pipeline
+          </h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Live web retrieval used to ground materials, protocols, and regulatory flags.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge tone={evidence.tavilyConfigured ? "emerald" : "amber"}>
+            Tavily {evidence.tavilyConfigured ? "configured" : "not configured"}
           </Badge>
-        )}
+          <Badge tone="slate">
+            {evidence.cardCount} evidence card{evidence.cardCount === 1 ? "" : "s"}
+          </Badge>
+          {evidence.regulatoryReasons.length > 0 && (
+            <Badge tone="amber">
+              Oversight: {evidence.regulatoryReasons.length} flag
+              {evidence.regulatoryReasons.length === 1 ? "" : "s"}
+            </Badge>
+          )}
+        </div>
       </div>
-      <div className="grid gap-2 sm:grid-cols-3">
+      <div className="mt-4 grid gap-2 sm:grid-cols-3">
         {evidence.sourceStats.map((s) => (
-          <div key={s.name} className="rounded-lg border border-slate-200 bg-white p-2 text-xs">
+          <div key={s.name} className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs">
             <div className="flex items-center justify-between gap-2">
-              <span className="font-semibold text-slate-700">{labelMap[s.name] ?? s.name}</span>
+              <span className="text-sm font-semibold text-slate-800">
+                {labelMap[s.name] ?? s.name}
+              </span>
               <Badge tone={toneFor(s.status)}>{s.status}</Badge>
             </div>
-            <div className="mt-1 text-slate-500">
+            <div className="mt-1 text-[11px] text-slate-500">
+              {subtitleMap[s.name] ?? s.name}
+            </div>
+            <div className="mt-2 text-slate-600">
               {s.count} hit{s.count === 1 ? "" : "s"} · {s.durationMs} ms
             </div>
             {s.error && (
@@ -1253,7 +1494,7 @@ function EvidenceDiagnosticsPanel({ evidence }: { evidence: EvidenceMeta }) {
         ))}
       </div>
       {evidence.regulatoryReasons.length > 0 && (
-        <details className="text-xs text-amber-800">
+        <details className="mt-3 text-xs text-amber-800">
           <summary className="cursor-pointer underline">
             Why oversight evidence was searched
           </summary>
@@ -1264,7 +1505,7 @@ function EvidenceDiagnosticsPanel({ evidence }: { evidence: EvidenceMeta }) {
           </ul>
         </details>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -1311,19 +1552,76 @@ function Select({ label, value, onChange, options }: { label: string; value: str
   );
 }
 
-function LoadingCard({ label }: { label: string }) {
+function LoadingCard({ label, steps = [] }: { label: string; steps?: string[] }) {
+  // Rotate the live status messages so a 30-second plan generation feels
+  // alive instead of a single frozen label.
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (steps.length === 0) return;
+    const id = setInterval(() => setTick((t) => t + 1), 2200);
+    return () => clearInterval(id);
+  }, [steps.length]);
+  const subLabel = steps.length > 0 ? steps[tick % steps.length] : null;
   return (
     <Card>
       <div className="flex items-center gap-3 text-slate-600">
         <RefreshCw className="h-5 w-5 animate-spin text-blue-600" />
-        <span>{label}</span>
+        <span className="font-medium text-slate-700">{label}</span>
       </div>
+      {subLabel && (
+        <div className="mt-2 text-sm text-slate-500" aria-live="polite">
+          {subLabel}
+        </div>
+      )}
       <div className="mt-4 space-y-3">
         <div className="h-4 w-3/4 animate-pulse rounded bg-slate-100" />
         <div className="h-4 w-1/2 animate-pulse rounded bg-slate-100" />
         <div className="h-20 animate-pulse rounded-xl bg-slate-100" />
       </div>
     </Card>
+  );
+}
+
+function StageProgress({ stage }: { stage: Stage }) {
+  // Order maps to the user-facing stages of the workflow.
+  const steps: { key: Stage[]; label: string }[] = [
+    { key: ["input", "literature_loading", "error"], label: "Hypothesis" },
+    { key: ["literature_loading", "literature_ready", "plan_loading", "plan_ready"], label: "Literature QC" },
+    { key: ["plan_loading", "plan_ready"], label: "Experiment Plan" }
+  ];
+  // Index of the rightmost step that the stage matches; everything up to
+  // (and including) it is considered "active".
+  const activeIdx = (() => {
+    if (stage === "plan_ready" || stage === "plan_loading") return 2;
+    if (stage === "literature_ready" || stage === "literature_loading") return 1;
+    return 0;
+  })();
+  const isLoading = stage === "literature_loading" || stage === "plan_loading";
+  return (
+    <div className="mb-6 flex items-center gap-3 overflow-x-auto rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-xs font-semibold text-slate-500 backdrop-blur md:text-sm">
+      {steps.map((step, i) => {
+        const active = i <= activeIdx;
+        const current = i === activeIdx && isLoading;
+        return (
+          <div key={step.label} className="flex items-center gap-3">
+            <div
+              className={`flex h-7 w-7 items-center justify-center rounded-full border text-xs ${
+                active
+                  ? current
+                    ? "animate-pulse border-blue-600 bg-blue-600 text-white"
+                    : "border-blue-600 bg-blue-50 text-blue-700"
+                  : "border-slate-200 bg-slate-50 text-slate-400"
+              }`}
+              aria-current={current ? "step" : undefined}
+            >
+              {i + 1}
+            </div>
+            <span className={active ? "text-slate-900" : "text-slate-400"}>{step.label}</span>
+            {i < steps.length - 1 && <span className="text-slate-300">·</span>}
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -1369,7 +1667,7 @@ function downloadText(filename: string, text: string, type: string) {
   URL.revokeObjectURL(url);
 }
 
-function planToMarkdown(plan: ExperimentPlan): string {
+function planToMarkdown(plan: ExperimentPlan, critique: PlanCritiqueMeta | null = null): string {
   const lines: string[] = [];
   lines.push(`# The AI Scientist Plan`);
   lines.push("");
@@ -1493,6 +1791,27 @@ function planToMarkdown(plan: ExperimentPlan): string {
   lines.push(`Known gaps:`);
   for (const gap of plan.evidence_quality.known_gaps) {
     lines.push(`- ${gap}`);
+  }
+  if (critique) {
+    lines.push("");
+    lines.push(`## AI Plan Critic`);
+    const sourceLabel = critique.source === "openai" ? `OpenAI (${critique.model ?? "unknown model"})` : "Heuristic critic";
+    lines.push(`- Source: ${sourceLabel}`);
+    lines.push(`- Overall assessment: ${critique.overall_assessment.replaceAll("_", " ")}`);
+    lines.push(`- Findings: ${critique.findings.length}`);
+    if (critique.findings.length > 0) {
+      lines.push("");
+      for (const finding of critique.findings) {
+        lines.push(`### [${finding.severity.toUpperCase()}] ${finding.area} — ${finding.finding}`);
+        lines.push(`Suggestion: ${finding.suggestion}`);
+        lines.push("");
+      }
+    }
+    if (critique.errors.length > 0) {
+      lines.push("Notes:");
+      for (const e of critique.errors) lines.push(`- ${e}`);
+      lines.push("");
+    }
   }
   lines.push("");
   lines.push("> Generated for expert review. Do not execute without approved local SOPs and required institutional approvals.");
