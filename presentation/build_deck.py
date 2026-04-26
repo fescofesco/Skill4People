@@ -1,4 +1,4 @@
-"""AI Scientist pitch deck — 4 slides, 2-minute format."""
+"""AI Scientist pitch deck — 4 slides, 2-minute format. Rebuilt for platform release."""
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
@@ -14,6 +14,8 @@ GREEN      = RGBColor(0x00, 0xE5, 0x96)
 YELLOW     = RGBColor(0xFF, 0xD6, 0x00)
 RED_SOFT   = RGBColor(0xFF, 0x6B, 0x6B)
 MID_BLUE   = RGBColor(0x12, 0x28, 0x3E)
+EMERALD    = RGBColor(0x05, 0xC4, 0x8A)
+PURPLE     = RGBColor(0xA8, 0x6E, 0xFF)
 
 prs = Presentation()
 prs.slide_width  = Inches(13.33)
@@ -21,7 +23,7 @@ prs.slide_height = Inches(7.5)
 BLANK = prs.slide_layouts[6]
 
 
-# ── low-level helpers ──────────────────────────────────────────────────────────
+# ── helpers ────────────────────────────────────────────────────────────────────
 
 def add_slide():
     sl = prs.slides.add_slide(BLANK)
@@ -52,39 +54,37 @@ def bullets(slide, l, t, w, h, lines, size=14, colour=WHITE, leading=None):
     tb.word_wrap = True
     tf = tb.text_frame; tf.word_wrap = True
     for i, line in enumerate(lines):
-        if isinstance(line, tuple):
-            text, opts = line
-        else:
-            text, opts = line, {}
+        text, opts = (line, {}) if not isinstance(line, tuple) else line
         p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
         p.alignment = opts.get("align", PP_ALIGN.LEFT)
         if leading:
             p.line_spacing = Pt(leading)
         r = p.add_run(); r.text = text
-        r.font.size  = Pt(opts.get("size", size))
-        r.font.bold  = opts.get("bold", False)
+        r.font.size   = Pt(opts.get("size", size))
+        r.font.bold   = opts.get("bold", False)
         r.font.italic = opts.get("italic", False)
         r.font.color.rgb = opts.get("colour", colour)
 
-def hyperlink_txt(slide, l, t, w, h, text, url, size=14, colour=ACCENT, align=PP_ALIGN.CENTER):
-    """Text box with a clickable hyperlink."""
+def hyperlink_txt(slide, l, t, w, h, text, url, size=14, colour=ACCENT,
+                  align=PP_ALIGN.CENTER):
     tb = slide.shapes.add_textbox(Inches(l), Inches(t), Inches(w), Inches(h))
     tb.word_wrap = False
     tf = tb.text_frame
     p = tf.paragraphs[0]; p.alignment = align
     r = p.add_run(); r.text = text
     r.font.size = Pt(size); r.font.color.rgb = colour; r.font.underline = True
-    # inject hlinkClick into rPr
     rPr = r._r.get_or_add_rPr()
-    rId = slide.part.relate_to(url, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink", is_external=True)
+    rId = slide.part.relate_to(
+        url,
+        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink",
+        is_external=True)
     hl = etree.SubElement(rPr, qn("a:hlinkClick"))
     hl.set(qn("r:id"), rId)
 
 def header(slide, title):
     rect(slide, 0, 0, 13.33, 0.10, ACCENT)
     rect(slide, 0, 7.40, 13.33, 0.10, ACCENT)
-    txt(slide, 0.5, 0.18, 12, 0.60, title,
-        size=32, bold=True, colour=WHITE)
+    txt(slide, 0.5, 0.18, 12, 0.60, title, size=32, bold=True, colour=WHITE)
     rect(slide, 0.5, 0.82, 1.2, 0.07, ACCENT)
 
 
@@ -95,74 +95,64 @@ sl = add_slide()
 rect(sl, 0, 0, 13.33, 0.10, ACCENT)
 rect(sl, 0, 7.40, 13.33, 0.10, ACCENT)
 
-# Event banner
 rect(sl, 0, 0.10, 13.33, 0.42, RGBColor(0x05, 0x12, 0x1E))
 txt(sl, 0.5, 0.16, 12.3, 0.32,
     "Hack-Nation 5th Global AI Hackathon  ·  HUB-LINZ",
     size=13, colour=LIGHT_GREY, align=PP_ALIGN.CENTER)
 
-# Project name
 txt(sl, 0.5, 0.75, 12.3, 1.10,
     "Skills4People",
     size=62, bold=True, colour=WHITE, align=PP_ALIGN.CENTER)
 
-# Sub-title / product name
 rect(sl, 3.2, 1.95, 6.93, 0.55, RGBColor(0x00, 0x40, 0x60))
 txt(sl, 3.2, 2.00, 6.93, 0.44,
-    "The AI Scientist  —  hypothesis to runnable experiment in minutes",
-    size=14, italic=True, colour=ACCENT, align=PP_ALIGN.CENTER)
+    "The AI Scientist  —  from one-shot tool to experiment platform that learns",
+    size=13, italic=True, colour=ACCENT, align=PP_ALIGN.CENTER)
 
-# Divider
 rect(sl, 4.0, 2.68, 5.33, 0.06, ACCENT)
 
-# Team name large
 txt(sl, 0.5, 2.88, 12.3, 0.80,
     "GF.sh",
     size=44, bold=True, colour=ACCENT, align=PP_ALIGN.CENTER)
 
-# Team members
 txt(sl, 0.5, 3.78, 12.3, 0.45,
     "Samuel Hajek  ·  Georg Niess  ·  Felix Scope  ·  Johannes Wagner",
     size=17, colour=LIGHT_GREY, align=PP_ALIGN.CENTER)
 
-# Powered by
-rect(sl, 3.5, 4.45, 6.33, 0.05, RGBColor(0x22,0x44,0x55))
+rect(sl, 3.5, 4.45, 6.33, 0.05, RGBColor(0x22, 0x44, 0x55))
 txt(sl, 0.5, 4.60, 12.3, 0.38,
-    "Powered by  OpenAI GPT-4o  ·  Google Gemini  ·  Claude  ·  Supabase pgvector  ·  Tavily  ·  Next.js 14",
-    size=12, colour=RGBColor(0x66,0x99,0xBB), align=PP_ALIGN.CENTER)
+    "OpenAI GPT-4o  ·  Google Gemini  ·  Claude  ·  Supabase pgvector  ·  Tavily  ·  Next.js 14",
+    size=12, colour=RGBColor(0x66, 0x99, 0xBB), align=PP_ALIGN.CENTER)
 
-# GitHub link
 hyperlink_txt(sl, 0.5, 4.95, 12.3, 0.38,
     "🔗  github.com/fescofesco/Skill4People",
     "https://github.com/fescofesco/Skill4People",
     size=14, colour=ACCENT, align=PP_ALIGN.CENTER)
 
-# One-liner tagline
 rect(sl, 0.5, 5.45, 12.3, 1.50, RGBColor(0x08, 0x1E, 0x30))
 txt(sl, 0.7, 5.60, 11.9, 1.20,
     "Science moves at the speed of operations, not ideas.\n"
-    "We compress weeks of lab-planning into a plan a scientist\n"
-    "can pick up on Monday and start running by Friday.",
+    "Every plan saved, every correction made, every document uploaded —\n"
+    "the next plan is better.",
     size=16, italic=True, colour=WHITE, align=PP_ALIGN.CENTER)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SLIDE 2 — THE PROBLEM + OUR SOLUTION
+# SLIDE 2 — PROBLEM + SOLUTION
 # ══════════════════════════════════════════════════════════════════════════════
 sl = add_slide()
 rect(sl, 0, 0, 13.33, 0.10, ACCENT)
 rect(sl, 0, 7.40, 13.33, 0.10, ACCENT)
 
-# Big headline
 txt(sl, 0.5, 0.22, 12.3, 0.85,
     "THE AI SCIENTIST",
     size=46, bold=True, colour=WHITE, align=PP_ALIGN.CENTER)
 txt(sl, 0.5, 1.10, 12.3, 0.50,
-    "From hypothesis to runnable experiment — in minutes, not weeks",
+    "Hypothesis to runnable experiment plan — in minutes, not weeks",
     size=20, italic=True, colour=ACCENT, align=PP_ALIGN.CENTER)
 rect(sl, 4.5, 1.70, 4.33, 0.06, ACCENT)
 
-# Left: Problem
+# Problem
 rect(sl, 0.4, 1.90, 5.9, 4.90, MID_BLUE)
 rect(sl, 0.4, 1.90, 5.9, 0.08, RED_SOFT)
 txt(sl, 0.55, 2.03, 5.6, 0.50, "THE PROBLEM", size=18, bold=True, colour=RED_SOFT)
@@ -173,179 +163,129 @@ bullets(sl, 0.55, 2.65, 5.6, 3.8,
      "• Sourcing reagents with correct catalog numbers",
      "• Building realistic budgets + phased timelines",
      "• Assessing safety, ethics & regulatory requirements",
+     "• Applying your lab's own SOPs and prior corrections",
      "",
      ("The bottleneck isn't ideas — it's operations.", {"italic": True, "colour": YELLOW})],
-    size=14, colour=LIGHT_GREY, leading=20)
+    size=13, colour=LIGHT_GREY, leading=19)
 
-# Arrow
 txt(sl, 6.35, 4.10, 0.6, 0.60, "→", size=36, bold=True, colour=ACCENT,
     align=PP_ALIGN.CENTER)
 
-# Right: Solution
+# Solution
 rect(sl, 7.05, 1.90, 5.85, 4.90, RGBColor(0x08, 0x1E, 0x12))
 rect(sl, 7.05, 1.90, 5.85, 0.08, GREEN)
 txt(sl, 7.20, 2.03, 5.6, 0.50, "OUR SOLUTION", size=18, bold=True, colour=GREEN)
-bullets(sl, 7.20, 2.65, 5.6, 3.8,
-    [("3-stage AI pipeline:", {"bold": True, "colour": WHITE}),
+bullets(sl, 7.20, 2.65, 5.6, 3.9,
+    [("An iterative experiment platform:", {"bold": True, "colour": WHITE}),
      "",
-     ("① Input  — any natural-language hypothesis", {"colour": ACCENT}),
+     ("① Input  — hypothesis + category + optional\n"
+      "   reference documents (PDF / TXT)", {"colour": ACCENT}),
      "",
-     ("② Literature QC  — 6-source search (Semantic Scholar,\n"
-      "   arXiv, PubMed, OpenAlex, protocols.io + Tavily)\n"
+     ("② Literature QC  — 6-source parallel search\n"
       "   → novelty signal in seconds", {"colour": ACCENT}),
      "",
-     ("③ Full Experiment Plan  — protocol · materials\n"
-      "   catalog #s · budget · timeline · validation\n"
-      "   safety · risks · assumptions", {"colour": ACCENT}),
+     ("③ Plan + Critique  — full operational plan,\n"
+      "   then AI audits its own weaknesses", {"colour": ACCENT}),
      "",
-     ("Pick it up Monday. Start running Friday.", {"italic": True, "bold": True, "colour": GREEN})],
-    size=13, colour=LIGHT_GREY, leading=18)
+     ("④ Save → Feedback → Regenerate  — corrections\n"
+      "   stored by scope, applied to every future plan", {"colour": ACCENT}),
+     "",
+     ("The platform gets smarter with every use.", {"italic": True, "bold": True, "colour": GREEN})],
+    size=12, colour=LIGHT_GREY, leading=17)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SLIDE 2 — WHAT WE BUILT
+# SLIDE 3 — WHAT WE BUILT
 # ══════════════════════════════════════════════════════════════════════════════
 sl = add_slide()
 header(sl, "WHAT WE BUILT")
 
 features = [
-    (RED_SOFT,  "🔍  PLAN CRITIQUE — AI EVALUATES ITS OWN WEAKNESSES",
-     "After every plan, AI scans for 6 critical weakness categories:\n"
+    (RED_SOFT, "🔍  PLAN CRITIQUE — AI EVALUATES ITS OWN WEAKNESSES",
+     "After every plan, a second AI pass scans for 6 weakness categories:\n"
      "missing controls · weak statistics · insufficient sample size\n"
      "validation gaps · safety oversights · feasibility issues\n"
-     "Rated: weak (critical) · needs_work (warning) · solid (pass)"),
+     "Rated: weak (critical) · needs_work · solid"),
 
-    (YELLOW,    "🔁  RAG FEEDBACK LOOP — IT LEARNS  (Stretch Goal ✔)",
-     "Scientist corrects a plan → Gemini embeds the correction (768-dim vector)\n"
-     "stored in Supabase pgvector with HNSW index.\n"
-     "Next similar question → match_experiments() retrieves corrections\n"
-     "via cosine similarity → injected as few-shot context into the next plan."),
+    (EMERALD,  "🔁  3-BUCKET FEEDBACK PLATFORM  (Stretch Goal ✔)",
+     "Corrections scoped to: Organisation · Category · Experiment\n"
+     "AI auto-classifies each correction into the right bucket.\n"
+     "Stored as Gemini 768-dim vectors in Supabase pgvector (HNSW).\n"
+     "Injected as labelled blocks into every new plan. ~1,600 rules pre-seeded."),
 
-    (RED_SOFT,  "🛡️  USER-SPECIFIC RISK PROFILE",
-     "Hard-blocks: gain-of-function · pathogen synthesis · unapproved human trials.\n"
-     "Soft-flags: animal work · GMOs · controlled substances · biohazards.\n"
-     "Every plan includes PPE requirements, waste handling & expert-review gates."),
+    (YELLOW,   "📂  DOCUMENT UPLOAD — YOUR SOPs BECOME PART OF EVERY PLAN",
+     "Upload PDF, TXT, or MD at organisation-scope or experiment-scope.\n"
+     "Text extracted via pdf-parse (60 KB cap), threaded into plan prompt.\n"
+     "Org documents inject into all plans. Experiment docs inject on branch.\n"
+     "Your lab's protocols, not just the literature."),
 
-    (GREEN,     "📊  COMPOSITE CONFIDENCE SCORE",
-     "Every plan is scored across 4 dimensions:\n"
-     "evidence quality · supplier completeness · validation completeness · feedback relevance.\n"
-     "Scientists know exactly how much to trust the output before ordering materials."),
+    (PURPLE,   "🏛️  EXPERIMENT LIBRARY + ORGANISATION LAYER",
+     "Named experiments saved and re-opened from a persistent library.\n"
+     "Save without re-running · Regenerate with latest feedback applied.\n"
+     "Category system (cell-biology, diagnostics, …) scopes feedback rules.\n"
+     "Multi-tenant org layer: settings drawer, per-org categories & documents."),
 ]
 
 for i, (colour, title, body) in enumerate(features):
     row, col = divmod(i, 2)
     cx = 0.4  + col * 6.45
-    cy = 1.15 + row * 2.85
-    rect(sl, cx, cy, 6.1, 2.65, MID_BLUE)
+    cy = 1.15 + row * 2.90
+    rect(sl, cx, cy, 6.1, 2.72, MID_BLUE)
     rect(sl, cx, cy, 6.1, 0.08, colour)
-    txt(sl, cx+0.15, cy+0.14, 5.8, 0.50, title, size=14, bold=True, colour=colour)
-    txt(sl, cx+0.15, cy+0.70, 5.8, 1.80, body, size=12, colour=LIGHT_GREY)
+    txt(sl, cx+0.15, cy+0.14, 5.8, 0.48, title, size=13, bold=True, colour=colour)
+    txt(sl, cx+0.15, cy+0.66, 5.8, 1.92, body, size=11, colour=LIGHT_GREY)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SLIDE 3 — DID WE FULFIL THE BRIEF?
-# ══════════════════════════════════════════════════════════════════════════════
-sl = add_slide()
-header(sl, "DID WE FULFIL THE BRIEF?")
-
-def check_row(slide, x, y, done, label, note=""):
-    sym   = "✔" if done else "○"
-    scol  = GREEN if done else LIGHT_GREY
-    lcol  = WHITE if done else LIGHT_GREY
-    txt(slide, x,      y, 0.45, 0.38, sym,   size=16, bold=True,  colour=scol)
-    txt(slide, x+0.42, y, 5.40, 0.38, label, size=13, bold=False, colour=lcol)
-    if note:
-        txt(slide, x+0.42, y+0.27, 5.40, 0.30, note, size=10,
-            italic=True, colour=ACCENT)
-
-# Column headers
-rect(sl, 0.4,  1.05, 6.3, 0.38, RGBColor(0x00,0x4A,0x7A))
-rect(sl, 6.85, 1.05, 6.1, 0.38, RGBColor(0x00,0x3A,0x1A))
-txt(sl, 0.55,  1.10, 6.1, 0.30, "CORE REQUIREMENTS", size=13, bold=True, colour=WHITE)
-txt(sl, 7.00,  1.10, 5.9, 0.30, "STRETCH GOAL + BEYOND", size=13, bold=True, colour=GREEN)
-
-core = [
-    (True,  "Natural language input"),
-    (True,  "Literature QC — novelty signal + references"),
-    (True,  "Step-by-step protocol (grounded in research)"),
-    (True,  "Reagents with catalog numbers & suppliers"),
-    (True,  "Realistic cost breakdown (line items)"),
-    (True,  "Phased timeline with dependencies"),
-    (True,  "Validation design — success/failure criteria"),
-    (True,  "Polished end-to-end UI"),
-]
-extra = [
-    (True,  "Feedback loop — corrects future plans",      "✔ Stretch goal fully implemented"),
-    (True,  "Plan critique — finds own weaknesses",        "✔ Beyond the brief"),
-    (True,  "Risk profile per plan + safety hard-blocks",  "✔ Beyond the brief"),
-    (True,  "Composite confidence score",                  "✔ Beyond the brief"),
-    (True,  "Evidence drilldown cards",                    "✔ Beyond the brief"),
-    (False, "Upload own experimental data",               "○ Architecture ready — coming soon"),
-]
-
-for i, (done, label) in enumerate(core):
-    check_row(sl, 0.4, 1.55 + i * 0.68, done, label)
-
-for i, (done, label, note) in enumerate(extra):
-    check_row(sl, 6.85, 1.55 + i * 0.97, done, label, note)
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-# SLIDE 4 — WHAT WE DID BETTER THAN THE REQUIREMENTS
+# SLIDE 4 — BEYOND THE BRIEF
 # ══════════════════════════════════════════════════════════════════════════════
 sl = add_slide()
 header(sl, "WHAT WE DID BETTER THAN THE REQUIREMENTS")
 
-# Column headers
-rect(sl, 0.4,  1.05, 5.7, 0.40, RGBColor(0x00,0x30,0x55))
-rect(sl, 6.3,  1.05, 6.6, 0.40, RGBColor(0x00,0x40,0x20))
+rect(sl, 0.4,  1.05, 5.7, 0.40, RGBColor(0x00, 0x30, 0x55))
+rect(sl, 6.3,  1.05, 6.6, 0.40, RGBColor(0x00, 0x40, 0x20))
 txt(sl, 0.55,  1.10, 5.5, 0.28, "BRIEF ASKED FOR", size=13, bold=True, colour=LIGHT_GREY)
 txt(sl, 6.45,  1.10, 6.3, 0.28, "WE DELIVERED", size=13, bold=True, colour=GREEN)
 
 rows = [
     ("Novelty signal + 1–3 references",
-     "6-source search (Scholar · arXiv · PubMed · OpenAlex · protocols.io · Tavily)\n"
-     "Smart domain filtering · re-ranking · de-duplication · coverage diagnostics"),
+     "6-source parallel search · domain filtering · Jaccard re-ranking · de-duplication"),
 
     ("Step-by-step protocol",
-     "Protocol + AI CRITIC evaluates its own output for 6 weakness categories:\n"
-     "controls · statistics · sample size · validation · safety · feasibility"),
+     "Protocol + AI CRITIC: 6 weakness categories audited after every generation"),
 
     ("Materials with catalog numbers",
-     "Per-material Tavily search · regex fact extraction from supplier pages\n"
-     "AI price estimation tagged [approx_estimate] — never fabricates"),
+     "Tavily supplier search + regex extraction of prices, pack sizes, catalog numbers"),
 
     ("Phased timeline",
-     "Timeline with decision gates · schedule risks per phase · dependencies"),
+     "Timeline with decision gates · schedule risks · dependencies per phase"),
 
     ("[Stretch] Scientist feedback loop",
-     "✔  Full RAG pipeline: correction → Gemini 768-dim embedding → Supabase pgvector\n"
-     "   match_experiments() cosine search → few-shot context in next plan"),
+     "✔  3-bucket RAG: org / category / experiment scope · Gemini embeddings · Supabase pgvector"),
 
-    ("(Not in brief)  —",
-     "Multi-model: OpenAI GPT-4o · Google Gemini · Claude for redundancy & best-fit tasks"),
+    ("(Not in brief)",
+     "Document upload: PDF/TXT/MD · extracted & injected · org-scope + experiment-scope"),
 
-    ("(Not in brief)  —",
-     "User-specific risk profile: hard-blocks · soft-flags · expert-review gates per plan"),
+    ("(Not in brief)",
+     "Persistent experiment library · named plans · Save + Regenerate workflow"),
 
-    ("(Not in brief)  —",
-     "Composite confidence score: evidence quality · supplier completeness\n"
-     "   validation completeness · feedback relevance  →  trust before ordering"),
+    ("(Not in brief)",
+     "Category system + multi-tenant org layer · settings drawer · per-org rules"),
 
-    ("(Not in brief)  —",
-     "Upload own data [coming soon]  —  Supabase schema + embedding store already in place"),
+    ("(Not in brief)",
+     "Multi-model: OpenAI GPT-4o · Google Gemini · Claude — redundancy & best-fit routing"),
 ]
 
 for i, (left, right) in enumerate(rows):
-    y = 1.55 + i * 0.72
-    bg = RGBColor(0x10,0x22,0x33) if i % 2 == 0 else RGBColor(0x0D,0x1B,0x2A)
-    rect(sl, 0.4, y, 12.5, 0.70, bg)
+    y = 1.55 + i * 0.655
+    bg = RGBColor(0x10, 0x22, 0x33) if i % 2 == 0 else RGBColor(0x0D, 0x1B, 0x2A)
+    rect(sl, 0.4, y, 12.5, 0.63, bg)
     is_beyond = left.startswith("(Not")
     is_stretch = "Stretch" in left
-    lcol = RGBColor(0x88,0x99,0xAA) if is_beyond else LIGHT_GREY
-    rcol = ACCENT if (is_stretch or is_beyond) else GREEN
-    txt(sl, 0.55, y+0.10, 5.6, 0.52, left,  size=11, colour=lcol, italic=is_beyond)
-    txt(sl, 6.30, y+0.10, 6.7, 0.52, right, size=11, colour=rcol)
+    lcol = RGBColor(0x77, 0x88, 0x99) if is_beyond else LIGHT_GREY
+    rcol = EMERALD if is_stretch else (ACCENT if is_beyond else GREEN)
+    txt(sl, 0.55, y+0.11, 5.6, 0.44, left,  size=11, colour=lcol, italic=is_beyond)
+    txt(sl, 6.30, y+0.11, 6.7, 0.44, right, size=11, colour=rcol)
 
 
 # ── save ──────────────────────────────────────────────────────────────────────
