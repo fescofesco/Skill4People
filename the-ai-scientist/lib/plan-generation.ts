@@ -1,5 +1,6 @@
 import { recomputeBudget } from "./budget";
 import { detectDemoTopic, demoEvidenceCards } from "./demo-fallbacks";
+import { getEnv } from "./env";
 import {
   newAssumptionId,
   newControlId,
@@ -11,6 +12,11 @@ import {
   newTimelineId
 } from "./ids";
 import { enrichMaterialsFromEvidence } from "./material-enrichment";
+import {
+  applyApproxEstimates,
+  estimatePricesAI,
+  searchSuppliersForMaterials
+} from "./material-pricing";
 import { chatCompletionsJson, getOpenAIClient, getOpenAIModel } from "./openai";
 import { PLAN_SYSTEM_PROMPT, SCHEMA_HINT, buildPlanUserPrompt } from "./plan-prompts";
 import {
@@ -108,25 +114,143 @@ export async function generateExperimentPlan(args: GeneratePlanArgs): Promise<Ge
 
   const ai = await aiGeneratePlan(args);
   if (ai.plan) {
+    const enriched = await enrichPlanPricing(ai.plan, args);
     return {
-      plan: ai.plan,
+      plan: enriched.plan,
       generation: {
         source: "openai",
         model: getOpenAIModel(),
         attempts: ai.attempts,
-        errors: ai.errors
+        errors: [...ai.errors, ...enriched.errors]
       }
     };
   }
 
+  const fallback = deterministicReviewPlan(args);
+  const enriched = await enrichPlanPricing(fallback, args);
   return {
-    plan: deterministicReviewPlan(args),
+    plan: enriched.plan,
     generation: {
       source: "deterministic_fallback",
       model: null,
       attempts: ai.attempts,
-      errors: ai.errors
+      errors: [...ai.errors, ...enriched.errors]
     }
+  };
+}
+
+/**
+ * Two-stage budget rescue:
+ *
+ *   1. Per-material targeted Tavily searches for any material that the
+ *      hypothesis-level supplier search didn't price. This catches cases
+ *      where the LLM emits specific reagents (e.g. "Polydopamine",
+ *      "TEOS") that wouldn't surface from the broad parsed-hypothesis
+ *      query alone.
+ *   2. AI approximation for anything still unpriced. Marked with the
+ *      APPROX_NOTE_MARKER so the UI can show "approx" instead of "—",
+ *      and confidence is forced to "low" so the badge already signals
+ *      that this is not a vendor quote.
+ *
+ * The budget is recomputed at the end so totals stay consistent. Both
+ * passes are best-effort: any error inside is captured and the original
+ * plan is returned untouched.
+ */
+async function enrichPlanPricing(
+  plan: ExperimentPlan,
+  args: GeneratePlanArgs
+): Promise<{ plan: ExperimentPlan; errors: string[] }> {
+  const errors: string[] = [];
+  if (!Array.isArray(plan.materials) || plan.materials.length === 0) {
+    return { plan, errors };
+  }
+
+  let materials = plan.materials;
+  let mergedEvidence = args.evidenceCards;
+
+  // Stage 1: targeted Tavily for unpriced materials.
+  try {
+    const unpriced = materials.filter((m) => m.unit_cost === null);
+    if (unpriced.length > 0 && getEnv().tavilyApiKey) {
+      const extraCards = await searchSuppliersForMaterials(unpriced);
+      if (extraCards.length > 0) {
+        mergedEvidence = [...args.evidenceCards, ...extraCards];
+        const refined = enrichMaterialsFromEvidence(materials, mergedEvidence, 1);
+        materials = refined.materials;
+      }
+    }
+  } catch (err) {
+    errors.push(
+      "pricing_tavily_failed: " +
+        (err instanceof Error ? err.message.slice(0, 240) : String(err).slice(0, 240))
+    );
+  }
+
+  // Stage 2: AI approximation for anything still unpriced.
+  try {
+    const stillUnpriced = materials.filter((m) => m.unit_cost === null);
+    if (stillUnpriced.length > 0) {
+      const estimates = await estimatePricesAI(stillUnpriced);
+      if (estimates.size > 0) {
+        materials = applyApproxEstimates(materials, estimates);
+      }
+    }
+  } catch (err) {
+    errors.push(
+      "pricing_ai_failed: " +
+        (err instanceof Error ? err.message.slice(0, 240) : String(err).slice(0, 240))
+    );
+  }
+
+  // Recompute budget if anything changed.
+  let budget = plan.budget;
+  if (materials !== plan.materials) {
+    try {
+      const priced = materials.filter((m) => m.unit_cost !== null).length;
+      const approxCount = materials.filter(
+        (m) => m.unit_cost !== null && typeof m.notes === "string" && m.notes.includes("[approx_estimate]")
+      ).length;
+      const realPriced = priced - approxCount;
+      const note = [
+        realPriced > 0
+          ? `${realPriced}/${materials.length} materials priced from live supplier evidence.`
+          : null,
+        approxCount > 0
+          ? `${approxCount}/${materials.length} materials use AI-estimated approximations (verify before ordering).`
+          : null
+      ]
+        .filter(Boolean)
+        .join(" ");
+      budget = recomputeBudget({
+        materials,
+        equipment: plan.equipment as Equipment[],
+        currency: plan.budget?.currency || "USD",
+        contingencyPercent: plan.budget?.contingency_percent ?? 15,
+        laborOrService:
+          typeof plan.budget?.labor_or_service_estimate === "number"
+            ? plan.budget.labor_or_service_estimate
+            : null,
+        notesPrefix: note ? `${note} ` : ""
+      });
+    } catch (err) {
+      errors.push(
+        "pricing_budget_recompute_failed: " +
+          (err instanceof Error ? err.message.slice(0, 240) : String(err).slice(0, 240))
+      );
+    }
+  }
+
+  return {
+    plan: {
+      ...plan,
+      materials,
+      budget,
+      evidence_quality: {
+        ...plan.evidence_quality,
+        evidence_cards: mergedEvidence
+      }
+    },
+    errors
   };
 }
 

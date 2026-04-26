@@ -1156,16 +1156,36 @@ function PlanDashboard({
               </tr>
             </thead>
             <tbody>
-              {plan.materials.map((m) => (
-                <tr key={m.id} className="border-b last:border-0">
-                  <td className="py-3 font-medium text-slate-900">{m.name}<div className="font-normal text-slate-500">{m.purpose}</div></td>
-                  <td>{m.supplier}</td>
-                  <td>{m.catalog_number === "not_found" ? <Badge tone="amber">not found</Badge> : m.catalog_number}</td>
-                  <td>{m.estimated_cost === null ? "—" : `$${m.estimated_cost}`}</td>
-                  <td><Badge tone={m.confidence === "high" ? "emerald" : m.confidence === "medium" ? "blue" : "amber"}>{m.confidence}</Badge></td>
-                  <td><EditButton onClick={() => onEdit(contextTarget("material", m.id, m))} compact /></td>
-                </tr>
-              ))}
+              {plan.materials.map((m) => {
+                const isApprox = typeof m.notes === "string" && m.notes.includes("[approx_estimate]");
+                return (
+                  <tr key={m.id} className="border-b last:border-0">
+                    <td className="py-3 font-medium text-slate-900">
+                      {m.name}
+                      <div className="font-normal text-slate-500">{m.purpose}</div>
+                    </td>
+                    <td>{m.supplier}</td>
+                    <td>{m.catalog_number === "not_found" ? <Badge tone="amber">not found</Badge> : m.catalog_number}</td>
+                    <td>
+                      {m.estimated_cost === null ? (
+                        "—"
+                      ) : isApprox ? (
+                        <span
+                          className="inline-flex items-center gap-1.5"
+                          title="AI-estimated approximation, not a vendor quote. Verify before ordering."
+                        >
+                          <span className="text-slate-700">~${m.estimated_cost}</span>
+                          <Badge tone="amber">approx</Badge>
+                        </span>
+                      ) : (
+                        `$${m.estimated_cost}`
+                      )}
+                    </td>
+                    <td><Badge tone={m.confidence === "high" ? "emerald" : m.confidence === "medium" ? "blue" : "amber"}>{m.confidence}</Badge></td>
+                    <td><EditButton onClick={() => onEdit(contextTarget("material", m.id, m))} compact /></td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
