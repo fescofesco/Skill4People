@@ -362,6 +362,45 @@ for i, (name, email) in enumerate(contacts):
     txt(sl, cx, 6.84, 3.1, 0.26, email, size=10, italic=True, colour=ACCENT)
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# SLIDE 6 — CONTACT US
+# ══════════════════════════════════════════════════════════════════════════════
+sl = add_slide()
+rect(sl, 0, 0, 13.33, 0.10, ACCENT)
+rect(sl, 0, 7.40, 13.33, 0.10, ACCENT)
+
+txt(sl, 0.5, 0.55, 12.3, 0.80,
+    "CONTACT US",
+    size=48, bold=True, colour=WHITE, align=PP_ALIGN.CENTER)
+
+txt(sl, 0.5, 1.45, 12.3, 0.45,
+    "Questions, collaborations, or feedback — we'd love to hear from you.",
+    size=16, italic=True, colour=LIGHT_GREY, align=PP_ALIGN.CENTER)
+
+rect(sl, 4.0, 2.05, 5.33, 0.06, ACCENT)
+
+contacts = [
+    ("Samuel Hajek",    "Scientist",              "samuel.hajek@gmail.com"),
+    ("Johannes Wagner", "Mechanical Engineer",    "johannes.wagner@alumni.tugraz.at"),
+    ("Felix Scope",     "Computer Scientist",     "scope@tugraz.at"),
+    ("Georg Niess",     "Medicine MSc",           "georg.niess@tugraz.at"),
+]
+
+for i, (name, role, email) in enumerate(contacts):
+    cx = 0.55 + (i % 2) * 6.4
+    cy = 2.35 + (i // 2) * 2.05
+    rect(sl, cx, cy, 6.1, 1.75, MID_BLUE)
+    rect(sl, cx, cy, 6.1, 0.08, ACCENT)
+    txt(sl, cx+0.22, cy+0.18, 5.7, 0.45, name,  size=20, bold=True,  colour=WHITE)
+    txt(sl, cx+0.22, cy+0.65, 5.7, 0.30, role,  size=13, italic=True, colour=ACCENT)
+    txt(sl, cx+0.22, cy+1.02, 5.7, 0.32, email, size=13, colour=LIGHT_GREY)
+
+hyperlink_txt(sl, 0.5, 6.60, 12.3, 0.38,
+    "🔗  github.com/fescofesco/Skill4People",
+    "https://github.com/fescofesco/Skill4People",
+    size=14, colour=ACCENT, align=PP_ALIGN.CENTER)
+
+
 # ── save ──────────────────────────────────────────────────────────────────────
 out = r"C:\Users\Admin\Documents\Repos\Hacknation_april_2026\presentation\GF_sh_AI_scientist_Deck.pptx"
 prs.save(out)
