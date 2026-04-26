@@ -128,7 +128,7 @@ txt(sl, 0.5, 3.78, 12.3, 0.45,
 # Powered by
 rect(sl, 3.5, 4.45, 6.33, 0.05, RGBColor(0x22,0x44,0x55))
 txt(sl, 0.5, 4.60, 12.3, 0.38,
-    "Powered by  OpenAI GPT-4o  ·  Tavily  ·  OpenAlex  ·  Semantic Scholar  ·  Next.js 14",
+    "Powered by  OpenAI GPT-4o  ·  Google Gemini  ·  Claude  ·  Supabase pgvector  ·  Tavily  ·  Next.js 14",
     size=12, colour=RGBColor(0x66,0x99,0xBB), align=PP_ALIGN.CENTER)
 
 # GitHub link
@@ -209,15 +209,17 @@ sl = add_slide()
 header(sl, "WHAT WE BUILT")
 
 features = [
-    (RED_SOFT,  "🔍  PLAN CRITIQUE — WE CHECK OUR OWN WORK",
-     "After every plan is generated, an AI critic scans it for 6 weakness categories:\n"
-     "controls · statistics · sample size · validation · safety · feasibility\n"
-     "Heuristic fallback if AI is unavailable. Rated: weak / needs_work / solid"),
+    (RED_SOFT,  "🔍  PLAN CRITIQUE — AI EVALUATES ITS OWN WEAKNESSES",
+     "After every plan, AI scans for 6 critical weakness categories:\n"
+     "missing controls · weak statistics · insufficient sample size\n"
+     "validation gaps · safety oversights · feasibility issues\n"
+     "Rated: weak (critical) · needs_work (warning) · solid (pass)"),
 
-    (YELLOW,    "🔁  LEARNING FEEDBACK LOOP (Stretch Goal ✔)",
-     "Scientist corrects a plan section → system derives a reusable rule + embedding.\n"
-     "Next plan for a similar experiment automatically incorporates those corrections.\n"
-     "Semantic + lexical retrieval: domain, type, tags, cosine similarity."),
+    (YELLOW,    "🔁  RAG FEEDBACK LOOP — IT LEARNS  (Stretch Goal ✔)",
+     "Scientist corrects a plan → Gemini embeds the correction (768-dim vector)\n"
+     "stored in Supabase pgvector with HNSW index.\n"
+     "Next similar question → match_experiments() retrieves corrections\n"
+     "via cosine similarity → injected as few-shot context into the next plan."),
 
     (RED_SOFT,  "🛡️  USER-SPECIFIC RISK PROFILE",
      "Hard-blocks: gain-of-function · pathogen synthesis · unapproved human trials.\n"
@@ -306,8 +308,8 @@ rows = [
      "Smart domain filtering · re-ranking · de-duplication · coverage diagnostics"),
 
     ("Step-by-step protocol",
-     "Protocol + AI CRITIC that scans our own output for 6 weakness categories\n"
-     "(controls · statistics · sample size · validation · safety · feasibility)"),
+     "Protocol + AI CRITIC evaluates its own output for 6 weakness categories:\n"
+     "controls · statistics · sample size · validation · safety · feasibility"),
 
     ("Materials with catalog numbers",
      "Per-material Tavily search · regex fact extraction from supplier pages\n"
@@ -317,8 +319,11 @@ rows = [
      "Timeline with decision gates · schedule risks per phase · dependencies"),
 
     ("[Stretch] Scientist feedback loop",
-     "✔  Fully implemented: derive rule → compute embedding → semantic+lexical retrieval\n"
-     "   'Applied Feedback' panel shows exactly which rules were injected"),
+     "✔  Full RAG pipeline: correction → Gemini 768-dim embedding → Supabase pgvector\n"
+     "   match_experiments() cosine search → few-shot context in next plan"),
+
+    ("(Not in brief)  —",
+     "Multi-model: OpenAI GPT-4o · Google Gemini · Claude for redundancy & best-fit tasks"),
 
     ("(Not in brief)  —",
      "User-specific risk profile: hard-blocks · soft-flags · expert-review gates per plan"),
@@ -328,7 +333,7 @@ rows = [
      "   validation completeness · feedback relevance  →  trust before ordering"),
 
     ("(Not in brief)  —",
-     "Upload own data [coming soon]  —  architecture (feedback store + embeddings) is ready"),
+     "Upload own data [coming soon]  —  Supabase schema + embedding store already in place"),
 ]
 
 for i, (left, right) in enumerate(rows):
