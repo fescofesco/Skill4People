@@ -18,6 +18,7 @@ type PubmedSummary = {
 export async function searchPubmed(queries: string[]): Promise<Reference[]> {
   const refs: Reference[] = [];
   const seen = new Set<string>();
+  let lastError: string | null = null;
   for (const q of queries.slice(0, 2)) {
     try {
       const params = new URLSearchParams({
@@ -31,7 +32,10 @@ export async function searchPubmed(queries: string[]): Promise<Reference[]> {
         10_000,
         "pubmed_search"
       );
-      if (!res.ok) continue;
+      if (!res.ok) {
+        lastError = `esearch HTTP ${res.status}`;
+        continue;
+      }
       const json = (await res.json()) as { esearchresult?: { idlist?: string[] } };
       const ids = json.esearchresult?.idlist || [];
       if (ids.length === 0) continue;
@@ -45,7 +49,10 @@ export async function searchPubmed(queries: string[]): Promise<Reference[]> {
         10_000,
         "pubmed_summary"
       );
-      if (!sumRes.ok) continue;
+      if (!sumRes.ok) {
+        lastError = `esummary HTTP ${sumRes.status}`;
+        continue;
+      }
       const sumJson = (await sumRes.json()) as {
         result?: Record<string, PubmedSummary | string[] | undefined>;
       };
@@ -71,10 +78,13 @@ export async function searchPubmed(queries: string[]): Promise<Reference[]> {
           evidence_type: "literature"
         });
       }
-    } catch {
-      // ignore failures, continue
+    } catch (err) {
+      lastError = err instanceof Error ? err.message : String(err);
     }
     await new Promise((r) => setTimeout(r, 250));
+  }
+  if (refs.length === 0 && lastError) {
+    throw new Error(`pubmed: ${lastError}`);
   }
   return refs;
 }

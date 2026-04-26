@@ -18,10 +18,12 @@ export type SemanticScholarHit = {
   citationCount?: number | null;
 };
 
+export type SsResult = { hits: SemanticScholarHit[]; lastError: string | null };
+
 export async function searchSemanticScholarOne(
   query: string,
   limit = 5
-): Promise<SemanticScholarHit[]> {
+): Promise<SsResult> {
   const env = getEnv();
   const params = new URLSearchParams({
     query,
@@ -40,22 +42,30 @@ export async function searchSemanticScholarOne(
       12_000,
       "semantic_scholar"
     );
-    if (!res.ok) return [];
+    if (!res.ok) return { hits: [], lastError: `HTTP ${res.status} ${res.statusText}` };
     const json = (await res.json()) as { data?: SemanticScholarHit[] };
-    return Array.isArray(json.data) ? json.data : [];
-  } catch {
-    return [];
+    return { hits: Array.isArray(json.data) ? json.data : [], lastError: null };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { hits: [], lastError: msg };
   }
 }
 
 export async function searchSemanticScholar(queries: string[]): Promise<Reference[]> {
   const all: SemanticScholarHit[] = [];
+  let lastError: string | null = null;
   // Limit to 4 queries to avoid rate limits during demo
   for (const q of queries.slice(0, 4)) {
-    const hits = await searchSemanticScholarOne(q, 5);
-    for (const h of hits) all.push(h);
+    const r = await searchSemanticScholarOne(q, 5);
+    for (const h of r.hits) all.push(h);
+    if (r.lastError) lastError = r.lastError;
     // gentle backoff
     await new Promise((r) => setTimeout(r, 250));
+  }
+  // Only throw if we got nothing AND every query reported an error.
+  // (If any query returned hits, callers don't need to know about transient errors.)
+  if (all.length === 0 && lastError) {
+    throw new Error(`semantic_scholar: ${lastError}`);
   }
   const seen = new Set<string>();
   const refs: Reference[] = [];

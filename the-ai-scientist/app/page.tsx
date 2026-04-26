@@ -51,8 +51,17 @@ type FeedbackTarget = {
   label: string;
 };
 
+type SearchSourceStat = {
+  name: string;
+  status: "ok" | "empty" | "error";
+  count: number;
+  durationMs: number;
+  error: string | null;
+};
+
 type LiteratureDiagnostics = {
   sources: string[];
+  sourceStats?: SearchSourceStat[];
   demoFallback: boolean;
   openaiConfigured: boolean;
   parseSource: "openai" | "heuristic";
@@ -493,6 +502,28 @@ function LiteratureCard({
               </Badge>
               {diagnostics.sources.length > 0 && (
                 <Badge tone="slate">live: {diagnostics.sources.join(", ")}</Badge>
+              )}
+              {diagnostics.sourceStats && diagnostics.sourceStats.length > 0 && (
+                <details className="text-xs text-slate-600">
+                  <summary className="cursor-pointer underline">search sources</summary>
+                  <ul className="mt-1 list-disc pl-4">
+                    {diagnostics.sourceStats.map((s) => (
+                      <li
+                        key={s.name}
+                        className={
+                          s.status === "ok"
+                            ? "text-emerald-700"
+                            : s.status === "error"
+                              ? "text-rose-700"
+                              : "text-slate-500"
+                        }
+                      >
+                        {s.name}: {s.status} ({s.count} hit{s.count === 1 ? "" : "s"}, {s.durationMs} ms)
+                        {s.error ? ` — ${s.error}` : ""}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
               )}
             </div>
           )}

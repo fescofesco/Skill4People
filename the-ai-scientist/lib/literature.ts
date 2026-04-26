@@ -3,6 +3,7 @@ import { searchArxiv } from "./arxiv";
 import { demoLiteratureQC, demoQueries } from "./demo-fallbacks";
 import { getEnv } from "./env";
 import { chatCompletionsJson, getOpenAIClient, getOpenAIModel } from "./openai";
+import { searchOpenAlex } from "./openalex";
 import { searchPubmed } from "./pubmed";
 import { searchSemanticScholar } from "./semantic-scholar";
 import { tavilyMultiSearch } from "./tavily";
@@ -527,8 +528,17 @@ export function heuristicNovelty(args: {
   });
 }
 
+export type SearchSourceStat = {
+  name: string;
+  status: "ok" | "empty" | "error";
+  count: number;
+  durationMs: number;
+  error: string | null;
+};
+
 export type LiteratureDiagnostics = {
   sources: string[];
+  sourceStats: SearchSourceStat[];
   demoFallback: boolean;
   openaiConfigured: boolean;
   parseSource: AiSource;
@@ -549,20 +559,24 @@ export async function runLiteratureQC(hypothesis: string): Promise<{
   const parseResult = await parseHypothesis(hypothesis);
   const queries = generateLiteratureQueries(parseResult.parsed, hypothesis);
 
-  const sourcesUsed: string[] = [];
+  const sourceStats: SearchSourceStat[] = [];
+  const useArxiv = shouldUseArxiv(parseResult.parsed);
+  const usePubmed = shouldUsePubmed(parseResult.parsed);
 
-  const [ssRefs, axRefs, pmRefs, prRefs] = await Promise.all([
-    safeSearch(() => searchSemanticScholar(queries), "semantic_scholar", sourcesUsed),
-    shouldUseArxiv(parseResult.parsed)
-      ? safeSearch(() => searchArxiv(queries), "arxiv", sourcesUsed)
-      : Promise.resolve([]),
-    shouldUsePubmed(parseResult.parsed)
-      ? safeSearch(() => searchPubmed(queries), "pubmed", sourcesUsed)
-      : Promise.resolve([]),
-    safeSearch(() => searchProtocolRepositories(queries), "protocol_repository", sourcesUsed)
+  const [ssRefs, axRefs, pmRefs, prRefs, oaRefs] = await Promise.all([
+    safeSearch(() => searchSemanticScholar(queries), "semantic_scholar", sourceStats),
+    useArxiv
+      ? safeSearch(() => searchArxiv(queries), "arxiv", sourceStats)
+      : skipped("arxiv", "skipped: domain heuristic", sourceStats),
+    usePubmed
+      ? safeSearch(() => searchPubmed(queries), "pubmed", sourceStats)
+      : skipped("pubmed", "skipped: domain heuristic", sourceStats),
+    safeSearch(() => searchProtocolRepositories(queries), "protocol_repository", sourceStats),
+    safeSearch(() => searchOpenAlex(queries), "openalex", sourceStats)
   ]);
 
-  const refs = dedupeReferences([...ssRefs, ...axRefs, ...pmRefs, ...prRefs]).slice(0, 12);
+  const refs = dedupeReferences([...ssRefs, ...axRefs, ...pmRefs, ...prRefs, ...oaRefs]).slice(0, 12);
+  const sourcesUsed = sourceStats.filter((s) => s.status === "ok").map((s) => s.name);
 
   // Demo fallback only fires when OpenAI is not configured AND demo is explicitly enabled.
   // With a real API key we always go through the AI/heuristic path so user-entered hypotheses
@@ -573,6 +587,7 @@ export async function runLiteratureQC(hypothesis: string): Promise<{
       qc: demo,
       diagnostics: {
         sources: sourcesUsed,
+        sourceStats,
         demoFallback: true,
         openaiConfigured,
         parseSource: parseResult.source,
@@ -597,6 +612,7 @@ export async function runLiteratureQC(hypothesis: string): Promise<{
     qc: novelty.qc,
     diagnostics: {
       sources: sourcesUsed,
+      sourceStats,
       demoFallback: false,
       openaiConfigured,
       parseSource: parseResult.source,
@@ -612,16 +628,36 @@ export async function runLiteratureQC(hypothesis: string): Promise<{
 
 async function safeSearch(
   fn: () => Promise<Reference[]>,
-  label: string,
-  used: string[]
+  name: string,
+  stats: SearchSourceStat[]
 ): Promise<Reference[]> {
+  const startedAt = Date.now();
   try {
     const r = await fn();
-    if (r.length > 0) used.push(label);
+    stats.push({
+      name,
+      status: r.length > 0 ? "ok" : "empty",
+      count: r.length,
+      durationMs: Date.now() - startedAt,
+      error: null
+    });
     return r;
-  } catch {
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    stats.push({
+      name,
+      status: "error",
+      count: 0,
+      durationMs: Date.now() - startedAt,
+      error: message.slice(0, 500)
+    });
     return [];
   }
+}
+
+async function skipped(name: string, reason: string, stats: SearchSourceStat[]): Promise<Reference[]> {
+  stats.push({ name, status: "empty", count: 0, durationMs: 0, error: reason });
+  return [];
 }
 
 // Re-export helpers used by demo fallback
