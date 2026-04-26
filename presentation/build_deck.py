@@ -1,4 +1,4 @@
-"""AI Scientist pitch deck — 3 slides, 2-minute format."""
+"""AI Scientist pitch deck — 4 slides, 2-minute format."""
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
@@ -73,7 +73,59 @@ def header(slide, title):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SLIDE 1 — THE PROBLEM + OUR SOLUTION
+# SLIDE 1 — TITLE
+# ══════════════════════════════════════════════════════════════════════════════
+sl = add_slide()
+rect(sl, 0, 0, 13.33, 0.10, ACCENT)
+rect(sl, 0, 7.40, 13.33, 0.10, ACCENT)
+
+# Event banner
+rect(sl, 0, 0.10, 13.33, 0.42, RGBColor(0x05, 0x12, 0x1E))
+txt(sl, 0.5, 0.16, 12.3, 0.32,
+    "Hack-Nation 5th Global AI Hackathon  ·  HUB-LINZ",
+    size=13, colour=LIGHT_GREY, align=PP_ALIGN.CENTER)
+
+# Project name
+txt(sl, 0.5, 0.75, 12.3, 1.10,
+    "Skills4People",
+    size=62, bold=True, colour=WHITE, align=PP_ALIGN.CENTER)
+
+# Sub-title / product name
+rect(sl, 3.2, 1.95, 6.93, 0.55, RGBColor(0x00, 0x40, 0x60))
+txt(sl, 3.2, 2.00, 6.93, 0.44,
+    "The AI Scientist  —  hypothesis to runnable experiment in minutes",
+    size=14, italic=True, colour=ACCENT, align=PP_ALIGN.CENTER)
+
+# Divider
+rect(sl, 4.0, 2.68, 5.33, 0.06, ACCENT)
+
+# Team name large
+txt(sl, 0.5, 2.88, 12.3, 0.80,
+    "GF.sh",
+    size=44, bold=True, colour=ACCENT, align=PP_ALIGN.CENTER)
+
+# Team members
+txt(sl, 0.5, 3.78, 12.3, 0.45,
+    "Samuel Hajek  ·  Georg Niess  ·  Felix Scope  ·  Johannes Wagner",
+    size=17, colour=LIGHT_GREY, align=PP_ALIGN.CENTER)
+
+# Powered by
+rect(sl, 3.5, 4.45, 6.33, 0.05, RGBColor(0x22,0x44,0x55))
+txt(sl, 0.5, 4.60, 12.3, 0.38,
+    "Powered by  OpenAI GPT-4o  ·  Tavily  ·  OpenAlex  ·  Semantic Scholar  ·  Next.js 14",
+    size=12, colour=RGBColor(0x66,0x99,0xBB), align=PP_ALIGN.CENTER)
+
+# One-liner tagline
+rect(sl, 0.5, 5.25, 12.3, 1.50, RGBColor(0x08, 0x1E, 0x30))
+txt(sl, 0.7, 5.40, 11.9, 1.20,
+    "Science moves at the speed of operations, not ideas.\n"
+    "We compress weeks of lab-planning into a plan a scientist\n"
+    "can pick up on Monday and start running by Friday.",
+    size=16, italic=True, colour=WHITE, align=PP_ALIGN.CENTER)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SLIDE 2 — THE PROBLEM + OUR SOLUTION
 # ══════════════════════════════════════════════════════════════════════════════
 sl = add_slide()
 rect(sl, 0, 0, 13.33, 0.10, ACCENT)
@@ -214,7 +266,62 @@ for i, (done, label, note) in enumerate(extra):
     check_row(sl, 6.85, 1.55 + i * 0.97, done, label, note)
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# SLIDE 4 — WHAT WE DID BETTER THAN THE REQUIREMENTS
+# ══════════════════════════════════════════════════════════════════════════════
+sl = add_slide()
+header(sl, "WHAT WE DID BETTER THAN THE REQUIREMENTS")
+
+# Column headers
+rect(sl, 0.4,  1.05, 5.7, 0.40, RGBColor(0x00,0x30,0x55))
+rect(sl, 6.3,  1.05, 6.6, 0.40, RGBColor(0x00,0x40,0x20))
+txt(sl, 0.55,  1.10, 5.5, 0.28, "BRIEF ASKED FOR", size=13, bold=True, colour=LIGHT_GREY)
+txt(sl, 6.45,  1.10, 6.3, 0.28, "WE DELIVERED", size=13, bold=True, colour=GREEN)
+
+rows = [
+    ("Novelty signal + 1–3 references",
+     "6-source search (Scholar · arXiv · PubMed · OpenAlex · protocols.io · Tavily)\n"
+     "Smart domain filtering · re-ranking · de-duplication · coverage diagnostics"),
+
+    ("Step-by-step protocol",
+     "Protocol + AI CRITIC that scans our own output for 6 weakness categories\n"
+     "(controls · statistics · sample size · validation · safety · feasibility)"),
+
+    ("Materials with catalog numbers",
+     "Per-material Tavily search · regex fact extraction from supplier pages\n"
+     "AI price estimation tagged [approx_estimate] — never fabricates"),
+
+    ("Phased timeline",
+     "Timeline with decision gates · schedule risks per phase · dependencies"),
+
+    ("[Stretch] Scientist feedback loop",
+     "✔  Fully implemented: derive rule → compute embedding → semantic+lexical retrieval\n"
+     "   'Applied Feedback' panel shows exactly which rules were injected"),
+
+    ("(Not in brief)  —",
+     "User-specific risk profile: hard-blocks · soft-flags · expert-review gates per plan"),
+
+    ("(Not in brief)  —",
+     "Composite confidence score: evidence quality · supplier completeness\n"
+     "   validation completeness · feedback relevance  →  trust before ordering"),
+
+    ("(Not in brief)  —",
+     "Upload own data [coming soon]  —  architecture (feedback store + embeddings) is ready"),
+]
+
+for i, (left, right) in enumerate(rows):
+    y = 1.55 + i * 0.72
+    bg = RGBColor(0x10,0x22,0x33) if i % 2 == 0 else RGBColor(0x0D,0x1B,0x2A)
+    rect(sl, 0.4, y, 12.5, 0.70, bg)
+    is_beyond = left.startswith("(Not")
+    is_stretch = "Stretch" in left
+    lcol = RGBColor(0x88,0x99,0xAA) if is_beyond else LIGHT_GREY
+    rcol = ACCENT if (is_stretch or is_beyond) else GREEN
+    txt(sl, 0.55, y+0.10, 5.6, 0.52, left,  size=11, colour=lcol, italic=is_beyond)
+    txt(sl, 6.30, y+0.10, 6.7, 0.52, right, size=11, colour=rcol)
+
+
 # ── save ──────────────────────────────────────────────────────────────────────
-out = r"C:\Users\Admin\Documents\Repos\Hacknation_april_2026\presentation\AI_Scientist_Deck.pptx"
+out = r"C:\Users\Admin\Documents\Repos\Hacknation_april_2026\presentation\AI_Scientist_Deck_v2.pptx"
 prs.save(out)
 print(f"Saved: {out}")
