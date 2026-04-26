@@ -11,7 +11,8 @@
     "smoke": "tsx scripts/smoke-test.ts",
     "smoke:tavily": "tsx scripts/smoke-tavily.ts",
     "feedback:reset": "tsx scripts/reset-feedback.ts",
-    "feedback:seed": "tsx scripts/seed-feedback.ts"
+    "feedback:seed": "tsx scripts/seed-feedback.ts",
+    "deploy:prod": "vercel deploy --prod --yes -e BUILD_SHA=$(git rev-parse HEAD) -e BUILD_REF=$(git rev-parse --abbrev-ref HEAD)"
   },
   "dependencies": {
     "@tavily/core": "^0.0.2",
