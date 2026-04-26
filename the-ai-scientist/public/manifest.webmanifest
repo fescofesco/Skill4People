@@ -1,11 +1,11 @@
 {
-  "name": "The AI Scientist",
-  "short_name": "AI Scientist",
-  "description": "Turn a scientific hypothesis into a review-ready experiment plan.",
+  "name": "Helix — AI-assisted scientific planning workspace",
+  "short_name": "Helix",
+  "description": "Turn a natural language research question into a screened, defensible experiment plan with literature awareness and transparent assumptions.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
+  "background_color": "#f6f8fc",
+  "theme_color": "#0b1733",
   "orientation": "any",
   "icons": [
     {

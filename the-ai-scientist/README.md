@@ -1,8 +1,11 @@
-# The AI Scientist
+# Helix
 
-From scientific hypothesis to operational experiment plan.
+> **Helix** — AI-assisted scientific planning workspace.
+> From scientific hypothesis to operational experiment plan.
 
 This is a hackathon prototype for turning a scientific hypothesis into a structured, reviewable experiment-planning dossier with literature QC, supplier/material transparency, budget estimation, timeline, validation design, safety/compliance review, and a visible scientist-feedback loop.
+
+Helix is the product brand; the repo directory is still named `the-ai-scientist/` to preserve the original challenge mapping ("The AI Scientist"). All API routes, schemas, and business logic are unchanged from the upstream prototype — this branch only refreshes the UI.
 
 The app is intentionally conservative: generated plans are for expert review, not direct execution. Operational details must be checked against approved local SOPs and institutional approvals.
 

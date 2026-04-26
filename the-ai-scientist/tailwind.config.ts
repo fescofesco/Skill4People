@@ -50,15 +50,21 @@ const config: Config = {
       },
       fontFamily: {
         sans: [
+          "Inter",
           "ui-sans-serif",
           "system-ui",
           "-apple-system",
           "BlinkMacSystemFont",
           "Segoe UI",
           "Roboto",
-          "Inter",
           "sans-serif"
         ]
+      },
+      boxShadow: {
+        "helix-soft":
+          "0 1px 0 rgba(15,23,42,0.04), 0 24px 48px -32px rgba(15,23,42,0.18)",
+        "helix-pop":
+          "0 1px 0 rgba(15,23,42,0.06), 0 32px 60px -28px rgba(15,23,42,0.30)"
       }
     }
   },

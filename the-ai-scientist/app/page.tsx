@@ -3,20 +3,24 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
+  ArrowRight,
+  Atom,
   Beaker,
   BookOpen,
   BrainCircuit,
   CheckCircle2,
   ClipboardCheck,
+  ClipboardList,
   ExternalLink,
   FlaskConical,
+  Lightbulb,
   Newspaper,
   RefreshCw,
   Save,
   Search,
   ShieldAlert,
   ShoppingCart,
-  Sparkles
+  XCircle
 } from "lucide-react";
 import type {
   ExperimentPlan,
@@ -26,6 +30,11 @@ import type {
   Reference,
   ScientistFeedback
 } from "@/lib/schemas";
+
+const PRODUCT_NAME = "Helix";
+const PRODUCT_EYEBROW = "AI-assisted scientific planning workspace";
+const PRODUCT_DESCRIPTION =
+  "Turn a natural language research question into a screened, defensible experiment plan with literature awareness and transparent assumptions.";
 
 const samples = [
   {
@@ -284,37 +293,34 @@ export default function Home() {
     }
   }
 
+  const overview = computeOverview({ stage, literatureQC, plan });
+
   return (
-    <main className="min-h-screen px-4 py-8 md:px-8">
+    <main className="min-h-screen px-4 py-8 md:px-10 lg:py-12">
       <div className="mx-auto max-w-7xl">
-        <header className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border bg-white px-3 py-1 text-sm text-slate-600 shadow-sm">
-              <Sparkles className="h-4 w-4 text-blue-600" /> Hackathon prototype
-            </div>
-            <h1 className="mt-4 text-4xl font-bold tracking-tight text-slate-950 md:text-5xl">
-              The AI Scientist
-            </h1>
-            <p className="mt-2 text-base text-slate-600 md:text-lg">
-              From scientific hypothesis to operational experiment plan
-            </p>
-          </div>
+        <HeroHeader overview={overview} />
+        <div className="mt-6">
           <StatusBadges health={health} feedbackCount={feedbackCount} />
-        </header>
-        <StageProgress stage={stage} />
+        </div>
+        <div className="mt-6">
+          <StageProgress stage={stage} />
+        </div>
 
 
         {toast && (
-          <div className="mb-4 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-            <span>{toast}</span>
-            <button onClick={() => setToast(null)} className="font-semibold">
+          <div className="mt-6 flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-900 shadow-sm backdrop-blur">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              <span>{toast}</span>
+            </div>
+            <button onClick={() => setToast(null)} className="font-semibold hover:underline">
               Dismiss
             </button>
           </div>
         )}
 
         {health && health.env.openaiConfigured === false && (
-          <div className="mb-4 flex flex-col gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 md:flex-row md:items-center md:justify-between">
+          <div className="mt-6 flex flex-col gap-2 rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm text-amber-900 shadow-sm backdrop-blur md:flex-row md:items-center md:justify-between">
             <div>
               <b>OpenAI key not detected.</b> The app will use a deterministic template fallback
               instead of calling a real model. Add{" "}
@@ -342,7 +348,7 @@ export default function Home() {
             genMeta?.source === "deterministic_fallback";
           if (!fallbackActive) return null;
           return (
-            <div className="mb-4 rounded-xl border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-900">
+            <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-sm text-rose-900 shadow-sm backdrop-blur">
               <div className="font-semibold">
                 AI calls failed — showing deterministic fallback output
                 {quota ? " (OpenAI quota exceeded)" : policy ? " (provider policy block)" : ""}.
@@ -373,56 +379,101 @@ export default function Home() {
           );
         })()}
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
           <section className="space-y-6">
             <Card>
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-xl font-semibold text-slate-950">Stage A — Input</h2>
-                  <p className="text-sm text-slate-600">
-                    Enter any scientific hypothesis, question, or research topic. The AI will parse
-                    it; if it&apos;s too vague to plan, the parsed hypothesis and novelty rationale
-                    will say so.
-                  </p>
+              <div className="flex flex-col gap-4 md:flex-row md:items-start">
+                <div className="helix-icon-bubble">
+                  <Beaker className="h-5 w-5" />
                 </div>
-                <Badge tone="blue">{hypothesis.length}/3000</Badge>
+                <div className="flex-1">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h2 className="text-lg font-semibold text-slate-900">Scientific question</h2>
+                      <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                        Start with the claim, mechanism, population, and measurable outcome you
+                        want to test.
+                      </p>
+                    </div>
+                    <span className="helix-chip text-[11px] uppercase tracking-[0.14em] text-slate-500">
+                      {hypothesis.length}/3000
+                    </span>
+                  </div>
+
+                  <div className="mt-5">
+                    <label className="sr-only" htmlFor="hypothesis">
+                      Hypothesis
+                    </label>
+                    <textarea
+                      id="hypothesis"
+                      className="helix-textarea min-h-[180px]"
+                      placeholder="Describe the intervention, system, expected outcome and threshold — e.g. 'Replacing sucrose with trehalose as a cryoprotectant will increase HeLa post-thaw viability by ≥15 percentage points...'"
+                      value={hypothesis}
+                      onChange={(e) => setHypothesis(e.target.value)}
+                    />
+                    {!validation.ok && (
+                      <p className="mt-2 text-sm text-red-700">{validation.message}</p>
+                    )}
+                  </div>
+
+                  <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap gap-2">
+                      <span className="helix-chip">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> Hypothesis-ready
+                      </span>
+                      <span className="helix-chip">
+                        <FlaskConical className="h-3.5 w-3.5 text-blue-600" /> Wet-lab context
+                      </span>
+                      <span className="helix-chip">
+                        <Search className="h-3.5 w-3.5 text-slate-500" /> Tavily QC
+                      </span>
+                    </div>
+                    <button
+                      onClick={runLiteratureQC}
+                      disabled={
+                        !validation.ok ||
+                        stage === "literature_loading" ||
+                        stage === "plan_loading"
+                      }
+                      className="helix-btn-primary"
+                    >
+                      {stage === "literature_loading" ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 animate-spin" />
+                          Running Literature QC…
+                        </>
+                      ) : (
+                        <>
+                          Run Literature QC <ArrowRight className="h-4 w-4" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="mt-5 rounded-2xl border border-slate-200/70 bg-slate-50/60 p-4">
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      <Lightbulb className="h-3.5 w-3.5" />
+                      <span>Try an example</span>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {samples.map((sample) => (
+                        <button
+                          key={sample.label}
+                          className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                          onClick={() => {
+                            setHypothesis(sample.text);
+                            resetDownstream();
+                            setError(null);
+                            setStage("input");
+                          }}
+                        >
+                          {sample.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {samples.map((sample) => (
-                  <button
-                    key={sample.label}
-                    className="rounded-full border bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-blue-300 hover:bg-blue-50"
-                    onClick={() => {
-                      setHypothesis(sample.text);
-                      resetDownstream();
-                      setError(null);
-                      setStage("input");
-                    }}
-                  >
-                    {sample.label}
-                  </button>
-                ))}
-              </div>
-              <label className="mt-4 block text-sm font-medium text-slate-700" htmlFor="hypothesis">
-                Hypothesis
-              </label>
-              <textarea
-                id="hypothesis"
-                className="mt-2 min-h-40 w-full rounded-xl border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-900 shadow-inner focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                value={hypothesis}
-                onChange={(e) => setHypothesis(e.target.value)}
-              />
-              {!validation.ok && (
-                <p className="mt-2 text-sm text-red-700">{validation.message}</p>
-              )}
-              <button
-                onClick={runLiteratureQC}
-                disabled={!validation.ok || stage === "literature_loading" || stage === "plan_loading"}
-                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <Search className="h-4 w-4" />
-                {stage === "literature_loading" ? "Running Literature QC..." : "Run Literature QC"}
-              </button>
             </Card>
 
             {stage === "literature_loading" && (
@@ -488,48 +539,79 @@ export default function Home() {
 
           <aside className="space-y-6">
             <Card>
-              <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-950">
-                <ClipboardCheck className="h-5 w-5 text-blue-600" /> Judge Demo
-              </h2>
-              <ol className="mt-3 space-y-2 text-sm text-slate-600">
-                <li>Click a sample or enter your own hypothesis.</li>
-                <li>Run Literature QC.</li>
-                <li>Generate plan.</li>
-                <li>Edit/correct validation or protocol.</li>
-                <li>Regenerate and show Applied Scientist Feedback.</li>
+              <div className="flex items-start gap-3">
+                <div className="helix-icon-bubble">
+                  <ClipboardList className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-slate-900">Step-by-step demo</h2>
+                  <p className="mt-1 text-xs text-slate-500">
+                    A judge can walk the full loop in under five minutes.
+                  </p>
+                </div>
+              </div>
+              <ol className="mt-4 space-y-2 text-sm text-slate-600">
+                {[
+                  "Pick a sample or enter your own hypothesis.",
+                  "Run Literature QC.",
+                  "Generate the experiment plan.",
+                  "Suggest a correction on a validation or protocol step.",
+                  "Regenerate and watch the Applied Scientist Feedback panel update."
+                ].map((step, i) => (
+                  <li key={step} className="flex items-start gap-3">
+                    <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[11px] font-semibold text-[hsl(var(--helix-brand))] ring-1 ring-blue-100">
+                      {i + 1}
+                    </span>
+                    <span className="leading-6">{step}</span>
+                  </li>
+                ))}
               </ol>
             </Card>
             <Card>
-              <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-950">
-                <BrainCircuit className="h-5 w-5 text-emerald-600" /> Feedback Store
-              </h2>
-              <p className="mt-2 text-sm text-slate-600">
-                {feedbackCount} saved scientist correction{feedbackCount === 1 ? "" : "s"}.
-              </p>
-              <div className="mt-3 space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="helix-icon-bubble">
+                  <BrainCircuit className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-base font-semibold text-slate-900">Feedback store</h2>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {feedbackCount} saved scientist correction
+                    {feedbackCount === 1 ? "" : "s"}.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 space-y-2.5">
                 {recentFeedback.length === 0 ? (
-                  <p className="rounded-xl bg-slate-50 p-3 text-sm text-slate-500">
+                  <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 p-3 text-sm text-slate-500">
                     No feedback yet. Save a correction to demonstrate learning.
                   </p>
                 ) : (
                   recentFeedback.map((fb) => (
-                    <div key={fb.id} className="rounded-xl border bg-slate-50 p-3 text-sm">
-                      <div className="font-medium text-slate-900">{fb.item_type} · {fb.severity}</div>
-                      <p className="mt-1 text-slate-600">{fb.derived_rule}</p>
+                    <div
+                      key={fb.id}
+                      className="rounded-2xl border border-slate-200/70 bg-slate-50/60 p-3 text-sm"
+                    >
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                        <Badge tone="slate">{humanizeItemType(fb.item_type)}</Badge>
+                        <Badge tone={fb.severity === "critical" ? "red" : fb.severity === "important" ? "amber" : "slate"}>
+                          {fb.severity}
+                        </Badge>
+                      </div>
+                      <p className="mt-2 leading-6 text-slate-700">{fb.derived_rule}</p>
                     </div>
                   ))
                 )}
               </div>
-              <div className="mt-4 flex flex-wrap gap-2 border-t pt-4">
+              <div className="mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
                 <button
                   onClick={() => void runFeedbackAction("seed")}
-                  className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100"
+                  className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-100"
                 >
                   Seed demo feedback
                 </button>
                 <button
                   onClick={() => void runFeedbackAction("reset")}
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                 >
                   Reset feedback
                 </button>
@@ -562,10 +644,10 @@ function DeploymentFooter({ health }: { health: HealthResponse | null }) {
         : null
       : null;
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-8 pt-2">
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-white/60 px-4 py-2 text-xs text-slate-500 backdrop-blur">
+    <div className="mx-auto mt-10 max-w-7xl px-4 pb-8 pt-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-white/70 px-4 py-2 text-xs text-slate-500 backdrop-blur">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <span>The AI Scientist</span>
+          <span className="font-semibold text-slate-700">{PRODUCT_NAME}</span>
           {v?.onVercel ? (
             <span>
               · Vercel <span className="font-semibold text-slate-700">{v.env ?? "unknown"}</span>
@@ -600,7 +682,11 @@ function DeploymentFooter({ health }: { health: HealthResponse | null }) {
 function StatusBadges({ health, feedbackCount }: { health: HealthResponse | null; feedbackCount: number }) {
   const env = health?.env;
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+        Pipeline status
+      </span>
+      <span className="hidden h-px flex-1 bg-slate-200 sm:block" />
       <Badge tone={env?.openaiConfigured ? "emerald" : "amber"}>
         OpenAI {env?.openaiConfigured ? "on" : "fallback"}
       </Badge>
@@ -614,6 +700,113 @@ function StatusBadges({ health, feedbackCount }: { health: HealthResponse | null
         Feedback {feedbackCount}
       </Badge>
       {env?.demoFallbackEnabled && <Badge tone="blue">Demo fallback on</Badge>}
+    </div>
+  );
+}
+
+type Overview = {
+  qcStatus: { label: string; tone: "slate" | "emerald" | "amber" | "blue" | "red" };
+  references: { label: string; tone: "slate" | "emerald" | "amber" | "blue" | "red" };
+  planStatus: { label: string; tone: "slate" | "emerald" | "amber" | "blue" | "red" };
+};
+
+function computeOverview({
+  stage,
+  literatureQC,
+  plan
+}: {
+  stage: Stage;
+  literatureQC: LiteratureQC | null;
+  plan: ExperimentPlan | null;
+}): Overview {
+  const qcStatus: Overview["qcStatus"] =
+    stage === "literature_loading"
+      ? { label: "Running…", tone: "blue" }
+      : literatureQC
+        ? { label: "Complete", tone: "emerald" }
+        : { label: "Idle", tone: "slate" };
+
+  const refCount = literatureQC?.novelty.references.length ?? 0;
+  const references: Overview["references"] = literatureQC
+    ? {
+        label: `${refCount} screened`,
+        tone: refCount > 0 ? "emerald" : "amber"
+      }
+    : { label: "Pending", tone: "slate" };
+
+  const planStatus: Overview["planStatus"] =
+    stage === "plan_loading"
+      ? { label: "Generating…", tone: "blue" }
+      : plan
+        ? { label: "Draft ready", tone: "emerald" }
+        : literatureQC
+          ? { label: "Awaiting plan", tone: "amber" }
+          : { label: "Awaiting QC", tone: "slate" };
+
+  return { qcStatus, references, planStatus };
+}
+
+function HeroHeader({ overview }: { overview: Overview }) {
+  return (
+    <header className="rounded-3xl border border-slate-200/70 bg-white/85 p-6 shadow-helix-soft backdrop-blur md:p-9">
+      <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+        <div className="max-w-2xl">
+          <span className="helix-eyebrow">
+            <Atom className="h-3.5 w-3.5 text-[hsl(var(--helix-brand))]" />
+            <span>{PRODUCT_EYEBROW}</span>
+          </span>
+          <h1 className="mt-5 text-4xl font-semibold tracking-tight text-slate-950 md:text-[44px] md:leading-[1.05]">
+            {PRODUCT_NAME}
+          </h1>
+          <p className="mt-3 text-base leading-relaxed text-slate-600 md:text-[17px]">
+            {PRODUCT_DESCRIPTION}
+          </p>
+        </div>
+        <div className="grid grid-cols-3 gap-3 lg:min-w-[420px]">
+          <HeroStatCard
+            label="QC status"
+            value={overview.qcStatus.label}
+            tone={overview.qcStatus.tone}
+          />
+          <HeroStatCard
+            label="References"
+            value={overview.references.label}
+            tone={overview.references.tone}
+          />
+          <HeroStatCard
+            label="Plan status"
+            value={overview.planStatus.label}
+            tone={overview.planStatus.tone}
+          />
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function HeroStatCard({
+  label,
+  value,
+  tone
+}: {
+  label: string;
+  value: string;
+  tone: "slate" | "emerald" | "amber" | "blue" | "red";
+}) {
+  const dot = {
+    slate: "bg-slate-300",
+    emerald: "bg-emerald-500",
+    amber: "bg-amber-500",
+    blue: "bg-blue-500",
+    red: "bg-rose-500"
+  }[tone];
+  return (
+    <div className="helix-stat">
+      <div className="helix-stat-label">{label}</div>
+      <div className="helix-stat-value flex items-center justify-center gap-2">
+        <span className={`inline-block h-1.5 w-1.5 rounded-full ${dot}`} />
+        <span>{value}</span>
+      </div>
     </div>
   );
 }
@@ -659,9 +852,13 @@ function sourceLabel(ref: Reference): string {
 function ReferenceList({ references }: { references: Reference[] }) {
   if (references.length === 0) {
     return (
-      <div className="mt-4">
-        <h3 className="font-semibold text-slate-900">References</h3>
-        <p className="mt-2 text-sm text-slate-500">No references retrieved.</p>
+      <div className="mt-6">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+          References
+        </h3>
+        <div className="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 p-4 text-sm text-slate-500">
+          No references retrieved.
+        </div>
       </div>
     );
   }
@@ -674,58 +871,76 @@ function ReferenceList({ references }: { references: Reference[] }) {
     .filter((g) => g.items.length > 0);
 
   return (
-    <div className="mt-4">
+    <div className="mt-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="font-semibold text-slate-900">
-          References <span className="font-normal text-slate-500">({references.length})</span>
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+          References <span className="font-normal text-slate-400">· {references.length}</span>
         </h3>
-        <span className="text-xs text-slate-500">Click any title to open the source.</span>
+        <span className="text-xs text-slate-400">Click any title to open the source.</span>
       </div>
-      <div className="mt-3 space-y-4">
+      <div className="mt-3 space-y-5">
         {groups.map(({ key, meta, items }) => {
           const Icon = meta.icon;
           return (
             <div key={key}>
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
                 <Icon className="h-3.5 w-3.5" />
                 <span>{meta.label}</span>
                 <span className="text-slate-400">· {items.length}</span>
               </div>
-              <div className="mt-2 space-y-2">
+              <div className="mt-2 space-y-2.5">
                 {items.map((ref) => {
                   const hasUrl = ref.url && ref.url !== "not_found";
-                  const Wrapper = hasUrl ? "a" : "div";
-                  const wrapperProps = hasUrl
-                    ? {
-                        href: ref.url,
-                        target: "_blank",
-                        rel: "noopener noreferrer",
-                        className:
-                          "group block rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm transition-colors hover:border-blue-300 hover:bg-white"
-                      }
-                    : { className: "block rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm" };
+                  const hostLabel = hasUrl ? prettyHost(ref.url) : null;
                   return (
-                    <Wrapper key={ref.id} {...(wrapperProps as Record<string, unknown>)}>
+                    <div
+                      key={ref.id}
+                      className="group rounded-2xl border border-slate-200/70 bg-white p-4 text-sm shadow-[0_1px_0_rgba(15,23,42,0.04)] transition-colors hover:border-blue-200 hover:shadow-helix-soft"
+                    >
                       <div className="flex items-start justify-between gap-3">
-                        <div className="font-medium text-slate-900 group-hover:text-blue-700">
-                          {ref.title}
+                        <div className="min-w-0">
+                          <div className="font-semibold leading-snug text-slate-900">
+                            {hasUrl ? (
+                              <a
+                                href={ref.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hover:text-blue-700 hover:underline"
+                              >
+                                {ref.title}
+                              </a>
+                            ) : (
+                              ref.title
+                            )}
+                          </div>
+                          {hasUrl && (
+                            <a
+                              href={ref.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-blue-700 hover:underline"
+                            >
+                              <span className="truncate">{hostLabel}</span>
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
+                          )}
                         </div>
-                        {hasUrl && (
-                          <ExternalLink className="mt-1 h-4 w-4 shrink-0 text-slate-400 group-hover:text-blue-600" />
-                        )}
+                        <Badge tone={meta.tone}>Reference</Badge>
                       </div>
-                      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500">
-                        <Badge tone={meta.tone}>{sourceLabel(ref)}</Badge>
-                        {ref.year && <span>{ref.year}</span>}
+                      <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-500">
+                        <span>{sourceLabel(ref)}</span>
+                        {ref.year && <span>· {ref.year}</span>}
                         {ref.venue && <span>· {ref.venue}</span>}
                         {ref.relevance_score > 0 && (
                           <span>· score {Math.round(ref.relevance_score * 100) / 100}</span>
                         )}
                       </div>
                       {ref.relevance_reason && (
-                        <p className="mt-1 text-xs leading-5 text-slate-600">{ref.relevance_reason}</p>
+                        <p className="mt-2 text-sm leading-6 text-slate-600">
+                          {ref.relevance_reason}
+                        </p>
                       )}
-                    </Wrapper>
+                    </div>
                   );
                 })}
               </div>
@@ -735,6 +950,15 @@ function ReferenceList({ references }: { references: Reference[] }) {
       </div>
     </div>
   );
+}
+
+function prettyHost(url: string): string {
+  try {
+    const u = new URL(url);
+    return u.hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
 }
 
 function ParsedHypothesisEditor({
@@ -823,86 +1047,134 @@ function LiteratureCard({
 }) {
   const [editingParse, setEditingParse] = useState(false);
 
+  const signalCopy = {
+    exact_match_found: {
+      tone: "red" as const,
+      label: "Exact match",
+      icon: <XCircle className="h-4 w-4 text-rose-600" />,
+      banner: "An exact precedent was found across the current reference set."
+    },
+    similar_work_exists: {
+      tone: "amber" as const,
+      label: "Similar work",
+      icon: <AlertTriangle className="h-4 w-4 text-amber-600" />,
+      banner: "Closely related work exists — refine to clarify the novel angle."
+    },
+    not_found: {
+      tone: "emerald" as const,
+      label: "Not Found",
+      icon: <CheckCircle2 className="h-4 w-4 text-emerald-600" />,
+      banner: "No direct precedent found across the current reference set."
+    }
+  }[qc.novelty.signal];
+
+  const confidenceLabel =
+    qc.novelty.confidence >= 0.75
+      ? "High novelty confidence"
+      : qc.novelty.confidence >= 0.5
+        ? "Medium novelty confidence"
+        : "Low novelty confidence";
+
   return (
     <Card>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h2 className="flex items-center gap-2 text-xl font-semibold text-slate-950">
-            <BookOpen className="h-5 w-5 text-blue-600" /> Stage B — Literature QC
-          </h2>
-          <p className="mt-1 text-sm text-slate-600">Rapid novelty signal, not a systematic review.</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <div className="helix-icon-bubble">
+            <BookOpen className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Literature QC</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Novelty screening state and supporting references.
+            </p>
+          </div>
         </div>
-        <div className="flex flex-col items-end gap-2">
-          <Badge tone={qc.novelty.signal === "exact_match_found" ? "red" : qc.novelty.signal === "similar_work_exists" ? "amber" : "emerald"}>
-            {qc.novelty.signal.replaceAll("_", " ")}
-          </Badge>
-          {diagnostics && (
-            <div className="flex flex-wrap gap-1">
-              <Badge tone={diagnostics.parseSource === "openai" ? "emerald" : "amber"}>
-                Parsed by {diagnostics.parseSource === "openai" ? `AI · ${diagnostics.parseModel ?? "openai"}` : "heuristic"}
-              </Badge>
-              <Badge
-                tone={
-                  diagnostics.noveltySource === "openai"
-                    ? "emerald"
-                    : diagnostics.noveltySource === "heuristic"
-                      ? "amber"
-                      : "red"
-                }
-              >
-                Novelty {diagnostics.noveltySource === "openai"
-                  ? `AI · ${diagnostics.noveltyModel ?? "openai"}`
-                  : diagnostics.noveltySource === "heuristic"
-                    ? "heuristic"
-                    : "demo fallback"}
-              </Badge>
-              {diagnostics.sources.length > 0 && (
-                <Badge tone="slate">live: {diagnostics.sources.join(", ")}</Badge>
-              )}
-              {diagnostics.sourceStats && diagnostics.sourceStats.length > 0 && (
-                <details className="text-xs text-slate-600">
-                  <summary className="cursor-pointer underline">search sources</summary>
-                  <ul className="mt-1 list-disc pl-4">
-                    {diagnostics.sourceStats.map((s) => (
-                      <li
-                        key={s.name}
-                        className={
-                          s.status === "ok"
-                            ? "text-emerald-700"
-                            : s.status === "error"
-                              ? "text-rose-700"
-                              : "text-slate-500"
-                        }
-                      >
-                        {s.name}: {s.status} ({s.count} hit{s.count === 1 ? "" : "s"}, {s.durationMs} ms)
-                        {s.error ? ` — ${s.error}` : ""}
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              )}
+        <Badge tone={signalCopy.tone}>{signalCopy.label}</Badge>
+      </div>
+
+      <div className="mt-5 rounded-2xl border border-slate-200/70 bg-slate-50/60 p-4">
+        <div className="flex items-start gap-3">
+          <div className="mt-0.5">{signalCopy.icon}</div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-slate-900">{signalCopy.banner}</p>
+            <p className="mt-1 text-xs text-slate-500">{confidenceLabel}</p>
+          </div>
+          <div className="hidden w-32 sm:block">
+            <div className="flex justify-between text-[11px] text-slate-500">
+              <span>Confidence</span>
+              <span>{Math.round(qc.novelty.confidence * 100)}%</span>
             </div>
+            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-200">
+              <div
+                className="h-full rounded-full bg-[hsl(var(--helix-brand))]"
+                style={{ width: `${qc.novelty.confidence * 100}%` }}
+              />
+            </div>
+          </div>
+        </div>
+        <p className="mt-3 text-sm leading-6 text-slate-700">{qc.novelty.rationale}</p>
+      </div>
+
+      {diagnostics && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Badge tone={diagnostics.parseSource === "openai" ? "emerald" : "amber"}>
+            Parsed by{" "}
+            {diagnostics.parseSource === "openai"
+              ? `AI · ${diagnostics.parseModel ?? "openai"}`
+              : "heuristic"}
+          </Badge>
+          <Badge
+            tone={
+              diagnostics.noveltySource === "openai"
+                ? "emerald"
+                : diagnostics.noveltySource === "heuristic"
+                  ? "amber"
+                  : "red"
+            }
+          >
+            Novelty{" "}
+            {diagnostics.noveltySource === "openai"
+              ? `AI · ${diagnostics.noveltyModel ?? "openai"}`
+              : diagnostics.noveltySource === "heuristic"
+                ? "heuristic"
+                : "demo fallback"}
+          </Badge>
+          {diagnostics.sources.length > 0 && (
+            <Badge tone="slate">live: {diagnostics.sources.join(", ")}</Badge>
+          )}
+          {diagnostics.sourceStats && diagnostics.sourceStats.length > 0 && (
+            <details className="text-xs text-slate-600">
+              <summary className="cursor-pointer underline">search sources</summary>
+              <ul className="mt-1 list-disc pl-4">
+                {diagnostics.sourceStats.map((s) => (
+                  <li
+                    key={s.name}
+                    className={
+                      s.status === "ok"
+                        ? "text-emerald-700"
+                        : s.status === "error"
+                          ? "text-rose-700"
+                          : "text-slate-500"
+                    }
+                  >
+                    {s.name}: {s.status} ({s.count} hit{s.count === 1 ? "" : "s"},{" "}
+                    {s.durationMs} ms){s.error ? ` — ${s.error}` : ""}
+                  </li>
+                ))}
+              </ul>
+            </details>
           )}
         </div>
-      </div>
-      <div className="mt-4">
-        <div className="mb-1 flex justify-between text-sm text-slate-600">
-          <span>Confidence</span>
-          <span>{Math.round(qc.novelty.confidence * 100)}%</span>
-        </div>
-        <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-          <div className="h-full rounded-full bg-blue-600" style={{ width: `${qc.novelty.confidence * 100}%` }} />
-        </div>
-      </div>
-      <p className="mt-4 text-sm leading-6 text-slate-700">{qc.novelty.rationale}</p>
-      <div className="mt-4 flex items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+      )}
+
+      <div className="mt-6 flex items-center justify-between gap-2">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
           Parsed hypothesis
         </h3>
         {!editingParse ? (
           <button
             onClick={() => setEditingParse(true)}
-            className="rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100"
+            className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
           >
             Edit parse
           </button>
@@ -922,7 +1194,7 @@ function LiteratureCard({
           onCancel={() => setEditingParse(false)}
         />
       ) : (
-        <div className="mt-2 grid gap-3 md:grid-cols-2">
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
           <MiniField label="Domain" value={qc.parsed_hypothesis.domain} />
           <MiniField label="Experiment Type" value={qc.parsed_hypothesis.experiment_type} />
           <MiniField label="System" value={qc.parsed_hypothesis.organism_or_system} />
@@ -933,21 +1205,27 @@ function LiteratureCard({
       )}
       <ReferenceList references={qc.novelty.references} />
       {qc.novelty.coverage_warnings.length > 0 && (
-        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50/60 p-3 text-sm text-amber-900">
           <div className="font-semibold">Coverage warnings</div>
           <ul className="mt-1 list-disc space-y-1 pl-5">
             {qc.novelty.coverage_warnings.map((w) => <li key={w}>{w}</li>)}
           </ul>
         </div>
       )}
-      <button
-        onClick={onGenerate}
-        disabled={loading}
-        className="mt-4 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50"
-      >
-        <FlaskConical className="h-4 w-4" />
-        {loading ? "Generating..." : "Generate Experiment Plan"}
-      </button>
+      <div className="mt-6 flex justify-end">
+        <button onClick={onGenerate} disabled={loading} className="helix-btn-primary">
+          {loading ? (
+            <>
+              <RefreshCw className="h-4 w-4 animate-spin" /> Generating…
+            </>
+          ) : (
+            <>
+              <FlaskConical className="h-4 w-4" /> Generate experiment plan
+              <ArrowRight className="h-4 w-4" />
+            </>
+          )}
+        </button>
+      </div>
     </Card>
   );
 }
@@ -974,43 +1252,53 @@ function PlanDashboard({
     <div className="space-y-6">
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h2 className="flex items-center gap-2 text-xl font-semibold text-slate-950">
-              <Beaker className="h-5 w-5 text-blue-600" /> Stage C — Plan Dashboard
-            </h2>
-            <p className="mt-1 text-sm text-slate-500">Plan ID: {plan.plan_id}</p>
-            {generation && (
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <Badge
-                  tone={
-                    generation.source === "openai"
-                      ? "emerald"
+          <div className="flex items-start gap-3">
+            <div className="helix-icon-bubble">
+              <Beaker className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">Experiment plan</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Plan ID <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-700">{plan.plan_id}</code>
+              </p>
+              {generation && (
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <Badge
+                    tone={
+                      generation.source === "openai"
+                        ? "emerald"
+                        : generation.source === "safety_restricted"
+                          ? "red"
+                          : "amber"
+                    }
+                  >
+                    {generation.source === "openai"
+                      ? `Generated by ${generation.model ?? "OpenAI"}`
                       : generation.source === "safety_restricted"
-                        ? "red"
-                        : "amber"
-                  }
-                >
-                  {generation.source === "openai"
-                    ? `Generated by ${generation.model ?? "OpenAI"}`
-                    : generation.source === "safety_restricted"
-                      ? "Safety-restricted plan"
-                      : "Deterministic fallback (no AI)"}
-                </Badge>
-                {generation.attempts > 0 && (
-                  <Badge tone="slate">{generation.attempts} attempt{generation.attempts === 1 ? "" : "s"}</Badge>
-                )}
-                {generation.errors.length > 0 && (
-                  <details className="text-xs text-amber-800">
-                    <summary className="cursor-pointer underline">{generation.errors.length} note{generation.errors.length === 1 ? "" : "s"}</summary>
-                    <ul className="mt-1 list-disc pl-5">
-                      {generation.errors.map((e, i) => (
-                        <li key={i}>{e}</li>
-                      ))}
-                    </ul>
-                  </details>
-                )}
-              </div>
-            )}
+                        ? "Safety-restricted plan"
+                        : "Deterministic fallback (no AI)"}
+                  </Badge>
+                  {generation.attempts > 0 && (
+                    <Badge tone="slate">
+                      {generation.attempts} attempt{generation.attempts === 1 ? "" : "s"}
+                    </Badge>
+                  )}
+                  {generation.errors.length > 0 && (
+                    <details className="text-xs text-amber-800">
+                      <summary className="cursor-pointer underline">
+                        {generation.errors.length} note
+                        {generation.errors.length === 1 ? "" : "s"}
+                      </summary>
+                      <ul className="mt-1 list-disc pl-5">
+                        {generation.errors.map((e, i) => (
+                          <li key={i}>{e}</li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex flex-wrap gap-2">
             <button
@@ -1030,7 +1318,7 @@ function PlanDashboard({
                   "application/json"
                 )
               }
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+              className="helix-btn-secondary"
             >
               Export JSON
             </button>
@@ -1042,175 +1330,275 @@ function PlanDashboard({
                   "text/markdown"
                 )
               }
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+              className="helix-btn-secondary"
             >
               Export Markdown
             </button>
             {savedSincePlan && (
-              <button
-                onClick={onRegenerate}
-                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
-              >
-                <RefreshCw className="h-4 w-4" /> Regenerate with Feedback
+              <button onClick={onRegenerate} className="helix-btn-primary">
+                <RefreshCw className="h-4 w-4" /> Regenerate with feedback
               </button>
             )}
           </div>
         </div>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <div className="mt-5 grid gap-3 md:grid-cols-2">
           <MiniField label="Objective" value={plan.executive_summary.objective} />
-          <MiniField label="Decision Gate" value={plan.executive_summary.decision_gate} />
+          <MiniField label="Decision gate" value={plan.executive_summary.decision_gate} />
         </div>
-        <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50 p-4">
+        <div className="mt-5 rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h3 className="font-semibold text-blue-950">Plan confidence</h3>
-              <p className="mt-1 text-sm text-blue-800">
-                Composite score from evidence quality, supplier completeness, validation completeness,
-                and feedback relevance.
+              <h3 className="text-sm font-semibold text-slate-900">Plan confidence</h3>
+              <p className="mt-1 text-xs text-slate-600">
+                Composite score from evidence quality, supplier completeness, validation
+                completeness, and feedback relevance.
               </p>
             </div>
-            <Badge tone={confidence.score >= 75 ? "emerald" : confidence.score >= 50 ? "blue" : "amber"}>
+            <Badge
+              tone={
+                confidence.score >= 75 ? "emerald" : confidence.score >= 50 ? "blue" : "amber"
+              }
+            >
               {confidence.score}/100 · {confidence.label}
             </Badge>
           </div>
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-white">
+          <div className="mt-4 h-2 overflow-hidden rounded-full bg-white">
             <div
-              className="h-full rounded-full bg-blue-600"
+              className="h-full rounded-full bg-[hsl(var(--helix-brand))]"
               style={{ width: `${confidence.score}%` }}
             />
           </div>
-          <div className="mt-3 grid gap-2 text-xs text-blue-900 sm:grid-cols-4">
+          <div className="mt-3 grid gap-2 text-[11px] font-medium text-slate-600 sm:grid-cols-4">
             <span>Evidence {confidence.parts.evidence}/40</span>
             <span>Suppliers {confidence.parts.suppliers}/20</span>
             <span>Validation {confidence.parts.validation}/20</span>
             <span>Feedback {confidence.parts.feedback}/20</span>
           </div>
         </div>
-        <p className="mt-4 text-sm leading-6 text-slate-700">{plan.executive_summary.experimental_strategy}</p>
+        <p className="mt-5 text-sm leading-7 text-slate-700">
+          {plan.executive_summary.experimental_strategy}
+        </p>
       </Card>
 
       {evidence && <EvidenceDiagnosticsCard evidence={evidence} />}
 
       {critique && <PlanCritiquePanel critique={critique} />}
 
-      <SectionCard title="Applied Scientist Feedback" icon={<BrainCircuit className="h-5 w-5 text-emerald-600" />}>
+      <SectionCard
+        title="Applied scientist feedback"
+        subtitle="Past corrections retrieved and applied to this generation."
+        icon={<BrainCircuit className="h-5 w-5" />}
+      >
         {plan.applied_feedback.length === 0 ? (
           <p className="text-sm text-slate-500">No relevant saved feedback was applied yet.</p>
         ) : (
           <div className="space-y-3">
             {plan.applied_feedback.map((fb) => (
-              <div key={fb.feedback_id} className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm">
+              <div
+                key={fb.feedback_id}
+                className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-sm"
+              >
                 <div className="flex flex-wrap gap-2">
                   <Badge tone={fb.severity === "critical" ? "red" : "emerald"}>{fb.severity}</Badge>
                   <Badge tone="slate">score {fb.similarity_score.toFixed(2)}</Badge>
                   <Badge tone="slate">{fb.source_item_type}</Badge>
                 </div>
-                <p className="mt-2 font-medium text-emerald-950">{fb.derived_rule}</p>
-                <p className="mt-1 text-emerald-800">{fb.reason_applied}</p>
+                <p className="mt-2 font-semibold text-emerald-950">{fb.derived_rule}</p>
+                <p className="mt-1 leading-6 text-emerald-800">{fb.reason_applied}</p>
               </div>
             ))}
           </div>
         )}
       </SectionCard>
 
-      <SectionCard title="Safety / Ethics / Compliance" icon={<ShieldAlert className="h-5 w-5 text-red-600" />}>
+      <SectionCard
+        title="Safety, ethics & compliance"
+        subtitle="Required oversight, approvals, and biosafety posture."
+        icon={<ShieldAlert className="h-5 w-5" />}
+      >
         <div className="grid gap-3 md:grid-cols-2">
-          <MiniField label="Risk Level" value={plan.safety_ethics_compliance.overall_risk_level} />
-          <MiniField label="Biosafety Assumption" value={plan.safety_ethics_compliance.biosafety_level_assumption} />
-          <MiniField label="Human Samples" value={plan.safety_ethics_compliance.human_subjects_or_samples} />
-          <MiniField label="Animal Work" value={plan.safety_ethics_compliance.animal_work} />
+          <MiniField label="Risk level" value={plan.safety_ethics_compliance.overall_risk_level} />
+          <MiniField
+            label="Biosafety assumption"
+            value={plan.safety_ethics_compliance.biosafety_level_assumption}
+          />
+          <MiniField
+            label="Human samples"
+            value={plan.safety_ethics_compliance.human_subjects_or_samples}
+          />
+          <MiniField label="Animal work" value={plan.safety_ethics_compliance.animal_work} />
         </div>
         <ListBlock title="Approvals" items={plan.safety_ethics_compliance.required_approvals} />
-        <ListBlock title="Critical warnings" items={plan.safety_ethics_compliance.critical_warnings} tone="red" />
-        <EditButton onClick={() => onEdit(contextTarget("safety", "safety", plan.safety_ethics_compliance))} />
+        <ListBlock
+          title="Critical warnings"
+          items={plan.safety_ethics_compliance.critical_warnings}
+          tone="red"
+        />
+        <EditButton
+          onClick={() => onEdit(contextTarget("safety", "safety", plan.safety_ethics_compliance))}
+        />
       </SectionCard>
 
-      <SectionCard title="Protocol Plan" icon={<ClipboardCheck className="h-5 w-5 text-blue-600" />}>
-        <div className="space-y-3">
-          {plan.protocol.map((step) => (
-            <div key={step.id} className="rounded-xl border bg-slate-50 p-4">
+      <SectionCard
+        title="Protocol plan"
+        subtitle="Step-by-step methodology, designed for scientist review."
+        icon={<ClipboardCheck className="h-5 w-5" />}
+      >
+        <ol className="space-y-3">
+          {plan.protocol.map((step, i) => (
+            <li
+              key={step.id}
+              className="rounded-2xl border border-slate-200/70 bg-slate-50/60 p-4"
+            >
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <h3 className="font-semibold text-slate-950">{step.title}</h3>
-                  <p className="mt-1 text-sm text-slate-600">{step.purpose}</p>
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-[11px] font-semibold text-[hsl(var(--helix-brand))] ring-1 ring-blue-100">
+                    {i + 1}
+                  </span>
+                  <div>
+                    <h3 className="font-semibold text-slate-900">{step.title}</h3>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">{step.purpose}</p>
+                  </div>
                 </div>
                 <EditButton onClick={() => onEdit(contextTarget("protocol", step.id, step))} compact />
               </div>
               <ListBlock title="Review instructions" items={step.instructions} />
-            </div>
+            </li>
           ))}
-        </div>
+        </ol>
       </SectionCard>
 
-      <SectionCard title="Materials and Supply Chain" icon={<ShoppingCart className="h-5 w-5 text-blue-600" />}>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] text-left text-sm">
-            <thead>
-              <tr className="border-b text-slate-500">
-                <th className="py-2">Item</th>
-                <th>Supplier</th>
-                <th>Catalog</th>
-                <th>Cost</th>
-                <th>Confidence</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {plan.materials.map((m) => {
-                const isApprox = typeof m.notes === "string" && m.notes.includes("[approx_estimate]");
-                return (
-                  <tr key={m.id} className="border-b last:border-0">
-                    <td className="py-3 font-medium text-slate-900">
-                      {m.name}
-                      <div className="font-normal text-slate-500">{m.purpose}</div>
-                    </td>
-                    <td>{m.supplier}</td>
-                    <td>{m.catalog_number === "not_found" ? <Badge tone="amber">not found</Badge> : m.catalog_number}</td>
-                    <td>
-                      {m.estimated_cost === null ? (
-                        "—"
-                      ) : isApprox ? (
-                        <span
-                          className="inline-flex items-center gap-1.5"
-                          title="AI-estimated approximation, not a vendor quote. Verify before ordering."
+      <SectionCard
+        title="Materials and supply chain"
+        subtitle="Specific reagents, catalog numbers, and supplier confidence."
+        icon={<ShoppingCart className="h-5 w-5" />}
+      >
+        <div className="overflow-hidden rounded-2xl border border-slate-200/70">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead className="bg-slate-50/70 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                <tr>
+                  <th className="px-4 py-3">Item</th>
+                  <th className="px-4 py-3">Supplier</th>
+                  <th className="px-4 py-3">Catalog</th>
+                  <th className="px-4 py-3">Cost</th>
+                  <th className="px-4 py-3">Confidence</th>
+                  <th className="px-4 py-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {plan.materials.map((m) => {
+                  const isApprox =
+                    typeof m.notes === "string" && m.notes.includes("[approx_estimate]");
+                  return (
+                    <tr key={m.id} className="align-top">
+                      <td className="px-4 py-3">
+                        <div className="font-semibold text-slate-900">{m.name}</div>
+                        <div className="text-xs text-slate-500">{m.purpose}</div>
+                      </td>
+                      <td className="px-4 py-3 text-slate-700">{m.supplier}</td>
+                      <td className="px-4 py-3">
+                        {m.catalog_number === "not_found" ? (
+                          <Badge tone="amber">not found</Badge>
+                        ) : (
+                          <span className="font-mono text-xs text-slate-700">
+                            {m.catalog_number}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {m.estimated_cost === null ? (
+                          <span className="text-slate-400">—</span>
+                        ) : isApprox ? (
+                          <span
+                            className="inline-flex items-center gap-1.5"
+                            title="AI-estimated approximation, not a vendor quote. Verify before ordering."
+                          >
+                            <span className="font-medium text-slate-800">
+                              ~${m.estimated_cost}
+                            </span>
+                            <Badge tone="amber">approx</Badge>
+                          </span>
+                        ) : (
+                          <span className="font-medium text-slate-800">
+                            ${m.estimated_cost}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge
+                          tone={
+                            m.confidence === "high"
+                              ? "emerald"
+                              : m.confidence === "medium"
+                                ? "blue"
+                                : "amber"
+                          }
                         >
-                          <span className="text-slate-700">~${m.estimated_cost}</span>
-                          <Badge tone="amber">approx</Badge>
-                        </span>
-                      ) : (
-                        `$${m.estimated_cost}`
-                      )}
-                    </td>
-                    <td><Badge tone={m.confidence === "high" ? "emerald" : m.confidence === "medium" ? "blue" : "amber"}>{m.confidence}</Badge></td>
-                    <td><EditButton onClick={() => onEdit(contextTarget("material", m.id, m))} compact /></td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                          {m.confidence}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <EditButton
+                          onClick={() => onEdit(contextTarget("material", m.id, m))}
+                          compact
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </SectionCard>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <SectionCard title="Budget" icon={<CheckCircle2 className="h-5 w-5 text-emerald-600" />}>
-          <div className="space-y-2 text-sm">
-            <Row label="Materials subtotal" value={`$${plan.budget.material_line_items_total.toFixed(2)}`} />
-            <Row label="Equipment if needed" value={`$${plan.budget.equipment_line_items_total_if_needed.toFixed(2)}`} />
-            <Row label="Contingency" value={`$${plan.budget.contingency_amount.toFixed(2)} (${plan.budget.contingency_percent}%)`} />
-            <Row label="Estimated total" value={`$${plan.budget.estimated_total.toFixed(2)}`} strong />
+        <SectionCard
+          title="Budget"
+          subtitle="Realistic line-item estimate, ready for ordering review."
+          icon={<CheckCircle2 className="h-5 w-5" />}
+        >
+          <div className="space-y-1 text-sm">
+            <Row
+              label="Materials subtotal"
+              value={`$${plan.budget.material_line_items_total.toFixed(2)}`}
+            />
+            <Row
+              label="Equipment if needed"
+              value={`$${plan.budget.equipment_line_items_total_if_needed.toFixed(2)}`}
+            />
+            <Row
+              label="Contingency"
+              value={`$${plan.budget.contingency_amount.toFixed(2)} (${plan.budget.contingency_percent}%)`}
+            />
+            <Row
+              label="Estimated total"
+              value={`$${plan.budget.estimated_total.toFixed(2)}`}
+              strong
+            />
           </div>
-          <p className="mt-3 text-sm text-slate-600">{plan.budget.calculation_notes}</p>
+          <p className="mt-3 text-sm leading-6 text-slate-600">
+            {plan.budget.calculation_notes}
+          </p>
           <EditButton onClick={() => onEdit(contextTarget("budget", "budget", plan.budget))} />
         </SectionCard>
-        <SectionCard title="Timeline" icon={<RefreshCw className="h-5 w-5 text-blue-600" />}>
+        <SectionCard
+          title="Timeline"
+          subtitle="Phased breakdown with dependencies and decision gates."
+          icon={<RefreshCw className="h-5 w-5" />}
+        >
           <div className="space-y-3">
             {plan.timeline.map((p) => (
-              <div key={p.id} className="rounded-xl bg-slate-50 p-3 text-sm">
-                <div className="flex justify-between gap-4">
-                  <b>{p.name}</b>
-                  <span className="text-slate-500">{p.duration}</span>
+              <div
+                key={p.id}
+                className="rounded-2xl border border-slate-200/70 bg-slate-50/60 p-3.5 text-sm"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <b className="text-slate-900">{p.name}</b>
+                  <Badge tone="slate">{p.duration}</Badge>
                 </div>
-                <p className="mt-1 text-slate-600">{p.decision_gate}</p>
+                <p className="mt-1 leading-6 text-slate-700">{p.decision_gate}</p>
                 <EditButton onClick={() => onEdit(contextTarget("timeline", p.id, p))} compact />
               </div>
             ))}
@@ -1218,60 +1606,91 @@ function PlanDashboard({
         </SectionCard>
       </div>
 
-      <SectionCard title="Validation and Controls" icon={<AlertTriangle className="h-5 w-5 text-amber-600" />}>
+      <SectionCard
+        title="Validation and controls"
+        subtitle="Primary readout, success / failure thresholds, and control structure."
+        icon={<AlertTriangle className="h-5 w-5" />}
+      >
         <MiniField label="Primary readout" value={plan.validation.primary_readout} />
         <ListBlock title="Success criteria" items={plan.validation.success_criteria} />
         <ListBlock title="Failure criteria" items={plan.validation.failure_criteria} />
-        <h3 className="mt-4 font-semibold text-slate-900">Controls</h3>
+        <h3 className="mt-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+          Controls
+        </h3>
         <div className="mt-2 grid gap-3 md:grid-cols-2">
           {plan.validation.controls.map((c) => (
-            <div key={c.id} className="rounded-xl border bg-slate-50 p-3 text-sm">
-              <div className="flex justify-between gap-2">
-                <b>{c.name}</b>
+            <div
+              key={c.id}
+              className="rounded-2xl border border-slate-200/70 bg-slate-50/60 p-3.5 text-sm"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <b className="text-slate-900">{c.name}</b>
                 <Badge tone="slate">{c.control_type}</Badge>
               </div>
-              <p className="mt-1 text-slate-600">{c.purpose}</p>
+              <p className="mt-1 leading-6 text-slate-700">{c.purpose}</p>
               <EditButton onClick={() => onEdit(contextTarget("control", c.id, c))} compact />
             </div>
           ))}
         </div>
-        <EditButton onClick={() => onEdit(contextTarget("validation", "validation", plan.validation))} />
+        <EditButton
+          onClick={() => onEdit(contextTarget("validation", "validation", plan.validation))}
+        />
       </SectionCard>
 
-      <SectionCard title="Risks, Assumptions, Evidence Quality" icon={<BookOpen className="h-5 w-5 text-blue-600" />}>
+      <SectionCard
+        title="Risks, assumptions & evidence"
+        subtitle="What could go wrong, what we're assuming, and how confident we are."
+        icon={<BookOpen className="h-5 w-5" />}
+      >
         <div className="grid gap-4 lg:grid-cols-3">
           <div>
-            <h3 className="font-semibold text-slate-900">Risks</h3>
+            <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              Risks
+            </h3>
             {plan.risks_and_mitigations.map((r) => (
-              <div key={r.id} className="mt-2 rounded-xl bg-slate-50 p-3 text-sm">
-                <b>{r.risk}</b>
-                <p className="mt-1 text-slate-600">{r.mitigation}</p>
+              <div
+                key={r.id}
+                className="mt-2 rounded-2xl border border-slate-200/70 bg-slate-50/60 p-3.5 text-sm"
+              >
+                <b className="text-slate-900">{r.risk}</b>
+                <p className="mt-1 leading-6 text-slate-700">{r.mitigation}</p>
                 <EditButton onClick={() => onEdit(contextTarget("risk", r.id, r))} compact />
               </div>
             ))}
           </div>
           <div>
-            <h3 className="font-semibold text-slate-900">Assumptions</h3>
+            <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              Assumptions
+            </h3>
             {plan.assumptions.map((a) => (
-              <div key={a.id} className="mt-2 rounded-xl bg-slate-50 p-3 text-sm">
-                <b>{a.assumption}</b>
-                <p className="mt-1 text-slate-600">{a.how_to_verify}</p>
+              <div
+                key={a.id}
+                className="mt-2 rounded-2xl border border-slate-200/70 bg-slate-50/60 p-3.5 text-sm"
+              >
+                <b className="text-slate-900">{a.assumption}</b>
+                <p className="mt-1 leading-6 text-slate-700">{a.how_to_verify}</p>
                 <EditButton onClick={() => onEdit(contextTarget("assumption", a.id, a))} compact />
               </div>
             ))}
           </div>
           <div>
-            <h3 className="font-semibold text-slate-900">Evidence</h3>
+            <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              Evidence
+            </h3>
             <div className="mt-2 flex flex-wrap gap-2">
               <Badge tone="blue">Literature {plan.evidence_quality.literature_coverage}</Badge>
               <Badge tone="amber">Supplier {plan.evidence_quality.supplier_data_confidence}</Badge>
-              <Badge tone="emerald">Protocol {plan.evidence_quality.protocol_grounding_confidence}</Badge>
+              <Badge tone="emerald">
+                Protocol {plan.evidence_quality.protocol_grounding_confidence}
+              </Badge>
             </div>
             <ListBlock title="Known gaps" items={plan.evidence_quality.known_gaps} />
           </div>
         </div>
-        <div className="mt-6 border-t pt-4">
-          <h3 className="font-semibold text-slate-900">Evidence Cards</h3>
+        <div className="mt-6 border-t border-slate-100 pt-4">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+            Evidence cards
+          </h3>
           {plan.evidence_quality.evidence_cards.length === 0 ? (
             <p className="mt-2 text-sm text-slate-500">
               No evidence cards were available for this generation.
@@ -1279,8 +1698,11 @@ function PlanDashboard({
           ) : (
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               {plan.evidence_quality.evidence_cards.map((card) => (
-                <details key={card.id} className="rounded-xl border bg-slate-50 p-3 text-sm">
-                  <summary className="cursor-pointer font-semibold text-slate-950">
+                <details
+                  key={card.id}
+                  className="rounded-2xl border border-slate-200/70 bg-slate-50/60 p-3.5 text-sm"
+                >
+                  <summary className="cursor-pointer font-semibold text-slate-900">
                     {card.title}
                   </summary>
                   <div className="mt-2 flex flex-wrap gap-2">
@@ -1298,18 +1720,18 @@ function PlanDashboard({
                     </Badge>
                     <Badge tone="slate">{card.source_name}</Badge>
                   </div>
-                  <p className="mt-3 leading-6 text-slate-600">{card.snippet}</p>
+                  <p className="mt-3 leading-6 text-slate-700">{card.snippet}</p>
                   {card.extracted_facts.length > 0 && (
                     <ListBlock title="Extracted facts" items={card.extracted_facts} />
                   )}
                   {card.source_url !== "not_found" && (
                     <a
-                      className="mt-3 inline-block font-semibold text-blue-700 hover:underline"
+                      className="mt-3 inline-flex items-center gap-1 font-semibold text-blue-700 hover:underline"
                       href={card.source_url}
                       target="_blank"
                       rel="noreferrer"
                     >
-                      Open source
+                      Open source <ExternalLink className="h-3 w-3" />
                     </a>
                   )}
                 </details>
@@ -1339,18 +1761,21 @@ function FeedbackModal({
     confidence: number;
   }) => Promise<void>;
 }) {
-  const [correction, setCorrection] = useState("");
+  // Pre-fill "Corrected item" with the original so the scientist edits in
+  // place — matches the design and is faster than rewriting from scratch.
+  const [correction, setCorrection] = useState(target.original_context);
   const [reason, setReason] = useState("");
   const [rating, setRating] = useState("3");
   const [tags, setTags] = useState("validation, controls");
-  const [applicability, setApplicability] = useState<ScientistFeedback["applicability"]>("similar_experiment_type");
+  const [applicability, setApplicability] = useState<ScientistFeedback["applicability"]>(
+    "similar_experiment_type"
+  );
   const [severity, setSeverity] = useState<ScientistFeedback["severity"]>("important");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const correctionRef = useRef<HTMLTextAreaElement>(null);
 
-  // Lock body scroll while the modal is open so the page underneath doesn't
-  // scroll along with it on touch devices.
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -1359,7 +1784,6 @@ function FeedbackModal({
     };
   }, []);
 
-  // Close on Escape and autofocus the first input.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -1396,9 +1820,11 @@ function FeedbackModal({
     }
   }
 
+  const itemTypeLabel = humanizeItemType(target.item_type);
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur"
       role="dialog"
       aria-modal="true"
       aria-labelledby="feedback-modal-title"
@@ -1406,54 +1832,114 @@ function FeedbackModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-auto rounded-2xl bg-white p-6 shadow-2xl">
-        <h2 id="feedback-modal-title" className="text-xl font-semibold text-slate-950">
-          Scientist correction
-        </h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Turn expert review into reusable guidance for future similar plans.
-        </p>
-        <div className="mt-4 rounded-xl border bg-slate-50 p-3">
-          <div className="text-sm font-semibold text-slate-900">{target.label}</div>
-          <pre className="mt-2 max-h-32 overflow-auto whitespace-pre-wrap text-xs leading-5 text-slate-600">
-            {target.original_context}
-          </pre>
-        </div>
-        <label className="mt-4 block text-sm font-medium text-slate-700" htmlFor="feedback-correction">
-          Corrected text
-        </label>
-        <textarea
-          id="feedback-correction"
-          ref={correctionRef}
-          className="mt-1 w-full rounded-xl border p-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-          rows={4}
-          value={correction}
-          onChange={(e) => setCorrection(e.target.value)}
-        />
-        <label className="mt-4 block text-sm font-medium text-slate-700" htmlFor="feedback-reason">
-          Reason
-        </label>
-        <textarea
-          id="feedback-reason"
-          className="mt-1 w-full rounded-xl border p-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-          rows={3}
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-        />
-        <div className="mt-4 grid gap-3 md:grid-cols-4">
-          <Select label="Rating" value={rating} onChange={setRating} options={["1", "2", "3", "4", "5"]} />
-          <Select label="Applicability" value={applicability} onChange={(v) => setApplicability(v as ScientistFeedback["applicability"])} options={["only_this_plan", "similar_experiment_type", "broad_rule"]} />
-          <Select label="Severity" value={severity} onChange={(v) => setSeverity(v as ScientistFeedback["severity"])} options={["minor", "important", "critical"]} />
+      <div className="max-h-[92vh] w-full max-w-2xl overflow-auto rounded-3xl border border-slate-200/70 bg-white shadow-helix-pop">
+        <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 py-5">
           <div>
-            <label className="block text-sm font-medium text-slate-700">Tags</label>
-            <input className="mt-1 w-full rounded-xl border p-2 text-sm" value={tags} onChange={(e) => setTags(e.target.value)} />
+            <h2 id="feedback-modal-title" className="text-lg font-semibold text-slate-900">
+              Suggest Correction
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Replace the item with a clearer scientist-reviewed version and briefly explain why.
+            </p>
           </div>
+          <Badge tone="slate">{itemTypeLabel}</Badge>
         </div>
-        {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
-        <div className="mt-6 flex justify-end gap-3">
-          <button onClick={onClose} className="rounded-xl border px-4 py-2 text-sm font-semibold text-slate-700">Cancel</button>
-          <button onClick={submit} disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
-            <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save feedback"}
+
+        <div className="space-y-5 px-6 py-5">
+          <div>
+            <label className="text-sm font-medium text-slate-800">Original item</label>
+            <div className="mt-1.5 max-h-40 overflow-auto whitespace-pre-wrap rounded-2xl border border-slate-200 bg-slate-50/70 p-3.5 text-sm leading-6 text-slate-700">
+              {target.original_context}
+            </div>
+          </div>
+
+          <div>
+            <label
+              className="text-sm font-medium text-slate-800"
+              htmlFor="feedback-correction"
+            >
+              Corrected item
+            </label>
+            <textarea
+              id="feedback-correction"
+              ref={correctionRef}
+              className="helix-textarea mt-1.5 max-h-72 min-h-[140px]"
+              value={correction}
+              onChange={(e) => setCorrection(e.target.value)}
+            />
+            <p className="mt-1.5 text-xs text-slate-500">
+              Edit the full item text, not the database JSON. Keep catalog numbers, costs, and
+              assumptions explicit where relevant.
+            </p>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-slate-800" htmlFor="feedback-reason">
+              Reason for correction
+            </label>
+            <textarea
+              id="feedback-reason"
+              className="helix-textarea mt-1.5 min-h-[110px]"
+              placeholder="Example: supplier catalog number is outdated, cost estimate is too low, or the protocol step is scientifically incomplete."
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowAdvanced((v) => !v)}
+              className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 hover:text-slate-700"
+            >
+              {showAdvanced ? "Hide advanced" : "Show advanced (rating, scope, severity, tags)"}
+            </button>
+            {showAdvanced && (
+              <div className="mt-3 grid gap-3 rounded-2xl border border-slate-200/70 bg-slate-50/60 p-4 md:grid-cols-4">
+                <Select label="Rating" value={rating} onChange={setRating} options={["1", "2", "3", "4", "5"]} />
+                <Select
+                  label="Applicability"
+                  value={applicability}
+                  onChange={(v) =>
+                    setApplicability(v as ScientistFeedback["applicability"])
+                  }
+                  options={["only_this_plan", "similar_experiment_type", "broad_rule"]}
+                />
+                <Select
+                  label="Severity"
+                  value={severity}
+                  onChange={(v) => setSeverity(v as ScientistFeedback["severity"])}
+                  options={["minor", "important", "critical"]}
+                />
+                <div>
+                  <label className="block text-xs font-medium text-slate-600">Tags</label>
+                  <input
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-white p-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                    value={tags}
+                    onChange={(e) => setTags(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {error && <p className="text-sm text-red-700">{error}</p>}
+        </div>
+
+        <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 bg-slate-50/40 px-6 py-4">
+          <button onClick={onClose} className="helix-btn-secondary">
+            Cancel
+          </button>
+          <button onClick={submit} disabled={saving} className="helix-btn-primary">
+            {saving ? (
+              <>
+                <RefreshCw className="h-4 w-4 animate-spin" /> Saving…
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4" /> Save Correction
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -1461,14 +1947,56 @@ function FeedbackModal({
   );
 }
 
-function Card({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">{children}</div>;
+function humanizeItemType(t: ScientistFeedback["item_type"]): string {
+  const map: Record<ScientistFeedback["item_type"], string> = {
+    protocol: "Protocol",
+    material: "Material",
+    equipment: "Equipment",
+    budget: "Budget",
+    timeline: "Timeline",
+    validation: "Validation",
+    control: "Control",
+    safety: "Safety",
+    risk: "Risk",
+    assumption: "Assumption",
+    other: "Other"
+  };
+  return map[t] ?? t;
 }
 
-function SectionCard({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+function Card({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`helix-card ${className ?? ""}`.trim()}>
+      {children}
+    </div>
+  );
+}
+
+function SectionCard({
+  title,
+  icon,
+  subtitle,
+  trailing,
+  children
+}: {
+  title: string;
+  icon: React.ReactNode;
+  subtitle?: string;
+  trailing?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <Card>
-      <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-950">{icon}{title}</h2>
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <div className="helix-icon-bubble">{icon}</div>
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
+            {subtitle && <p className="mt-1 text-sm text-slate-600">{subtitle}</p>}
+          </div>
+        </div>
+        {trailing}
+      </div>
       {children}
     </Card>
   );
@@ -1479,17 +2007,25 @@ function Badge({ tone, children }: { tone: "blue" | "emerald" | "amber" | "red" 
     blue: "border-blue-200 bg-blue-50 text-blue-700",
     emerald: "border-emerald-200 bg-emerald-50 text-emerald-700",
     amber: "border-amber-200 bg-amber-50 text-amber-800",
-    red: "border-red-200 bg-red-50 text-red-700",
+    red: "border-rose-200 bg-rose-50 text-rose-700",
     slate: "border-slate-200 bg-slate-50 text-slate-700"
   };
-  return <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${classes[tone]}`}>{children}</span>;
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold tracking-wide ${classes[tone]}`}
+    >
+      {children}
+    </span>
+  );
 }
 
 function MiniField({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-slate-50 p-3">
-      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</div>
-      <div className="mt-1 text-sm leading-5 text-slate-800">{value}</div>
+    <div className="rounded-2xl border border-slate-200/70 bg-slate-50/60 p-3.5">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+        {label}
+      </div>
+      <div className="mt-1.5 text-sm leading-5 text-slate-800">{value}</div>
     </div>
   );
 }
@@ -1504,10 +2040,18 @@ function PlanCritiquePanel({ critique }: { critique: PlanCritiqueMeta }) {
   const sourceLabel = critique.source === "openai" ? `AI critic · ${critique.model ?? "OpenAI"}` : "Heuristic critic";
   return (
     <Card>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-950">
-          <ClipboardCheck className="h-5 w-5 text-blue-600" /> AI Plan Critic
-        </h2>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <div className="helix-icon-bubble">
+            <ClipboardCheck className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">AI plan critic</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Methodological gap-check before the plan goes to scientist review.
+            </p>
+          </div>
+        </div>
         <div className="flex flex-wrap gap-2">
           <Badge tone={critique.source === "openai" ? "emerald" : "amber"}>{sourceLabel}</Badge>
           <Badge tone={overallTone}>
@@ -1523,22 +2067,25 @@ function PlanCritiquePanel({ critique }: { critique: PlanCritiqueMeta }) {
         </div>
       </div>
       {critique.findings.length === 0 ? (
-        <p className="mt-3 text-sm text-slate-500">
+        <p className="mt-4 text-sm text-slate-500">
           No issues detected. The critic still recommends a domain-expert review before execution.
         </p>
       ) : (
-        <ul className="mt-3 space-y-2">
+        <ul className="mt-4 space-y-2.5">
           {critique.findings.map((f, i) => {
             const tone = f.severity === "critical" ? "red" : f.severity === "warning" ? "amber" : "blue";
             return (
-              <li key={i} className="rounded-xl border border-slate-200 bg-white p-3 text-sm">
+              <li
+                key={i}
+                className="rounded-2xl border border-slate-200/70 bg-slate-50/60 p-4 text-sm"
+              >
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge tone={tone}>{f.severity}</Badge>
                   <Badge tone="slate">{f.area}</Badge>
                 </div>
-                <p className="mt-2 font-medium text-slate-900">{f.finding}</p>
-                <p className="mt-1 text-slate-600">
-                  <span className="font-semibold text-slate-700">Suggestion: </span>
+                <p className="mt-2 font-semibold text-slate-900">{f.finding}</p>
+                <p className="mt-1 leading-6 text-slate-700">
+                  <span className="font-semibold text-slate-800">Suggestion: </span>
                   {f.suggestion}
                 </p>
               </li>
@@ -1586,14 +2133,17 @@ function EvidenceDiagnosticsCard({ evidence }: { evidence: EvidenceMeta }) {
   };
   return (
     <Card>
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-950">
-            <BookOpen className="h-5 w-5 text-blue-600" /> Evidence pipeline
-          </h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Live web retrieval used to ground materials, protocols, and regulatory flags.
-          </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <div className="helix-icon-bubble">
+            <BookOpen className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Evidence pipeline</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Live web retrieval used to ground materials, protocols, and regulatory flags.
+            </p>
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge tone={evidence.tavilyConfigured ? "emerald" : "amber"}>
@@ -1610,11 +2160,14 @@ function EvidenceDiagnosticsCard({ evidence }: { evidence: EvidenceMeta }) {
           )}
         </div>
       </div>
-      <div className="mt-4 grid gap-2 sm:grid-cols-3">
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
         {evidence.sourceStats.map((s) => (
-          <div key={s.name} className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs">
+          <div
+            key={s.name}
+            className="rounded-2xl border border-slate-200/70 bg-slate-50/60 p-3.5 text-xs"
+          >
             <div className="flex items-center justify-between gap-2">
-              <span className="text-sm font-semibold text-slate-800">
+              <span className="text-sm font-semibold text-slate-900">
                 {labelMap[s.name] ?? s.name}
               </span>
               <Badge tone={toneFor(s.status)}>{s.status}</Badge>
@@ -1653,9 +2206,17 @@ function ListBlock({ title, items, tone = "slate" }: { title: string; items: str
   if (!items.length) return null;
   return (
     <div className="mt-4">
-      <h3 className="font-semibold text-slate-900">{title}</h3>
-      <ul className={`mt-2 list-disc space-y-1 pl-5 text-sm ${tone === "red" ? "text-red-800" : "text-slate-600"}`}>
-        {items.map((item) => <li key={item}>{item}</li>)}
+      <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+        {title}
+      </h3>
+      <ul
+        className={`mt-2 list-disc space-y-1 pl-5 text-sm leading-6 ${
+          tone === "red" ? "text-rose-800" : "text-slate-700"
+        }`}
+      >
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
       </ul>
     </div>
   );
@@ -1663,7 +2224,11 @@ function ListBlock({ title, items, tone = "slate" }: { title: string; items: str
 
 function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
-    <div className={`flex justify-between gap-4 border-b py-2 last:border-0 ${strong ? "font-semibold text-slate-950" : "text-slate-700"}`}>
+    <div
+      className={`flex justify-between gap-4 border-b border-slate-100 py-2 last:border-0 ${
+        strong ? "font-semibold text-slate-900" : "text-slate-700"
+      }`}
+    >
       <span>{label}</span>
       <span>{value}</span>
     </div>
@@ -1674,19 +2239,37 @@ function EditButton({ onClick, compact }: { onClick: () => void; compact?: boole
   return (
     <button
       onClick={onClick}
-      className={`${compact ? "mt-2 px-2.5 py-1.5 text-xs" : "mt-4 px-3 py-2 text-sm"} rounded-lg border border-blue-200 bg-blue-50 font-semibold text-blue-700 hover:bg-blue-100`}
+      className={`${
+        compact ? "mt-2 px-3 py-1.5 text-xs" : "mt-4 px-3 py-2 text-sm"
+      } inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white font-medium text-slate-700 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700`}
     >
-      Edit / Correct
+      Suggest correction
     </button>
   );
 }
 
-function Select({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: string[] }) {
+function Select({
+  label,
+  value,
+  onChange,
+  options
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+}) {
   return (
     <div>
-      <label className="block text-sm font-medium text-slate-700">{label}</label>
-      <select className="mt-1 w-full rounded-xl border p-2 text-sm" value={value} onChange={(e) => onChange(e.target.value)}>
-        {options.map((opt) => <option key={opt}>{opt}</option>)}
+      <label className="block text-xs font-medium text-slate-600">{label}</label>
+      <select
+        className="mt-1 w-full rounded-xl border border-slate-200 bg-white p-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        {options.map((opt) => (
+          <option key={opt}>{opt}</option>
+        ))}
       </select>
     </div>
   );
@@ -1704,33 +2287,34 @@ function LoadingCard({ label, steps = [] }: { label: string; steps?: string[] })
   const subLabel = steps.length > 0 ? steps[tick % steps.length] : null;
   return (
     <Card>
-      <div className="flex items-center gap-3 text-slate-600">
-        <RefreshCw className="h-5 w-5 animate-spin text-blue-600" />
-        <span className="font-medium text-slate-700">{label}</span>
-      </div>
-      {subLabel && (
-        <div className="mt-2 text-sm text-slate-500" aria-live="polite">
-          {subLabel}
+      <div className="flex items-center gap-3 text-slate-700">
+        <div className="helix-icon-bubble">
+          <RefreshCw className="h-5 w-5 animate-spin" />
         </div>
-      )}
-      <div className="mt-4 space-y-3">
-        <div className="h-4 w-3/4 animate-pulse rounded bg-slate-100" />
-        <div className="h-4 w-1/2 animate-pulse rounded bg-slate-100" />
-        <div className="h-20 animate-pulse rounded-xl bg-slate-100" />
+        <div>
+          <div className="font-semibold text-slate-900">{label}</div>
+          {subLabel && (
+            <div className="mt-0.5 text-sm text-slate-500" aria-live="polite">
+              {subLabel}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="mt-5 space-y-3">
+        <div className="h-3 w-3/4 animate-pulse rounded-full bg-slate-100" />
+        <div className="h-3 w-1/2 animate-pulse rounded-full bg-slate-100" />
+        <div className="h-20 animate-pulse rounded-2xl bg-slate-100" />
       </div>
     </Card>
   );
 }
 
 function StageProgress({ stage }: { stage: Stage }) {
-  // Order maps to the user-facing stages of the workflow.
-  const steps: { key: Stage[]; label: string }[] = [
-    { key: ["input", "literature_loading", "error"], label: "Hypothesis" },
-    { key: ["literature_loading", "literature_ready", "plan_loading", "plan_ready"], label: "Literature QC" },
-    { key: ["plan_loading", "plan_ready"], label: "Experiment Plan" }
+  const steps: { label: string }[] = [
+    { label: "Hypothesis" },
+    { label: "Literature QC" },
+    { label: "Experiment Plan" }
   ];
-  // Index of the rightmost step that the stage matches; everything up to
-  // (and including) it is considered "active".
   const activeIdx = (() => {
     if (stage === "plan_ready" || stage === "plan_loading") return 2;
     if (stage === "literature_ready" || stage === "literature_loading") return 1;
@@ -1738,26 +2322,37 @@ function StageProgress({ stage }: { stage: Stage }) {
   })();
   const isLoading = stage === "literature_loading" || stage === "plan_loading";
   return (
-    <div className="mb-6 flex items-center gap-3 overflow-x-auto rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-xs font-semibold text-slate-500 backdrop-blur md:text-sm">
+    <div className="flex items-center gap-2 overflow-x-auto rounded-2xl border border-slate-200/70 bg-white/80 px-4 py-3 text-xs font-semibold text-slate-500 shadow-sm backdrop-blur md:text-sm">
       {steps.map((step, i) => {
-        const active = i <= activeIdx;
-        const current = i === activeIdx && isLoading;
+        const done = i < activeIdx;
+        const current = i === activeIdx;
+        const pulsing = current && isLoading;
         return (
           <div key={step.label} className="flex items-center gap-3">
             <div
-              className={`flex h-7 w-7 items-center justify-center rounded-full border text-xs ${
-                active
-                  ? current
-                    ? "animate-pulse border-blue-600 bg-blue-600 text-white"
-                    : "border-blue-600 bg-blue-50 text-blue-700"
-                  : "border-slate-200 bg-slate-50 text-slate-400"
+              className={`flex h-6 w-6 items-center justify-center rounded-full border text-[11px] transition-colors ${
+                done
+                  ? "border-[hsl(var(--helix-brand))] bg-[hsl(var(--helix-brand))] text-white"
+                  : current
+                    ? pulsing
+                      ? "animate-pulse border-[hsl(var(--helix-brand))] bg-[hsl(var(--helix-brand))] text-white"
+                      : "border-[hsl(var(--helix-brand))] bg-blue-50 text-[hsl(var(--helix-brand))]"
+                    : "border-slate-200 bg-white text-slate-400"
               }`}
               aria-current={current ? "step" : undefined}
             >
-              {i + 1}
+              {done ? <CheckCircle2 className="h-3.5 w-3.5" /> : i + 1}
             </div>
-            <span className={active ? "text-slate-900" : "text-slate-400"}>{step.label}</span>
-            {i < steps.length - 1 && <span className="text-slate-300">·</span>}
+            <span className={done || current ? "text-slate-900" : "text-slate-400"}>
+              {step.label}
+            </span>
+            {i < steps.length - 1 && (
+              <span
+                className={`hidden h-px w-8 sm:block ${
+                  done ? "bg-[hsl(var(--helix-brand))]" : "bg-slate-200"
+                }`}
+              />
+            )}
           </div>
         );
       })}
@@ -1767,7 +2362,7 @@ function StageProgress({ stage }: { stage: Stage }) {
 
 function ErrorBox({ message }: { message: string }) {
   return (
-    <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+    <div className="rounded-2xl border border-rose-200 bg-rose-50/80 p-4 text-sm text-rose-800 shadow-sm">
       <b>Error:</b> {message}
     </div>
   );
@@ -1812,7 +2407,7 @@ function downloadText(filename: string, text: string, type: string) {
 
 function planToMarkdown(plan: ExperimentPlan, critique: PlanCritiqueMeta | null = null): string {
   const lines: string[] = [];
-  lines.push(`# The AI Scientist Plan`);
+  lines.push(`# ${PRODUCT_NAME} — Experiment Plan`);
   lines.push("");
   lines.push(`- Plan ID: ${plan.plan_id}`);
   lines.push(`- Created: ${plan.created_at}`);
