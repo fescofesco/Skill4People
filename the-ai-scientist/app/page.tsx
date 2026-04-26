@@ -244,11 +244,59 @@ export default function Home() {
               <b>OpenAI key not detected.</b> The app will use a deterministic template fallback
               instead of calling a real model. Add{" "}
               <code className="rounded bg-amber-100 px-1">OPENAI_API_KEY</code> to{" "}
-              <code className="rounded bg-amber-100 px-1">.env.local</code> and restart the dev
-              server.
+              <code className="rounded bg-amber-100 px-1">.env.local</code> (or set it in Vercel)
+              and reload.
             </div>
           </div>
         )}
+
+        {(() => {
+          if (!health?.env.openaiConfigured) return null;
+          const allErrors = [
+            ...(litDiag?.parseErrors ?? []),
+            ...(litDiag?.noveltyErrors ?? []),
+            ...(genMeta?.errors ?? [])
+          ];
+          if (allErrors.length === 0) return null;
+          const quota = allErrors.some((e) => /\b429\b|quota|billing|exceeded/i.test(e));
+          const policy = allErrors.some((e) => /policy|blocked|safety/i.test(e));
+          const fallbackActive =
+            litDiag?.parseSource === "heuristic" ||
+            litDiag?.noveltySource === "heuristic" ||
+            litDiag?.noveltySource === "demo" ||
+            genMeta?.source === "deterministic_fallback";
+          if (!fallbackActive) return null;
+          return (
+            <div className="mb-4 rounded-xl border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-900">
+              <div className="font-semibold">
+                AI calls failed — showing deterministic fallback output
+                {quota ? " (OpenAI quota exceeded)" : policy ? " (provider policy block)" : ""}.
+              </div>
+              <div className="mt-1 text-rose-800">
+                The OpenAI API key is configured, but every recent request fell back to the
+                heuristic / template path. Fix:&nbsp;
+                {quota ? (
+                  <>
+                    top up credits at{" "}
+                    <a
+                      className="underline"
+                      href="https://platform.openai.com/account/billing"
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      platform.openai.com/account/billing
+                    </a>{" "}
+                    — no redeploy needed.
+                  </>
+                ) : policy ? (
+                  <>rephrase the hypothesis or check provider safety policy.</>
+                ) : (
+                  <>see expandable error details on the literature card / plan dashboard below.</>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <section className="space-y-6">

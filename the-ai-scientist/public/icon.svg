@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="The AI Scientist">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e3a8a"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <g fill="none" stroke="#60a5fa" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M188 112 V224 L132 360 a48 48 0 0 0 44 68 H336 a48 48 0 0 0 44 -68 L324 224 V112"/>
+    <path d="M168 112 H344"/>
+    <path d="M196 252 H316" stroke="#93c5fd"/>
+  </g>
+  <circle cx="220" cy="320" r="14" fill="#22d3ee"/>
+  <circle cx="278" cy="356" r="10" fill="#22d3ee"/>
+  <circle cx="316" cy="312" r="8"  fill="#22d3ee"/>
+  <text x="50%" y="465" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto" font-weight="700" font-size="56" fill="#e2e8f0">AI · Scientist</text>
+</svg>

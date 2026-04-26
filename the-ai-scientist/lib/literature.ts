@@ -184,20 +184,32 @@ function extractSystem(text: string): string {
 }
 
 function inferDomain(lowered: string): string {
-  if (/(cell|macrophage|cytokine|protein|gene|culture|tissue)/.test(lowered)) return "cell biology";
+  // Diagnostics first: a "sensor/biosensor/aptamer/assay" hypothesis is an analytical
+  // diagnostics study even when it incidentally mentions cells, tissue, or proteins.
+  if (
+    /(biosensor|aptamer|elisa|lateral[- ]flow|point[- ]of[- ]care|lod|limit of detection|electrochemical sensor|fet sensor|graphene[- ]fet|impedance sensor|fluorescent probe|colorimetric assay|biomarker|diagnostic|cfdna|ctdna|circulating tumor dna|liquid biopsy)/.test(
+      lowered
+    )
+  )
+    return "diagnostics";
+  // "sensor" alone is too generic, only treat as diagnostics if combined with detection vocabulary
+  if (/sensor/.test(lowered) && /(detect|measure|quantif|sensitiv|specific|saliva|urine|serum|plasma|blood|sample)/.test(lowered))
+    return "diagnostics";
+  if (/(reactor|co2|carbon|electrochemical|catalyst|climate)/.test(lowered)) return "climate / electrochemistry";
   if (/(polymer|hydrogel|nanoparticle|material|surface|membrane)/.test(lowered)) return "materials / bioengineering";
   if (/(mice|rat|animal|in vivo|gut|microbiome)/.test(lowered)) return "in vivo biology";
-  if (/(sensor|biosensor|diagnostic|elisa|biomarker)/.test(lowered)) return "diagnostics";
-  if (/(reactor|co2|carbon|electrochemical|catalyst|climate)/.test(lowered)) return "climate / electrochemistry";
+  if (/(cell|macrophage|cytokine|protein|gene|culture|tissue)/.test(lowered)) return "cell biology";
   return "general experimental science";
 }
 
 function inferExperimentType(lowered: string): string {
-  if (/(cell|macrophage|culture|cytokine)/.test(lowered)) return "in vitro cell-culture response study";
-  if (/(hydrogel|material|polymer|release)/.test(lowered)) return "materials formulation and release validation";
-  if (/(sensor|biosensor|diagnostic)/.test(lowered)) return "analytical validation study";
-  if (/(mice|rat|animal|in vivo)/.test(lowered)) return "controlled in vivo study";
+  if (/(biosensor|aptamer|elisa|lateral[- ]flow|point[- ]of[- ]care|biomarker|diagnostic|sensor)/.test(lowered))
+    return "analytical validation study";
   if (/(reactor|electrochemical|cathode|anode)/.test(lowered)) return "reactor performance validation study";
+  if (/(hydrogel|polymer|nanoparticle|material|release|coating)/.test(lowered))
+    return "materials formulation and release validation";
+  if (/(mice|rat|animal|in vivo)/.test(lowered)) return "controlled in vivo study";
+  if (/(cell|macrophage|culture|cytokine)/.test(lowered)) return "in vitro cell-culture response study";
   return "controlled experimental validation study";
 }
 
