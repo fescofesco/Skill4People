@@ -1,0 +1,13 @@
+---
+alwaysApply: true
+---
+description: Handles AI research and Literature QC using the Tavily API
+globs: ["app/api/research/**/*.ts", "lib/tavily/**/*.ts"]
+---
+# Tavily API Skill
+
+- When writing code that requires web search or "Literature QC", use the Tavily API.
+- The Tavily API expects a POST request to `https://api.tavily.com/search`.
+- Always pass the API key via the `process.env.TAVILY_API_KEY` environment variable.
+- For the "Literature QC" step, configure the Tavily payload to prefer academic or scientific sources (e.g., using `include_domains: ["protocols.io", "nature.com", "ncbi.nlm.nih.gov"]` if applicable).
+- Ensure the API route returns a strict JSON structure containing: `noveltySignal` ("not found", "similar work exists", "exact match found") and an array of `references`.

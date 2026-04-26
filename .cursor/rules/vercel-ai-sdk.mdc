@@ -1,0 +1,14 @@
+---
+alwaysApply: true
+---
+description: Standards for generating LLM responses and streaming UI using Vercel AI SDK
+globs: ["app/api/chat/**/*.ts", "app/api/generate-plan/**/*.ts", "components/**/*.tsx"]
+alwaysApply: true
+---
+# Vercel AI SDK Skill
+
+- Use the Vercel AI SDK (`ai` and `@ai-sdk/google`) for all LLM generations.
+- Specifically, use the Google provider and the latest Flash model by calling: `google('gemini-3-flash-preview')`.
+- To generate the "Experiment Plan" (Protocol, Materials, Budget, Timeline), use the `streamObject` function from the AI SDK.
+- Always define a strict Zod schema (`z.object({...})`) for the Experiment Plan to ensure the LLM outputs exact fields for the budget (with £/$), timeline, and step-by-step protocol.
+- Do not use the legacy `OpenAIStream`. Use the App Router native `streamObject` or `streamText` methods.
