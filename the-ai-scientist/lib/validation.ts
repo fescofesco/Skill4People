@@ -76,23 +76,18 @@ export function jsonError(err: unknown): Response {
   );
 }
 
+/**
+ * Length-only sanity check on free-form scientific input. We deliberately
+ * do NOT keyword-match the text: "Synthesis of a novel yolk-shell
+ * nanoparticle…" is a perfectly legitimate research topic that has no
+ * "will/would/effect" verb and would fail a regex filter, but is fine for
+ * the AI parser. Substance assessment happens downstream via the parser
+ * and novelty classifier, both of which return structured uncertainty
+ * for vague inputs instead of refusing them.
+ */
 export function validateHypothesisShape(text: string): { ok: boolean; reason?: string } {
   const t = text.trim();
-  if (t.length < 20) return { ok: false, reason: "Hypothesis must be at least 20 characters." };
+  if (t.length < 10) return { ok: false, reason: "Hypothesis must be at least 10 characters." };
   if (t.length > 3000) return { ok: false, reason: "Hypothesis must be at most 3000 characters." };
-  const lowered = t.toLowerCase();
-  const hasVerb = /\b(will|would|may|could|increase|decrease|reduce|enhance|outperform|detect|fix|produce|generate|prevent|improve|exhibit|cause|cure|catalyze)\b/.test(
-    lowered
-  );
-  const hasNoun = /\b(hypothesis|effect|cells?|protein|biosensor|mice|rats?|microbe|enzyme|cathode|anode|catalyst|antibody|gene|culture|sample|patient|tissue|reactor|substrate|membrane|particle|polymer|biomarker|metabolite|temperature|pressure|expression|reaction|electrode|reagent|treatment|drug|vaccine)\b/.test(
-    lowered
-  );
-  if (!hasVerb && !hasNoun) {
-    return {
-      ok: false,
-      reason:
-        "Input does not look like a scientific hypothesis. Include an intervention, system, and measurable outcome."
-    };
-  }
   return { ok: true };
 }

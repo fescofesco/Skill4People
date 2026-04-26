@@ -380,8 +380,9 @@ export default function Home() {
                 <div>
                   <h2 className="text-xl font-semibold text-slate-950">Stage A — Input</h2>
                   <p className="text-sm text-slate-600">
-                    Enter a scientific hypothesis with an intervention, system, measurable outcome,
-                    comparator, and target.
+                    Enter any scientific hypothesis, question, or research topic. The AI will parse
+                    it; if it&apos;s too vague to plan, the parsed hypothesis and novelty rationale
+                    will say so.
                   </p>
                 </div>
                 <Badge tone="blue">{hypothesis.length}/3000</Badge>
@@ -1753,11 +1754,14 @@ function ErrorBox({ message }: { message: string }) {
 }
 
 function validateHypothesis(text: string): { ok: boolean; message?: string } {
-  if (text.trim().length < 20) return { ok: false, message: "Minimum 20 characters." };
+  // Keep length-only sanity checks. The AI parser decides whether a query
+  // is workable — vague or unconventional phrasings (e.g. "Synthesis of a
+  // yolk-shell nanoparticle...") are passed through, and the pipeline
+  // surfaces uncertainty via the parsed hypothesis + novelty rationale
+  // instead of refusing input outright.
+  const trimmed = text.trim();
+  if (trimmed.length < 10) return { ok: false, message: "Add a few more words so the AI has something to work with." };
   if (text.length > 3000) return { ok: false, message: "Maximum 3000 characters." };
-  if (!/(will|would|can|detect|increase|reduce|outperform|measure|test|compare|effect)/i.test(text)) {
-    return { ok: false, message: "Please phrase this as a testable scientific hypothesis or question." };
-  }
   return { ok: true };
 }
 
