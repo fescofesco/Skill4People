@@ -181,6 +181,10 @@ export default function Home() {
   const [planSummaries, setPlanSummaries] = useState<SavedPlanSummary[]>([]);
   const [genContext, setGenContext] = useState<GenerationContext | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  // User-supplied experiment name. Falls back to parsed_hypothesis.intervention
+  // or a truncated hypothesis on the server when blank.
+  const [title, setTitle] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     void refreshHealthAndFeedback();
@@ -195,6 +199,7 @@ export default function Home() {
     void refreshPlanLibrary();
     setSavedPlanId(null);
     setContinueFromPlanId(null);
+    setTitle("");
   }, [organizationId]);
 
   // Auto-dismiss toasts after 5s so the success/info banner doesn't linger.
@@ -216,6 +221,7 @@ export default function Home() {
     setSavedSincePlan(false);
     setSavedPlanId(null);
     setGenContext(null);
+    setTitle("");
   }
 
   async function refreshHealthAndFeedback() {
@@ -338,6 +344,7 @@ export default function Home() {
         body: JSON.stringify({
           category_id: genContext?.category_id || categoryId,
           continue_from_plan_id: continueFromPlanId,
+          title: title.trim() || undefined,
           hypothesis,
           parsed_hypothesis: nextPlan.hypothesis.parsed,
           literature_qc: literatureQC,
@@ -367,6 +374,39 @@ export default function Home() {
     } catch (err) {
       console.warn("Auto-save failed", err);
       setToast("Plan saved locally only — server save failed.");
+    }
+  }
+
+  /**
+   * Explicit "Save experiment" action: persists the current plan/critique
+   * plus the user's chosen title. If we already have a saved row, this is
+   * a PUT (rename + edits). If we don't (e.g. auto-save failed earlier or
+   * the user cleared it), fall back to POST via autoSavePlan.
+   */
+  async function saveExperiment() {
+    if (!plan) return;
+    setSaving(true);
+    try {
+      if (savedPlanId) {
+        await apiJson(`/api/plans/${savedPlanId}`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            title: title.trim() || undefined,
+            plan,
+            critique: critique ?? undefined
+          })
+        });
+        await refreshPlanLibrary();
+        setToast(title.trim() ? `Saved "${title.trim()}".` : "Experiment saved.");
+      } else {
+        await autoSavePlan(plan, genMeta, evidenceMeta, critique);
+        setToast(title.trim() ? `Saved "${title.trim()}".` : "Experiment saved.");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Save failed.");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -422,6 +462,7 @@ export default function Home() {
       );
       setCritique((sp.critique as PlanCritiqueMeta) ?? null);
       setCategoryId(sp.category_id);
+      setTitle(sp.title || "");
       // Make this opened plan the auto-link source so feedback rules saved
       // here flow into future generations until the user clears the form.
       setContinueFromPlanId(sp.id);
@@ -530,6 +571,27 @@ export default function Home() {
           </div>
           <div className="flex flex-wrap items-center gap-3 md:items-end md:justify-end">
             <StatusBadges health={health} feedbackCount={feedbackCount} />
+            {planSummaries.length > 0 && (
+              <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm">
+                <FolderOpen className="h-4 w-4 text-slate-500" />
+                <select
+                  className="bg-transparent text-sm text-slate-700 focus:outline-none"
+                  value={savedPlanId ?? ""}
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    if (id) void openSavedPlan(id);
+                  }}
+                  aria-label="Open a saved experiment"
+                >
+                  <option value="">Open experiment…</option>
+                  {planSummaries.slice(0, 50).map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm">
               <Library className="h-4 w-4 text-slate-500" />
               <span className="font-mono text-xs text-slate-700">{organizationId}</span>
@@ -647,6 +709,25 @@ export default function Home() {
                   </button>
                 ))}
               </div>
+              <label
+                className="mt-4 block text-sm font-medium text-slate-700"
+                htmlFor="experiment-title"
+              >
+                Experiment name <span className="text-slate-400">(optional)</span>
+              </label>
+              <input
+                id="experiment-title"
+                type="text"
+                maxLength={160}
+                placeholder="e.g. Pd/C hydrogenation kinetics screen"
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-900 shadow-inner focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+              <p className="mt-1 text-xs text-slate-500">
+                Used as the label in your experiment library. Leave blank to auto-generate from
+                the parsed hypothesis.
+              </p>
               <label className="mt-4 block text-sm font-medium text-slate-700" htmlFor="hypothesis">
                 Hypothesis
               </label>
@@ -771,7 +852,11 @@ export default function Home() {
                 evidence={evidenceMeta}
                 critique={critique}
                 savedSincePlan={savedSincePlan}
+                title={title}
+                onTitleChange={setTitle}
                 onRegenerate={generatePlan}
+                onSave={saveExperiment}
+                saving={saving}
                 onEdit={setTarget}
               />
             )}
@@ -1288,7 +1373,11 @@ function PlanDashboard({
   evidence,
   critique,
   savedSincePlan,
+  title,
+  onTitleChange,
   onRegenerate,
+  onSave,
+  saving,
   onEdit
 }: {
   plan: ExperimentPlan;
@@ -1296,7 +1385,11 @@ function PlanDashboard({
   evidence: EvidenceMeta | null;
   critique: PlanCritiqueMeta | null;
   savedSincePlan: boolean;
+  title: string;
+  onTitleChange: (next: string) => void;
   onRegenerate: () => void;
+  onSave: () => void;
+  saving: boolean;
   onEdit: (target: FeedbackTarget) => void;
 }) {
   const confidence = computePlanConfidence(plan);
@@ -1376,15 +1469,45 @@ function PlanDashboard({
             >
               Export Markdown
             </button>
-            {savedSincePlan && (
-              <button
-                onClick={onRegenerate}
-                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
-              >
-                <RefreshCw className="h-4 w-4" /> Regenerate with Feedback
-              </button>
-            )}
+            <button
+              onClick={onRegenerate}
+              className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-100"
+              title="Re-run the AI planner with the current hypothesis and any new feedback rules"
+            >
+              <RefreshCw className="h-4 w-4" />
+              {savedSincePlan ? "Regenerate with feedback" : "Regenerate"}
+            </button>
+            <button
+              onClick={onSave}
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+              title="Save the current plan and your edits to the experiment library"
+            >
+              <Save className="h-4 w-4" /> {saving ? "Saving…" : "Save experiment"}
+            </button>
           </div>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <label
+            htmlFor="dashboard-title"
+            className="text-xs font-semibold uppercase tracking-wide text-slate-500"
+          >
+            Experiment name
+          </label>
+          <input
+            id="dashboard-title"
+            type="text"
+            maxLength={160}
+            placeholder="Untitled experiment"
+            value={title}
+            onChange={(e) => onTitleChange(e.target.value)}
+            className="min-w-[260px] flex-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-900 shadow-inner focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+          />
+          {savedSincePlan && (
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+              New feedback — regenerate to apply
+            </span>
+          )}
         </div>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <MiniField label="Objective" value={plan.executive_summary.objective} />
