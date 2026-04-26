@@ -1,4 +1,5 @@
 import { getEnv } from "./env";
+import { chatCompletionsJson, getOpenAIClient, getOpenAIModel } from "./openai";
 import { EvidenceCard, ParsedHypothesis } from "./schemas";
 import { tavilyMultiSearch } from "./tavily";
 import { tavilyToEvidenceCard } from "./evidence";
@@ -110,13 +111,75 @@ export function buildSupplierQueries(parsed: ParsedHypothesis, _hypothesis: stri
   return queries.slice(0, 5);
 }
 
+const REFINE_SYSTEM = `You translate experimental hypothesis fields into supplier-searchable product queries for Sigma-Aldrich, Thermo Fisher, Abcam, Fisher Scientific, ATCC, etc.
+
+Return strict JSON:
+{ "queries": ["query 1", "query 2", ...] }
+
+Rules:
+- 3 to 6 queries, each 3-12 words.
+- Each query MUST name a concrete product type a vendor would list (antibody, kit, reagent, electrode, cell line, primer, plasmid, instrument).
+- Prefer ONE specific product per query. Append "catalog number" or "price" to one or two queries.
+- Do not invent specific catalog IDs.
+- Skip generic phrases like "appropriate control material".`;
+
+async function aiRefineSupplierQueries(
+  parsed: ParsedHypothesis,
+  hypothesis: string
+): Promise<string[] | null> {
+  const env = getEnv();
+  if (!env.openaiApiKey || !getOpenAIClient()) return null;
+  try {
+    const raw = await chatCompletionsJson({
+      system: REFINE_SYSTEM,
+      user: [
+        "Hypothesis:",
+        hypothesis,
+        "",
+        "Parsed:",
+        JSON.stringify(
+          {
+            domain: parsed.domain,
+            experiment_type: parsed.experiment_type,
+            organism_or_system: parsed.organism_or_system,
+            intervention: parsed.intervention,
+            comparator: parsed.comparator,
+            primary_outcome: parsed.primary_outcome,
+            key_variables: parsed.key_variables,
+            key_measurements: parsed.key_measurements
+          },
+          null,
+          2
+        )
+      ].join("\n"),
+      temperature: 0.2,
+      maxTokens: 350,
+      model: getOpenAIModel()
+    });
+    const parsedJson = raw as { queries?: unknown };
+    const queries = Array.isArray(parsedJson.queries) ? parsedJson.queries : [];
+    const cleaned = queries
+      .filter((q): q is string => typeof q === "string")
+      .map((q) => q.trim())
+      .filter((q) => q.length >= 6 && q.length <= 140)
+      .slice(0, 6);
+    return cleaned.length ? cleaned : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function searchSuppliers(
   hypothesis: string,
   parsed: ParsedHypothesis
 ): Promise<EvidenceCard[]> {
   const env = getEnv();
   if (!env.tavilyApiKey) return [];
-  const queries = buildSupplierQueries(parsed, hypothesis);
+  // Try OpenAI-refined queries first; fall back to heuristic ones on any failure
+  // (no API key, 429, etc.). The fallback path is what shipped before, so any
+  // regression is caught by `npm run smoke:tavily`.
+  const aiQueries = await aiRefineSupplierQueries(parsed, hypothesis);
+  const queries = aiQueries && aiQueries.length ? aiQueries : buildSupplierQueries(parsed, hypothesis);
   if (queries.length === 0) return [];
   const results = await tavilyMultiSearch(queries, {
     maxResults: 4,

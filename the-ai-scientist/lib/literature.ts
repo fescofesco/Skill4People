@@ -5,6 +5,7 @@ import { getEnv } from "./env";
 import { chatCompletionsJson, getOpenAIClient, getOpenAIModel } from "./openai";
 import { searchOpenAlex } from "./openalex";
 import { searchPubmed } from "./pubmed";
+import { searchRecentNews } from "./news-search";
 import { searchSemanticScholar } from "./semantic-scholar";
 import { tavilyMultiSearch } from "./tavily";
 import {
@@ -563,7 +564,7 @@ export async function runLiteratureQC(hypothesis: string): Promise<{
   const useArxiv = shouldUseArxiv(parseResult.parsed);
   const usePubmed = shouldUsePubmed(parseResult.parsed);
 
-  const [ssRefs, axRefs, pmRefs, prRefs, oaRefs] = await Promise.all([
+  const [ssRefs, axRefs, pmRefs, prRefs, oaRefs, nwRefs] = await Promise.all([
     safeSearch(() => searchSemanticScholar(queries), "semantic_scholar", sourceStats),
     useArxiv
       ? safeSearch(() => searchArxiv(queries), "arxiv", sourceStats)
@@ -572,10 +573,13 @@ export async function runLiteratureQC(hypothesis: string): Promise<{
       ? safeSearch(() => searchPubmed(queries), "pubmed", sourceStats)
       : skipped("pubmed", "skipped: domain heuristic", sourceStats),
     safeSearch(() => searchProtocolRepositories(queries), "protocol_repository", sourceStats),
-    safeSearch(() => searchOpenAlex(queries), "openalex", sourceStats)
+    safeSearch(() => searchOpenAlex(queries), "openalex", sourceStats),
+    env.tavilyApiKey
+      ? safeSearch(() => searchRecentNews(parseResult.parsed, 90), "tavily_news", sourceStats)
+      : skipped("tavily_news", "skipped: TAVILY_API_KEY missing", sourceStats)
   ]);
 
-  const refs = dedupeReferences([...ssRefs, ...axRefs, ...pmRefs, ...prRefs, ...oaRefs]).slice(0, 12);
+  const refs = dedupeReferences([...ssRefs, ...axRefs, ...pmRefs, ...prRefs, ...oaRefs, ...nwRefs]).slice(0, 12);
   const sourcesUsed = sourceStats.filter((s) => s.status === "ok").map((s) => s.name);
 
   // Demo fallback only fires when OpenAI is not configured AND demo is explicitly enabled.

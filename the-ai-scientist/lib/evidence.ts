@@ -89,7 +89,9 @@ function hostnameOf(u: string): string {
  */
 function extractFacts(text: string): string[] {
   if (!text) return [];
-  const cleaned = text.replace(/\s+/g, " ").trim();
+  // Cap to 16 KB so regex passes stay sub-millisecond even on huge raw_content.
+  const trimmed = text.length > 16_000 ? text.slice(0, 16_000) : text;
+  const cleaned = trimmed.replace(/\s+/g, " ").trim();
   const found = new Set<string>();
   const out: string[] = [];
 

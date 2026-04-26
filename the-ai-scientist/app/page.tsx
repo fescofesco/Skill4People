@@ -95,10 +95,34 @@ type EvidenceMeta = {
   cardCount: number;
 };
 
+type CritiqueFinding = {
+  area:
+    | "controls"
+    | "statistics"
+    | "sample_size"
+    | "validation"
+    | "safety"
+    | "feasibility"
+    | "evidence"
+    | "scope";
+  finding: string;
+  suggestion: string;
+  severity: "info" | "warning" | "critical";
+};
+
+type PlanCritiqueMeta = {
+  source: "openai" | "heuristic";
+  model: string | null;
+  overall_assessment: "weak" | "needs_work" | "solid";
+  findings: CritiqueFinding[];
+  errors: string[];
+};
+
 type LiteratureQCWithMeta = LiteratureQC & { _diagnostics?: LiteratureDiagnostics };
 type ExperimentPlanWithMeta = ExperimentPlan & {
   _generation?: PlanGenerationMeta;
   _evidence?: EvidenceMeta;
+  _critique?: PlanCritiqueMeta;
 };
 
 export default function Home() {
@@ -110,6 +134,7 @@ export default function Home() {
   const [plan, setPlan] = useState<ExperimentPlan | null>(null);
   const [genMeta, setGenMeta] = useState<PlanGenerationMeta | null>(null);
   const [evidenceMeta, setEvidenceMeta] = useState<EvidenceMeta | null>(null);
+  const [critique, setCritique] = useState<PlanCritiqueMeta | null>(null);
   const [feedbackCount, setFeedbackCount] = useState(0);
   const [recentFeedback, setRecentFeedback] = useState<ScientistFeedback[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -145,6 +170,7 @@ export default function Home() {
     setPlan(null);
     setGenMeta(null);
     setEvidenceMeta(null);
+    setCritique(null);
     setLitDiag(null);
     setSavedSincePlan(false);
     try {
@@ -181,10 +207,11 @@ export default function Home() {
         error?: { message?: string };
       };
       if (!res.ok) throw new Error(json?.error?.message || "Plan generation failed");
-      const { _generation, _evidence, ...planOnly } = json;
+      const { _generation, _evidence, _critique, ...planOnly } = json;
       setPlan(planOnly as ExperimentPlan);
       setGenMeta(_generation ?? null);
       setEvidenceMeta(_evidence ?? null);
+      setCritique(_critique ?? null);
       setStage("plan_ready");
       setSavedSincePlan(false);
       void refreshHealthAndFeedback();
@@ -395,6 +422,7 @@ export default function Home() {
                 plan={plan}
                 generation={genMeta}
                 evidence={evidenceMeta}
+                critique={critique}
                 savedSincePlan={savedSincePlan}
                 onRegenerate={generatePlan}
                 onEdit={setTarget}
@@ -461,7 +489,55 @@ export default function Home() {
           onSave={saveFeedback}
         />
       )}
+      <DeploymentFooter health={health} />
     </main>
+  );
+}
+
+function DeploymentFooter({ health }: { health: HealthResponse | null }) {
+  const v = health?.env?.vercel;
+  const node = health?.env?.nodeVersion;
+  const model = health?.env?.openaiModel;
+  if (!v && !node) return null;
+  const repoUrl =
+    v?.gitProvider && v.gitRepoOwner && v.gitRepoSlug && v.gitCommitSha
+      ? v.gitProvider === "github"
+        ? `https://github.com/${v.gitRepoOwner}/${v.gitRepoSlug}/commit/${v.gitCommitSha}`
+        : null
+      : null;
+  return (
+    <div className="mx-auto max-w-7xl px-4 pb-8 pt-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-white/60 px-4 py-2 text-xs text-slate-500 backdrop-blur">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span>The AI Scientist</span>
+          {v?.onVercel ? (
+            <span>
+              · Vercel <span className="font-semibold text-slate-700">{v.env ?? "unknown"}</span>
+              {v.region ? <> · region {v.region}</> : null}
+            </span>
+          ) : (
+            <span>· local</span>
+          )}
+          {model && <span>· model {model}</span>}
+          {node && <span>· Node {node}</span>}
+        </div>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          {v?.gitCommitShortSha && (
+            <span>
+              build{" "}
+              {repoUrl ? (
+                <a className="font-mono text-blue-700 hover:underline" href={repoUrl} target="_blank" rel="noreferrer">
+                  {v.gitCommitShortSha}
+                </a>
+              ) : (
+                <span className="font-mono text-slate-700">{v.gitCommitShortSha}</span>
+              )}
+              {v.gitCommitRef ? <span> on {v.gitCommitRef}</span> : null}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -606,6 +682,7 @@ function PlanDashboard({
   plan,
   generation,
   evidence,
+  critique,
   savedSincePlan,
   onRegenerate,
   onEdit
@@ -613,6 +690,7 @@ function PlanDashboard({
   plan: ExperimentPlan;
   generation: PlanGenerationMeta | null;
   evidence: EvidenceMeta | null;
+  critique: PlanCritiqueMeta | null;
   savedSincePlan: boolean;
   onRegenerate: () => void;
   onEdit: (target: FeedbackTarget) => void;
@@ -724,6 +802,8 @@ function PlanDashboard({
         </div>
         <p className="mt-4 text-sm leading-6 text-slate-700">{plan.executive_summary.experimental_strategy}</p>
       </Card>
+
+      {critique && <PlanCritiquePanel critique={critique} />}
 
       <SectionCard title="Applied Scientist Feedback" icon={<BrainCircuit className="h-5 w-5 text-emerald-600" />}>
         {plan.applied_feedback.length === 0 ? (
@@ -1052,6 +1132,72 @@ function MiniField({ label, value }: { label: string; value: string }) {
       <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</div>
       <div className="mt-1 text-sm leading-5 text-slate-800">{value}</div>
     </div>
+  );
+}
+
+function PlanCritiquePanel({ critique }: { critique: PlanCritiqueMeta }) {
+  const overallTone =
+    critique.overall_assessment === "weak"
+      ? "red"
+      : critique.overall_assessment === "needs_work"
+        ? "amber"
+        : "emerald";
+  const sourceLabel = critique.source === "openai" ? `AI critic · ${critique.model ?? "OpenAI"}` : "Heuristic critic";
+  return (
+    <Card>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-950">
+          <ClipboardCheck className="h-5 w-5 text-blue-600" /> AI Plan Critic
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          <Badge tone={critique.source === "openai" ? "emerald" : "amber"}>{sourceLabel}</Badge>
+          <Badge tone={overallTone}>
+            {critique.overall_assessment === "solid"
+              ? "Solid"
+              : critique.overall_assessment === "needs_work"
+                ? "Needs work"
+                : "Weak"}
+          </Badge>
+          <Badge tone="slate">
+            {critique.findings.length} finding{critique.findings.length === 1 ? "" : "s"}
+          </Badge>
+        </div>
+      </div>
+      {critique.findings.length === 0 ? (
+        <p className="mt-3 text-sm text-slate-500">
+          No issues detected. The critic still recommends a domain-expert review before execution.
+        </p>
+      ) : (
+        <ul className="mt-3 space-y-2">
+          {critique.findings.map((f, i) => {
+            const tone = f.severity === "critical" ? "red" : f.severity === "warning" ? "amber" : "blue";
+            return (
+              <li key={i} className="rounded-xl border border-slate-200 bg-white p-3 text-sm">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge tone={tone}>{f.severity}</Badge>
+                  <Badge tone="slate">{f.area}</Badge>
+                </div>
+                <p className="mt-2 font-medium text-slate-900">{f.finding}</p>
+                <p className="mt-1 text-slate-600">
+                  <span className="font-semibold text-slate-700">Suggestion: </span>
+                  {f.suggestion}
+                </p>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {critique.errors.length > 0 && (
+        <details className="mt-3 text-xs text-amber-800">
+          <summary className="cursor-pointer underline">{critique.errors.length} note{critique.errors.length === 1 ? "" : "s"}</summary>
+          <ul className="mt-1 list-disc pl-5">
+            {critique.errors.map((e, i) => (
+              <li key={i}>{e}</li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </Card>
   );
 }
 

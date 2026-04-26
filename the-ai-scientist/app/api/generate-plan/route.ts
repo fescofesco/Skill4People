@@ -2,6 +2,7 @@ import { getEnv } from "@/lib/env";
 import { retrieveRelevantFeedback } from "@/lib/feedback-retrieval";
 import { mergeEvidenceCards } from "@/lib/evidence";
 import { generateExperimentPlan } from "@/lib/plan-generation";
+import { critiquePlan } from "@/lib/plan-critic";
 import { searchProtocols } from "@/lib/protocol-search";
 import { searchRegulatory } from "@/lib/regulatory-search";
 import { searchSuppliers } from "@/lib/supplier-search";
@@ -130,6 +131,18 @@ export async function POST(req: Request) {
       feedback
     });
     const validated = ExperimentPlanSchema.parse(plan);
+    // Run a critic pass over the validated plan. AI-first, heuristic fallback.
+    // Never blocks plan delivery: any error is captured into _critique.errors.
+    const critique = await critiquePlan(validated, literatureQC).catch((err) => ({
+      source: "heuristic" as const,
+      model: null,
+      overall_assessment: "needs_work" as const,
+      findings: [],
+      errors: [
+        "critique_unhandled_error: " +
+          (err instanceof Error ? err.message.slice(0, 240) : String(err).slice(0, 240))
+      ]
+    }));
     return Response.json({
       ...validated,
       _generation: generation,
@@ -138,7 +151,8 @@ export async function POST(req: Request) {
         sourceStats: evidenceStats,
         regulatoryReasons,
         cardCount: evidenceCards.length
-      }
+      },
+      _critique: critique
     });
   } catch (err) {
     return jsonError(err);

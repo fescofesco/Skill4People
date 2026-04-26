@@ -473,32 +473,26 @@ function buildUniversalContent(
     ];
   });
 
-  const keyMaterials = Array.from(
-    new Set(
-      [
-        intervention,
-        system,
-        comparator,
-        ...p.key_measurements.map((m) => `${m} assay or measurement materials`),
-        ...p.key_variables.slice(0, 3).map((v) => `${v} control materials`)
-      ]
-        .map((item) => item.trim())
-        .filter(Boolean)
-    )
-  ).slice(0, 7);
+  const keyMaterials = dedupeBySemanticOverlap(
+    [
+      shortenMaterialName(intervention),
+      shortenMaterialName(system),
+      shortenMaterialName(comparator),
+      ...p.key_measurements.slice(0, 2).map((m) => `${shortenMaterialName(m)} assay reagents`),
+      ...p.key_variables.slice(0, 2).map((v) => `${shortenMaterialName(v)} control reagent`)
+    ],
+    7
+  );
 
-  const keyEquipment = Array.from(
-    new Set(
-      [
-        `${outcome} measurement instrument`,
-        "Safety and containment equipment required by local SOP",
-        "Data capture and analysis workstation",
-        ...p.key_measurements.slice(0, 3).map((m) => `${m} readout equipment`)
-      ]
-        .map((item) => item.trim())
-        .filter(Boolean)
-    )
-  ).slice(0, 5);
+  const keyEquipment = dedupeBySemanticOverlap(
+    [
+      `${shortenMaterialName(outcome)} measurement instrument`,
+      "Safety and containment equipment required by local SOP",
+      "Data capture and analysis workstation",
+      ...p.key_measurements.slice(0, 2).map((m) => `${shortenMaterialName(m)} readout equipment`)
+    ],
+    5
+  );
 
   const riskLevel = flags.length >= 4 || approvals.length >= 4 ? "high" : flags.length >= 1 ? "medium" : "low";
 
@@ -1104,4 +1098,53 @@ function makeAssumptions(items: string[][]): Assumption[] {
     how_to_verify: verify,
     editable: true
   }));
+}
+
+/**
+ * Trim material/equipment names to a readable length without losing the
+ * salient first noun phrase. The parsed hypothesis sometimes returns a whole
+ * sentence as the "outcome" or "intervention", which would otherwise leak
+ * into UI labels.
+ */
+function shortenMaterialName(raw: string): string {
+  const cleaned = (raw || "").trim().replace(/\s+/g, " ");
+  if (cleaned.length <= 60) return cleaned;
+  // Prefer cutting at sentence/clause boundaries so we don't bisect a phrase.
+  const cutAt = (() => {
+    for (const sep of [" with ", " at ", " in ", ", ", ". ", " - ", " (", ";"]) {
+      const idx = cleaned.toLowerCase().indexOf(sep, 20);
+      if (idx > 0 && idx < 60) return idx;
+    }
+    return 60;
+  })();
+  const snippet = cleaned.slice(0, cutAt).trim();
+  return snippet.length > 0 ? snippet + "…" : cleaned.slice(0, 60) + "…";
+}
+
+/**
+ * Dedupe by Jaccard token overlap so "graphene FET intervention" and
+ * "graphene FET intervention control materials" collapse to the first one.
+ * Falls back to exact-string dedupe so we still keep the original ordering.
+ */
+function dedupeBySemanticOverlap(items: string[], cap: number): string[] {
+  const seen: { tokens: Set<string>; original: string }[] = [];
+  for (const itemRaw of items.map((s) => (s || "").trim()).filter(Boolean)) {
+    const tokens = new Set(
+      itemRaw
+        .toLowerCase()
+        .replace(/[\(\)\[\]\{\}":;,\.!?\/]/g, " ")
+        .split(/\s+/)
+        .filter((t) => t.length > 2)
+    );
+    if (tokens.size === 0) continue;
+    const tooSimilar = seen.some((prev) => {
+      const intersect = [...tokens].filter((t) => prev.tokens.has(t)).length;
+      const union = tokens.size + prev.tokens.size - intersect;
+      return union > 0 && intersect / union >= 0.6;
+    });
+    if (tooSimilar) continue;
+    seen.push({ tokens, original: itemRaw });
+    if (seen.length >= cap) break;
+  }
+  return seen.map((x) => x.original);
 }

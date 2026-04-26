@@ -381,9 +381,26 @@ export const HealthResponseSchema = z.object({
   timestamp: z.string(),
   env: z.object({
     openaiConfigured: z.boolean(),
+    openaiModel: z.string().optional(),
     tavilyConfigured: z.boolean(),
     semanticScholarConfigured: z.boolean(),
-    demoFallbackEnabled: z.boolean()
+    demoFallbackEnabled: z.boolean(),
+    nodeVersion: z.string().optional(),
+    runtime: z.string().optional(),
+    vercel: z
+      .object({
+        onVercel: z.boolean(),
+        env: z.enum(["production", "preview", "development"]).nullable(),
+        url: z.string().nullable(),
+        region: z.string().nullable(),
+        gitCommitSha: z.string().nullable(),
+        gitCommitShortSha: z.string().nullable(),
+        gitCommitRef: z.string().nullable(),
+        gitProvider: z.string().nullable(),
+        gitRepoOwner: z.string().nullable(),
+        gitRepoSlug: z.string().nullable()
+      })
+      .optional()
   }),
   feedbackStore: z.object({
     exists: z.boolean(),
