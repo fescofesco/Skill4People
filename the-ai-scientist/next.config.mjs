@@ -32,7 +32,10 @@ const buildRef = captureBuildRef();
 const nextConfig = {
   reactStrictMode: true,
   experimental: {
-    serverComponentsExternalPackages: ["openai"]
+    // Keep these out of the webpack bundle; they need to load at runtime
+    // from node_modules (pdf-parse uses pdfjs-dist which trips webpack's
+    // ESM/CJS interop with `Object.defineProperty called on non-object`).
+    serverComponentsExternalPackages: ["openai", "pdf-parse", "pdfjs-dist", "@napi-rs/canvas"]
   },
   env: {
     BUILD_SHA: buildSha,

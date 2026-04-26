@@ -529,3 +529,48 @@ export const RetrievedFeedbackSchema = z.object({
   reason: z.string()
 });
 export type RetrievedFeedback = z.infer<typeof RetrievedFeedbackSchema>;
+
+export const DocumentScopeSchema = z.enum(["organization", "experiment"]);
+export type DocumentScope = z.infer<typeof DocumentScopeSchema>;
+
+export const DocumentRecordSchema = z.object({
+  id: z.string().min(1),
+  organization_id: z.string().min(1),
+  scope: DocumentScopeSchema,
+  plan_id: z.string().nullable(),
+  filename: z.string().min(1),
+  content_type: z.string().min(1),
+  byte_size: z.number().int().nonnegative(),
+  text: z.string(),
+  page_count: z.number().int().nullable().optional(),
+  truncated: z.boolean().default(false),
+  created_at: z.string(),
+  updated_at: z.string()
+});
+export type DocumentRecord = z.infer<typeof DocumentRecordSchema>;
+
+export const DocumentSummarySchema = z.object({
+  id: z.string(),
+  organization_id: z.string(),
+  scope: DocumentScopeSchema,
+  plan_id: z.string().nullable(),
+  filename: z.string(),
+  content_type: z.string(),
+  byte_size: z.number().int().nonnegative(),
+  page_count: z.number().int().nullable().optional(),
+  truncated: z.boolean(),
+  text_length: z.number().int().nonnegative(),
+  text_preview: z.string(),
+  created_at: z.string(),
+  updated_at: z.string()
+});
+export type DocumentSummary = z.infer<typeof DocumentSummarySchema>;
+
+export const DocumentListResponseSchema = z.object({
+  ok: z.literal(true),
+  organization_id: z.string(),
+  scope: DocumentScopeSchema.nullable(),
+  plan_id: z.string().nullable(),
+  documents: z.array(DocumentSummarySchema)
+});
+export type DocumentListResponse = z.infer<typeof DocumentListResponseSchema>;

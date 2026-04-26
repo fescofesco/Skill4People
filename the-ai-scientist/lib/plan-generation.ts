@@ -2,6 +2,7 @@ import { recomputeBudget } from "./budget";
 import { detectDemoTopic, demoEvidenceCards } from "./demo-fallbacks";
 import { getEnv } from "./env";
 import { ActiveFeedbackContext, flattenActiveContext } from "./feedback-retrieval";
+import { DocumentRecord } from "./schemas";
 import {
   newAssumptionId,
   newControlId,
@@ -38,6 +39,11 @@ import {
 import { assessSafety } from "./safety";
 import { nowIso } from "./utils";
 
+export type ActiveDocumentContext = {
+  organization: DocumentRecord[];
+  experiment: DocumentRecord[];
+};
+
 export type GeneratePlanArgs = {
   hypothesis: string;
   parsed: ParsedHypothesis;
@@ -48,6 +54,7 @@ export type GeneratePlanArgs = {
   categoryId?: string;
   categoryName?: string | null;
   continueFromPlanId?: string | null;
+  documents?: ActiveDocumentContext;
 };
 
 export type PlanGenerationSource =
@@ -64,6 +71,11 @@ export type PlanGenerationMeta = {
   feedback_buckets: {
     organization_count: number;
     category_count: number;
+    experiment_count: number;
+  };
+  documents_used: string[];
+  document_buckets: {
+    organization_count: number;
     experiment_count: number;
   };
 };
@@ -112,6 +124,8 @@ type PlanContent = {
 export async function generateExperimentPlan(args: GeneratePlanArgs): Promise<GeneratePlanResult> {
   const buckets = bucketCounts(args);
   const feedbackUsed = collectFeedbackUsedIds(args);
+  const documentsUsed = collectDocumentUsedIds(args);
+  const documentBuckets = documentBucketCounts(args);
   const safety = assessSafety(args.hypothesis, args.parsed);
   if (safety.unsafe) {
     return {
@@ -122,7 +136,9 @@ export async function generateExperimentPlan(args: GeneratePlanArgs): Promise<Ge
         attempts: 0,
         errors: [safety.reason || "Request is outside safe scope."],
         feedback_used: [],
-        feedback_buckets: buckets
+        feedback_buckets: buckets,
+        documents_used: [],
+        document_buckets: { organization_count: 0, experiment_count: 0 }
       }
     };
   }
@@ -138,7 +154,9 @@ export async function generateExperimentPlan(args: GeneratePlanArgs): Promise<Ge
         attempts: ai.attempts,
         errors: [...ai.errors, ...enriched.errors],
         feedback_used: feedbackUsed,
-        feedback_buckets: buckets
+        feedback_buckets: buckets,
+        documents_used: documentsUsed,
+        document_buckets: documentBuckets
       }
     };
   }
@@ -153,8 +171,27 @@ export async function generateExperimentPlan(args: GeneratePlanArgs): Promise<Ge
       attempts: ai.attempts,
       errors: [...ai.errors, ...enriched.errors],
       feedback_used: feedbackUsed,
-      feedback_buckets: buckets
+      feedback_buckets: buckets,
+      documents_used: documentsUsed,
+      document_buckets: documentBuckets
     }
+  };
+}
+
+function collectDocumentUsedIds(args: GeneratePlanArgs): string[] {
+  if (!args.documents) return [];
+  const ids = new Set<string>();
+  for (const d of args.documents.organization) ids.add(d.id);
+  for (const d of args.documents.experiment) ids.add(d.id);
+  return Array.from(ids);
+}
+
+function documentBucketCounts(
+  args: GeneratePlanArgs
+): PlanGenerationMeta["document_buckets"] {
+  return {
+    organization_count: args.documents?.organization.length ?? 0,
+    experiment_count: args.documents?.experiment.length ?? 0
   };
 }
 
@@ -336,6 +373,7 @@ async function aiGeneratePlan(args: GeneratePlanArgs): Promise<{
         feedbackContext: args.feedbackContext,
         categoryName: args.categoryName,
         continueFromPlanId: args.continueFromPlanId,
+        documents: args.documents,
         schemaHint: SCHEMA_HINT,
         validationErrorHint
       });

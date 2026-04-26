@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "smoke": "tsx scripts/smoke-test.ts",
     "smoke:tavily": "tsx scripts/smoke-tavily.ts",
+    "smoke:feedback": "tsx scripts/smoke-feedback.ts",
     "feedback:reset": "tsx scripts/reset-feedback.ts",
     "feedback:seed": "tsx scripts/seed-feedback.ts",
     "deploy:prod": "vercel deploy --prod --yes --build-env BUILD_SHA=$(git rev-parse HEAD) --build-env BUILD_REF=$(git rev-parse --abbrev-ref HEAD) -e BUILD_SHA=$(git rev-parse HEAD) -e BUILD_REF=$(git rev-parse --abbrev-ref HEAD)"
@@ -21,6 +22,7 @@
     "lucide-react": "^0.439.0",
     "next": "14.2.5",
     "openai": "^4.55.0",
+    "pdf-parse": "^2.4.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "tailwind-merge": "^2.5.2",
@@ -28,6 +30,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.14.10",
+    "@types/pdf-parse": "^1.1.5",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.19",

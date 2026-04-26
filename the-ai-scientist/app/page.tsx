@@ -10,20 +10,33 @@ import {
   ClipboardCheck,
   ExternalLink,
   FlaskConical,
+  FolderOpen,
+  Library,
   Newspaper,
+  Paperclip,
   RefreshCw,
   Save,
   Search,
+  Settings,
   ShieldAlert,
   ShoppingCart,
-  Sparkles
+  Sparkles,
+  Trash2
 } from "lucide-react";
+import { DocumentManager } from "@/components/DocumentManager";
+import { SettingsDrawer } from "@/components/SettingsDrawer";
+import { apiFetch, apiJson } from "@/lib/api-client";
+import { useOrganization } from "@/lib/org-context";
 import type {
+  Category,
   ExperimentPlan,
+  FeedbackScope,
   HealthResponse,
   LiteratureQC,
   ParsedHypothesis,
   Reference,
+  SavedPlan,
+  SavedPlanSummary,
   ScientistFeedback
 } from "@/lib/schemas";
 
@@ -82,6 +95,19 @@ type PlanGenerationMeta = {
   model: string | null;
   attempts: number;
   errors: string[];
+  feedback_used?: string[];
+  feedback_buckets?: {
+    organization_count: number;
+    category_count: number;
+    experiment_count: number;
+  };
+};
+
+type GenerationContext = {
+  organization_id: string;
+  category_id: string;
+  category_name: string | null;
+  continue_from_plan_id: string | null;
 };
 
 type EvidenceSourceStat = {
@@ -130,6 +156,7 @@ type ExperimentPlanWithMeta = ExperimentPlan & {
 };
 
 export default function Home() {
+  const { organizationId } = useOrganization();
   const [hypothesis, setHypothesis] = useState(samples[0].text);
   const [stage, setStage] = useState<Stage>("input");
   const [health, setHealth] = useState<HealthResponse | null>(null);
@@ -146,9 +173,29 @@ export default function Home() {
   const [toast, setToast] = useState<string | null>(null);
   const [savedSincePlan, setSavedSincePlan] = useState(false);
 
+  // Bucketed feedback / library state
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoryId, setCategoryId] = useState<string>("other");
+  const [continueFromPlanId, setContinueFromPlanId] = useState<string | null>(null);
+  const [savedPlanId, setSavedPlanId] = useState<string | null>(null);
+  const [planSummaries, setPlanSummaries] = useState<SavedPlanSummary[]>([]);
+  const [genContext, setGenContext] = useState<GenerationContext | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
   useEffect(() => {
     void refreshHealthAndFeedback();
+    void refreshCategories();
+    void refreshPlanLibrary();
   }, []);
+
+  // Re-pull org-scoped lists whenever the active org changes.
+  useEffect(() => {
+    void refreshHealthAndFeedback();
+    void refreshCategories();
+    void refreshPlanLibrary();
+    setSavedPlanId(null);
+    setContinueFromPlanId(null);
+  }, [organizationId]);
 
   // Auto-dismiss toasts after 5s so the success/info banner doesn't linger.
   useEffect(() => {
@@ -167,17 +214,45 @@ export default function Home() {
     setEvidenceMeta(null);
     setCritique(null);
     setSavedSincePlan(false);
+    setSavedPlanId(null);
+    setGenContext(null);
   }
 
   async function refreshHealthAndFeedback() {
     const [healthRes, fbRes] = await Promise.allSettled([
-      fetch("/api/health", { cache: "no-store" }).then((r) => r.json()),
-      fetch("/api/feedback", { cache: "no-store" }).then((r) => r.json())
+      apiFetch("/api/health", { cache: "no-store" }).then((r) => r.json()),
+      apiFetch("/api/feedback", { cache: "no-store" }).then((r) => r.json())
     ]);
     if (healthRes.status === "fulfilled") setHealth(healthRes.value);
     if (fbRes.status === "fulfilled") {
       setFeedbackCount(fbRes.value.count || 0);
       setRecentFeedback((fbRes.value.feedback || []).slice(-4).reverse());
+    }
+  }
+
+  async function refreshCategories() {
+    try {
+      const res = await apiJson<{ categories: Category[] }>("/api/categories", {
+        cache: "no-store"
+      });
+      const list = res.categories || [];
+      setCategories(list);
+      // Reconcile current selection: if the chosen category was deleted in
+      // another session, fall back to "other" so the input form stays valid.
+      setCategoryId((prev) => (list.find((c) => c.id === prev) ? prev : list[0]?.id || "other"));
+    } catch (err) {
+      console.warn("Failed to load categories", err);
+    }
+  }
+
+  async function refreshPlanLibrary() {
+    try {
+      const res = await apiJson<{ plans: SavedPlanSummary[] }>("/api/plans", {
+        cache: "no-store"
+      });
+      setPlanSummaries(res.plans || []);
+    } catch (err) {
+      console.warn("Failed to load plan library", err);
     }
   }
 
@@ -190,7 +265,7 @@ export default function Home() {
     setStage("literature_loading");
     resetDownstream();
     try {
-      const res = await fetch("/api/literature", {
+      const res = await apiFetch("/api/literature", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ hypothesis })
@@ -214,26 +289,167 @@ export default function Home() {
     setError(null);
     setStage("plan_loading");
     try {
-      const res = await fetch("/api/generate-plan", {
+      const res = await apiFetch("/api/generate-plan", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ hypothesis, literature_qc: literatureQC })
+        body: JSON.stringify({
+          hypothesis,
+          literature_qc: literatureQC,
+          category_id: categoryId,
+          continue_from_plan_id: continueFromPlanId
+        })
       });
       const json = (await res.json()) as ExperimentPlanWithMeta & {
+        _context?: GenerationContext;
         error?: { message?: string };
       };
       if (!res.ok) throw new Error(json?.error?.message || "Plan generation failed");
-      const { _generation, _evidence, _critique, ...planOnly } = json;
-      setPlan(planOnly as ExperimentPlan);
+      const { _generation, _evidence, _critique, _context, ...planOnly } = json;
+      const finalPlan = planOnly as ExperimentPlan;
+      setPlan(finalPlan);
       setGenMeta(_generation ?? null);
       setEvidenceMeta(_evidence ?? null);
       setCritique(_critique ?? null);
+      setGenContext(_context ?? null);
       setStage("plan_ready");
       setSavedSincePlan(false);
       void refreshHealthAndFeedback();
+      // Auto-save the freshly generated plan to the library so the user can
+      // come back and edit it later. Failures are surfaced in the toast but
+      // never block the run.
+      void autoSavePlan(finalPlan, _generation ?? null, _evidence ?? null, _critique ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Plan generation failed");
       setStage("error");
+    }
+  }
+
+  async function autoSavePlan(
+    nextPlan: ExperimentPlan,
+    generation: PlanGenerationMeta | null,
+    evidence: EvidenceMeta | null,
+    nextCritique: PlanCritiqueMeta | null
+  ) {
+    if (!literatureQC) return;
+    try {
+      const res = await apiJson<{ plan: SavedPlan }>("/api/plans", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          category_id: genContext?.category_id || categoryId,
+          continue_from_plan_id: continueFromPlanId,
+          hypothesis,
+          parsed_hypothesis: nextPlan.hypothesis.parsed,
+          literature_qc: literatureQC,
+          plan: nextPlan,
+          generation: generation
+            ? {
+                source: generation.source,
+                model: generation.model,
+                attempts: generation.attempts,
+                errors: generation.errors
+              }
+            : undefined,
+          evidence: evidence
+            ? {
+                tavilyConfigured: evidence.tavilyConfigured,
+                sourceStats: evidence.sourceStats,
+                regulatoryReasons: evidence.regulatoryReasons,
+                cardCount: evidence.cardCount
+              }
+            : undefined,
+          critique: nextCritique ?? undefined,
+          feedback_used: generation?.feedback_used ?? []
+        })
+      });
+      setSavedPlanId(res.plan.id);
+      void refreshPlanLibrary();
+    } catch (err) {
+      console.warn("Auto-save failed", err);
+      setToast("Plan saved locally only — server save failed.");
+    }
+  }
+
+  // Debounced save of in-place edits (PlanEditor mutates `plan` state).
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!plan || !savedPlanId) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      void apiJson(`/api/plans/${savedPlanId}`, {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ plan, critique: critique ?? undefined })
+      })
+        .then(() => refreshPlanLibrary())
+        .catch((err) => {
+          console.warn("Auto edit save failed", err);
+        });
+    }, 1200);
+    return () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    };
+  }, [plan, critique, savedPlanId]);
+
+  async function openSavedPlan(id: string) {
+    try {
+      const res = await apiJson<{ plan: SavedPlan }>(`/api/plans/${id}`, { cache: "no-store" });
+      const sp = res.plan;
+      setHypothesis(sp.hypothesis);
+      setLiteratureQC(sp.literature_qc);
+      setLitDiag(null);
+      setPlan(sp.plan);
+      setGenMeta(
+        sp.generation
+          ? {
+              source: sp.generation.source,
+              model: sp.generation.model,
+              attempts: sp.generation.attempts,
+              errors: sp.generation.errors,
+              feedback_used: sp.feedback_used
+            }
+          : null
+      );
+      setEvidenceMeta(
+        sp.evidence
+          ? {
+              tavilyConfigured: !!sp.evidence.tavilyConfigured,
+              sourceStats: (sp.evidence.sourceStats as EvidenceSourceStat[]) ?? [],
+              regulatoryReasons: sp.evidence.regulatoryReasons ?? [],
+              cardCount: sp.evidence.cardCount ?? 0
+            }
+          : null
+      );
+      setCritique((sp.critique as PlanCritiqueMeta) ?? null);
+      setCategoryId(sp.category_id);
+      // Make this opened plan the auto-link source so feedback rules saved
+      // here flow into future generations until the user clears the form.
+      setContinueFromPlanId(sp.id);
+      setSavedPlanId(sp.id);
+      setGenContext({
+        organization_id: sp.organization_id,
+        category_id: sp.category_id,
+        category_name: categories.find((c) => c.id === sp.category_id)?.name ?? null,
+        continue_from_plan_id: sp.continue_from_plan_id ?? null
+      });
+      setStage("plan_ready");
+      setToast(`Loaded "${sp.title}" for editing.`);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not open saved plan.");
+    }
+  }
+
+  async function deleteSavedPlan(id: string) {
+    if (!confirm("Delete this saved experiment? This cannot be undone.")) return;
+    try {
+      await apiJson(`/api/plans/${id}`, { method: "DELETE" });
+      if (savedPlanId === id) setSavedPlanId(null);
+      if (continueFromPlanId === id) setContinueFromPlanId(null);
+      void refreshPlanLibrary();
+      setToast("Experiment deleted.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Delete failed.");
     }
   }
 
@@ -245,36 +461,49 @@ export default function Home() {
     applicability: ScientistFeedback["applicability"];
     severity: ScientistFeedback["severity"];
     confidence: number;
-  }) {
-    if (!target || !plan) return;
+    scope?: FeedbackScope;
+  }): Promise<{ scope: FeedbackScope; applicable_rule: string | null }> {
+    if (!target || !plan) {
+      throw new Error("No active feedback target.");
+    }
     const body = {
       source_plan_id: plan.plan_id,
       hypothesis,
       parsed_hypothesis: plan.hypothesis.parsed,
       domain: plan.hypothesis.parsed.domain,
       experiment_type: plan.hypothesis.parsed.experiment_type,
+      category_id: genContext?.category_id || categoryId,
       item_type: target.item_type,
       item_id: target.item_id,
       original_context: target.original_context,
       ...payload
     };
-    const res = await fetch("/api/feedback", {
+    const res = await apiFetch("/api/feedback", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body)
     });
     const json = await res.json();
     if (!res.ok) throw new Error(json?.error?.message || "Feedback save failed");
-    setToast("Scientist feedback saved and will be retrieved for similar plans.");
-    setTarget(null);
+    const classification = json?.classification ?? json?.feedback ?? {};
+    const scope = (classification.scope as FeedbackScope) ?? "experiment";
+    setToast(
+      `Feedback saved into the ${scope} bucket. It will guide future plans${
+        scope === "organization" ? " across this organization." : "."
+      }`
+    );
     setSavedSincePlan(true);
     void refreshHealthAndFeedback();
+    return {
+      scope,
+      applicable_rule: classification.applicable_rule ?? null
+    };
   }
 
   async function runFeedbackAction(action: "seed" | "reset") {
     setError(null);
     try {
-      const res = await fetch(`/api/feedback/${action}`, { method: "POST" });
+      const res = await apiFetch(`/api/feedback/${action}`, { method: "POST" });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error?.message || `Feedback ${action} failed`);
       setToast(action === "seed" ? "Seeded demo feedback examples." : "Feedback store reset.");
@@ -299,7 +528,22 @@ export default function Home() {
               From scientific hypothesis to operational experiment plan
             </p>
           </div>
-          <StatusBadges health={health} feedbackCount={feedbackCount} />
+          <div className="flex flex-wrap items-center gap-3 md:items-end md:justify-end">
+            <StatusBadges health={health} feedbackCount={feedbackCount} />
+            <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm">
+              <Library className="h-4 w-4 text-slate-500" />
+              <span className="font-mono text-xs text-slate-700">{organizationId}</span>
+              <button
+                type="button"
+                onClick={() => setSettingsOpen(true)}
+                className="ml-1 rounded-full p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                aria-label="Open settings"
+                title="Settings"
+              >
+                <Settings className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
         </header>
         <StageProgress stage={stage} />
 
@@ -415,6 +659,53 @@ export default function Home() {
               {!validation.ok && (
                 <p className="mt-2 text-sm text-red-700">{validation.message}</p>
               )}
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700" htmlFor="category">
+                    Category
+                  </label>
+                  <select
+                    id="category"
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white p-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    value={categoryId}
+                    onChange={(e) => setCategoryId(e.target.value)}
+                  >
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                        {c.builtin ? "" : " (custom)"}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Drives which category-scoped feedback rules are applied.
+                  </p>
+                </div>
+                <div>
+                  <label
+                    className="block text-sm font-medium text-slate-700"
+                    htmlFor="continue-from"
+                  >
+                    Continue from existing experiment <span className="text-slate-400">(optional)</span>
+                  </label>
+                  <select
+                    id="continue-from"
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white p-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    value={continueFromPlanId ?? ""}
+                    onChange={(e) => setContinueFromPlanId(e.target.value || null)}
+                  >
+                    <option value="">— start fresh —</option>
+                    {planSummaries.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.title} · {categories.find((c) => c.id === s.category_id)?.name || s.category_id}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Inherits experiment-scoped rules from this past plan.
+                  </p>
+                </div>
+              </div>
               <button
                 onClick={runLiteratureQC}
                 disabled={!validation.ok || stage === "literature_loading" || stage === "plan_loading"}
@@ -484,9 +775,40 @@ export default function Home() {
                 onEdit={setTarget}
               />
             )}
+            {plan && (
+              <Card>
+                <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-950">
+                  <Paperclip className="h-5 w-5 text-blue-600" /> Experiment documents
+                </h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Upload PDFs or text files (SOPs, datasheets, raw notes) and they will be passed to the
+                  AI as EXPERIMENT DOCUMENTS whenever this experiment is opened or continued from.
+                </p>
+                <div className="mt-3">
+                  <DocumentManager
+                    scope="experiment"
+                    planId={savedPlanId}
+                    compact
+                    disabledReason={
+                      savedPlanId
+                        ? null
+                        : "Plan auto-saves once generated — give the save a moment, then refresh to attach documents."
+                    }
+                  />
+                </div>
+              </Card>
+            )}
           </section>
 
           <aside className="space-y-6">
+            <ExperimentLibraryPanel
+              summaries={planSummaries}
+              categories={categories}
+              activeId={savedPlanId}
+              onOpen={openSavedPlan}
+              onDelete={deleteSavedPlan}
+              onRefresh={refreshPlanLibrary}
+            />
             <Card>
               <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-950">
                 <ClipboardCheck className="h-5 w-5 text-blue-600" /> Judge Demo
@@ -541,10 +863,18 @@ export default function Home() {
       {target && (
         <FeedbackModal
           target={target}
+          categories={categories}
+          activeCategoryId={genContext?.category_id || categoryId}
           onClose={() => setTarget(null)}
           onSave={saveFeedback}
         />
       )}
+      <SettingsDrawer
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        categories={categories}
+        onCategoriesChange={setCategories}
+      />
       <DeploymentFooter health={health} />
     </main>
   );
@@ -1094,6 +1424,19 @@ function PlanDashboard({
       {critique && <PlanCritiquePanel critique={critique} />}
 
       <SectionCard title="Applied Scientist Feedback" icon={<BrainCircuit className="h-5 w-5 text-emerald-600" />}>
+        {generation?.feedback_buckets && (
+          <div className="mb-3 flex flex-wrap gap-2 text-xs">
+            <Badge tone="emerald">
+              Org · {generation.feedback_buckets.organization_count}
+            </Badge>
+            <Badge tone="blue">
+              Category · {generation.feedback_buckets.category_count}
+            </Badge>
+            <Badge tone="amber">
+              Experiment · {generation.feedback_buckets.experiment_count}
+            </Badge>
+          </div>
+        )}
         {plan.applied_feedback.length === 0 ? (
           <p className="text-sm text-slate-500">No relevant saved feedback was applied yet.</p>
         ) : (
@@ -1322,12 +1665,170 @@ function PlanDashboard({
   );
 }
 
+function ExperimentLibraryPanel({
+  summaries,
+  categories,
+  activeId,
+  onOpen,
+  onDelete,
+  onRefresh
+}: {
+  summaries: SavedPlanSummary[];
+  categories: Category[];
+  activeId: string | null;
+  onOpen: (id: string) => void;
+  onDelete: (id: string) => void;
+  onRefresh: () => void;
+}) {
+  const [docPlanId, setDocPlanId] = useState<string | null>(null);
+  // Group plans by category and sort categories by latest activity so the
+  // most recently touched category bubbles to the top.
+  const groups = useMemo(() => {
+    const buckets = new Map<
+      string,
+      { id: string; name: string; items: SavedPlanSummary[]; lastUpdated: string }
+    >();
+    for (const s of summaries) {
+      const cat = categories.find((c) => c.id === s.category_id);
+      const name = cat?.name ?? s.category_id ?? "Other";
+      const bucket = buckets.get(s.category_id) ?? {
+        id: s.category_id,
+        name,
+        items: [],
+        lastUpdated: s.updated_at
+      };
+      bucket.items.push(s);
+      if (s.updated_at > bucket.lastUpdated) bucket.lastUpdated = s.updated_at;
+      buckets.set(s.category_id, bucket);
+    }
+    return Array.from(buckets.values())
+      .map((g) => ({
+        ...g,
+        items: g.items.sort((a, b) => b.updated_at.localeCompare(a.updated_at))
+      }))
+      .sort((a, b) => b.lastUpdated.localeCompare(a.lastUpdated));
+  }, [summaries, categories]);
+
+  return (
+    <Card>
+      <div className="flex items-center justify-between">
+        <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-950">
+          <FolderOpen className="h-5 w-5 text-blue-600" /> My Experiments
+        </h2>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-500">{summaries.length}</span>
+          <button
+            type="button"
+            onClick={onRefresh}
+            className="rounded-lg border border-slate-200 bg-white p-1.5 text-slate-500 hover:bg-slate-50"
+            aria-label="Refresh experiments"
+            title="Refresh"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+      {summaries.length === 0 ? (
+        <p className="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-500">
+          No saved experiments yet. Generated plans will appear here automatically.
+        </p>
+      ) : (
+        <div className="mt-3 max-h-[460px] space-y-4 overflow-y-auto pr-1">
+          {groups.map((group) => (
+            <div key={group.id}>
+              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                {group.name} <span className="text-slate-400">· {group.items.length}</span>
+              </div>
+              <ul className="mt-2 space-y-2">
+                {group.items.map((s) => {
+                  const isActive = s.id === activeId;
+                  const docsOpen = docPlanId === s.id;
+                  return (
+                    <li
+                      key={s.id}
+                      className={`rounded-xl border p-3 text-sm transition-colors ${
+                        isActive
+                          ? "border-blue-300 bg-blue-50"
+                          : "border-slate-200 bg-white hover:border-blue-200"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onOpen(s.id)}
+                          className="min-w-0 grow text-left"
+                        >
+                          <div className="truncate font-semibold text-slate-900">{s.title}</div>
+                          <div className="mt-1 line-clamp-2 text-xs text-slate-600">
+                            {s.hypothesis_snippet}
+                          </div>
+                          <div className="mt-1 flex flex-wrap items-center gap-1 text-[10px] uppercase tracking-wide text-slate-500">
+                            {s.experiment_type && <span>{s.experiment_type}</span>}
+                            {s.has_critique && <span>· critique</span>}
+                            {s.feedback_used_count > 0 && (
+                              <span>· {s.feedback_used_count} rule{s.feedback_used_count === 1 ? "" : "s"}</span>
+                            )}
+                            <span>· {new Date(s.updated_at).toLocaleDateString()}</span>
+                          </div>
+                        </button>
+                        <div className="flex shrink-0 flex-col gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setDocPlanId(docsOpen ? null : s.id)}
+                            className={`rounded-lg border p-1.5 ${
+                              docsOpen
+                                ? "border-blue-300 bg-blue-100 text-blue-700"
+                                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                            }`}
+                            aria-label="Attach documents"
+                            title="Attach PDF or text documents"
+                          >
+                            <Paperclip className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onDelete(s.id)}
+                            className="rounded-lg border border-rose-200 bg-rose-50 p-1.5 text-rose-700 hover:bg-rose-100"
+                            aria-label="Delete experiment"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                      {docsOpen && (
+                        <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                          <DocumentManager
+                            scope="experiment"
+                            planId={s.id}
+                            compact
+                            title={`Documents for ${s.title}`}
+                            helperText="Applied as EXPERIMENT DOCUMENTS when this experiment is opened or continued from."
+                          />
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+
 function FeedbackModal({
   target,
+  categories,
+  activeCategoryId,
   onClose,
   onSave
 }: {
   target: FeedbackTarget;
+  categories: Category[];
+  activeCategoryId: string;
   onClose: () => void;
   onSave: (payload: {
     correction: string;
@@ -1337,7 +1838,8 @@ function FeedbackModal({
     applicability: ScientistFeedback["applicability"];
     severity: ScientistFeedback["severity"];
     confidence: number;
-  }) => Promise<void>;
+    scope?: FeedbackScope;
+  }) => Promise<{ scope: FeedbackScope; applicable_rule: string | null }>;
 }) {
   const [correction, setCorrection] = useState("");
   const [reason, setReason] = useState("");
@@ -1345,9 +1847,16 @@ function FeedbackModal({
   const [tags, setTags] = useState("validation, controls");
   const [applicability, setApplicability] = useState<ScientistFeedback["applicability"]>("similar_experiment_type");
   const [severity, setSeverity] = useState<ScientistFeedback["severity"]>("important");
+  const [scopeOverride, setScopeOverride] = useState<FeedbackScope | "auto">("auto");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [classification, setClassification] = useState<{
+    scope: FeedbackScope;
+    applicable_rule: string | null;
+  } | null>(null);
   const correctionRef = useRef<HTMLTextAreaElement>(null);
+  const activeCategoryName =
+    categories.find((c) => c.id === activeCategoryId)?.name ?? activeCategoryId;
 
   // Lock body scroll while the modal is open so the page underneath doesn't
   // scroll along with it on touch devices.
@@ -1380,15 +1889,17 @@ function FeedbackModal({
     setSaving(true);
     setError(null);
     try {
-      await onSave({
+      const result = await onSave({
         correction,
         reason,
         rating_before: rating ? Number(rating) : null,
         tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
         applicability,
         severity,
-        confidence: 0.75
+        confidence: 0.75,
+        scope: scopeOverride === "auto" ? undefined : scopeOverride
       });
+      setClassification(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed");
     } finally {
@@ -1449,11 +1960,65 @@ function FeedbackModal({
             <input className="mt-1 w-full rounded-xl border p-2 text-sm" value={tags} onChange={(e) => setTags(e.target.value)} />
           </div>
         </div>
+        <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
+          <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Apply this rule to
+          </div>
+          <p className="mt-1 text-xs text-slate-600">
+            Pick a bucket or let the AI classify. Category is{" "}
+            <span className="font-mono text-slate-700">{activeCategoryName}</span>.
+          </p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {(
+              [
+                { id: "auto", label: "Let AI decide" },
+                { id: "organization", label: "Whole organization" },
+                { id: "category", label: `Category: ${activeCategoryName}` },
+                { id: "experiment", label: "This experiment only" }
+              ] as const
+            ).map((opt) => {
+              const active = scopeOverride === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setScopeOverride(opt.id)}
+                  className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                    active
+                      ? "border-blue-500 bg-blue-600 text-white shadow-sm"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:bg-blue-50"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        {classification && (
+          <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+            <div className="font-semibold">
+              Saved into <span className="capitalize">{classification.scope}</span> bucket.
+            </div>
+            {classification.applicable_rule && (
+              <p className="mt-1 text-emerald-800">{classification.applicable_rule}</p>
+            )}
+            <p className="mt-1 text-xs text-emerald-700">
+              This rule will be appended to future plan prompts that match the bucket.
+            </p>
+          </div>
+        )}
         {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
         <div className="mt-6 flex justify-end gap-3">
-          <button onClick={onClose} className="rounded-xl border px-4 py-2 text-sm font-semibold text-slate-700">Cancel</button>
-          <button onClick={submit} disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
-            <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save feedback"}
+          <button onClick={onClose} className="rounded-xl border px-4 py-2 text-sm font-semibold text-slate-700">
+            {classification ? "Close" : "Cancel"}
+          </button>
+          <button
+            onClick={submit}
+            disabled={saving || !!classification}
+            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          >
+            <Save className="h-4 w-4" /> {saving ? "Saving..." : classification ? "Saved" : "Save feedback"}
           </button>
         </div>
       </div>

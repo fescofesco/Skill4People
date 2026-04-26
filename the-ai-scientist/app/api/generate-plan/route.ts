@@ -1,4 +1,5 @@
 import { getCategory } from "@/lib/category-store";
+import { listDocuments } from "@/lib/document-store";
 import { getEnv } from "@/lib/env";
 import { getActiveFeedbackContext } from "@/lib/feedback-retrieval";
 import { mergeEvidenceCards } from "@/lib/evidence";
@@ -75,6 +76,18 @@ export async function POST(req: Request) {
     const categoryRecord = await getCategory(organizationId, categoryId);
     const categoryName = categoryRecord?.name || null;
 
+    const [orgDocs, experimentDocs] = await Promise.all([
+      listDocuments({ organization_id: organizationId, scope: "organization" }),
+      continueFromPlanId
+        ? listDocuments({
+            organization_id: organizationId,
+            scope: "experiment",
+            plan_id: continueFromPlanId
+          })
+        : Promise.resolve([])
+    ]);
+    const documents = { organization: orgDocs, experiment: experimentDocs };
+
     const [feedbackContext, proto, supp, reg] = await Promise.all([
       getActiveFeedbackContext({
         organization_id: organizationId,
@@ -143,7 +156,8 @@ export async function POST(req: Request) {
       feedbackContext,
       categoryId,
       categoryName,
-      continueFromPlanId
+      continueFromPlanId,
+      documents
     });
     const validated = ExperimentPlanSchema.parse(plan);
     // Run a critic pass over the validated plan. AI-first, heuristic fallback.
@@ -172,7 +186,13 @@ export async function POST(req: Request) {
         organization_id: organizationId,
         category_id: categoryId,
         category_name: categoryName,
-        continue_from_plan_id: continueFromPlanId
+        continue_from_plan_id: continueFromPlanId,
+        documents: {
+          organization_count: orgDocs.length,
+          experiment_count: experimentDocs.length,
+          organization_ids: orgDocs.map((d) => d.id),
+          experiment_ids: experimentDocs.map((d) => d.id)
+        }
       }
     });
   } catch (err) {
