@@ -288,6 +288,80 @@ for i, (left, right) in enumerate(rows):
     txt(sl, 6.30, y+0.11, 6.7, 0.44, right, size=11, colour=rcol)
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# SLIDE 5 — FEEDBACK MODEL + AI VALIDATION + CONTACT
+# ══════════════════════════════════════════════════════════════════════════════
+sl = add_slide()
+header(sl, "FEEDBACK MODEL & AI VALIDATION")
+
+# ── LEFT: Feedback model ──────────────────────────────────────────────────────
+rect(sl, 0.4, 1.05, 7.0, 4.90, MID_BLUE)
+rect(sl, 0.4, 1.05, 7.0, 0.08, EMERALD)
+txt(sl, 0.55, 1.18, 6.7, 0.42, "HOW THE FEEDBACK MODEL WORKS", size=14, bold=True, colour=EMERALD)
+
+# Bucket diagram: three stacked boxes with arrows
+bucket_data = [
+    (EMERALD,  "ORGANISATION",  "Applies to all plans in the org\ne.g. 'Always verify matrix effects for biosensors'"),
+    (ACCENT,   "CATEGORY",      "Applies to one experiment type\ne.g. 'For Cell Biology: include mycoplasma testing'"),
+    (YELLOW,   "EXPERIMENT",    "Applies when branching from a specific plan\ne.g. 'n=4 sufficient for this HeLa line'"),
+]
+for i, (col, label, desc) in enumerate(bucket_data):
+    by = 1.72 + i * 1.08
+    rect(sl, 0.55, by, 6.7, 0.95, RGBColor(0x0A, 0x1E, 0x30))
+    rect(sl, 0.55, by, 0.18, 0.95, col)
+    txt(sl, 0.85, by+0.08, 2.0, 0.30, label, size=12, bold=True, colour=col)
+    txt(sl, 0.85, by+0.40, 6.1, 0.45, desc,  size=11, colour=LIGHT_GREY)
+
+# Storage / retrieval tech line
+rect(sl, 0.4, 4.98, 7.0, 0.48, RGBColor(0x06, 0x14, 0x20))
+bullets(sl, 0.55, 5.03, 6.7, 0.38,
+    [("Gemini 768-dim embeddings · Supabase pgvector HNSW · cosine similarity · "
+      "match_experiments() RPC · ~1,600 pre-seeded rules · AI auto-classifies bucket",
+      {"colour": RGBColor(0x88, 0xBB, 0xDD), "size": 10})],
+    size=10)
+
+# ── RIGHT: AI Validation ──────────────────────────────────────────────────────
+rect(sl, 7.6, 1.05, 5.3, 4.90, RGBColor(0x0F, 0x22, 0x35))
+rect(sl, 7.6, 1.05, 5.3, 0.08, RED_SOFT)
+txt(sl, 7.75, 1.18, 5.0, 0.42, "HOW WE VALIDATE THE AI", size=14, bold=True, colour=RED_SOFT)
+
+validation = [
+    (RED_SOFT, "Plan Critique (self-audit)",
+     "Second AI pass after every generation.\n6 categories: controls · statistics · sample size\nvalidation · safety · feasibility\nRated: weak · needs_work · solid"),
+    (YELLOW,   "Multi-model redundancy",
+     "OpenAI GPT-4o · Google Gemini · Claude\nHeuristic fallback at every AI call\nSystem is fully functional with no API key"),
+    (ACCENT,   "Composite confidence score",
+     "Every plan scored: evidence quality\nsupplier completeness · validation design\nfeedback relevance — visible before ordering"),
+    (GREEN,    "Literature grounding",
+     "Plans grounded in 6-source literature QC\nNov­elty classified with confidence score\nNo hallucinated catalog numbers — Tavily-verified"),
+]
+for i, (col, title, body) in enumerate(validation):
+    vy = 1.66 + i * 1.05
+    rect(sl, 7.75, vy, 4.95, 0.92, RGBColor(0x0A, 0x1A, 0x28))
+    rect(sl, 7.75, vy, 4.95, 0.06, col)
+    txt(sl, 7.90, vy+0.10, 4.6, 0.28, title, size=11, bold=True, colour=col)
+    txt(sl, 7.90, vy+0.40, 4.6, 0.48, body,  size=10, colour=LIGHT_GREY)
+
+# ── CONTACT BAR ───────────────────────────────────────────────────────────────
+rect(sl, 0, 6.10, 13.33, 1.30, RGBColor(0x05, 0x12, 0x1E))
+rect(sl, 0, 6.10, 13.33, 0.06, ACCENT)
+
+txt(sl, 0.5, 6.18, 12.3, 0.32,
+    "CONTACT US FOR MORE QUESTIONS",
+    size=13, bold=True, colour=ACCENT, align=PP_ALIGN.CENTER)
+
+contacts = [
+    ("Samuel Hajek",    "samuel.hajek@gmail.com"),
+    ("Johannes Wagner", "johannes.wagner@alumni.tugraz.at"),
+    ("Felix Scope",     "scope@tugraz.at"),
+    ("Georg Niess",     "georg.niess@tugraz.at"),
+]
+for i, (name, email) in enumerate(contacts):
+    cx = 0.45 + i * 3.22
+    txt(sl, cx, 6.56, 3.1, 0.28, name,  size=11, bold=True,  colour=WHITE)
+    txt(sl, cx, 6.84, 3.1, 0.26, email, size=10, italic=True, colour=ACCENT)
+
+
 # ── save ──────────────────────────────────────────────────────────────────────
 out = r"C:\Users\Admin\Documents\Repos\Hacknation_april_2026\presentation\GF_sh_AI_scientist_Deck.pptx"
 prs.save(out)
