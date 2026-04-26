@@ -3,6 +3,8 @@ from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
+from pptx.oxml.ns import qn
+from lxml import etree
 
 DARK_BG    = RGBColor(0x0D, 0x1B, 0x2A)
 ACCENT     = RGBColor(0x00, 0xC2, 0xFF)
@@ -64,6 +66,20 @@ def bullets(slide, l, t, w, h, lines, size=14, colour=WHITE, leading=None):
         r.font.italic = opts.get("italic", False)
         r.font.color.rgb = opts.get("colour", colour)
 
+def hyperlink_txt(slide, l, t, w, h, text, url, size=14, colour=ACCENT, align=PP_ALIGN.CENTER):
+    """Text box with a clickable hyperlink."""
+    tb = slide.shapes.add_textbox(Inches(l), Inches(t), Inches(w), Inches(h))
+    tb.word_wrap = False
+    tf = tb.text_frame
+    p = tf.paragraphs[0]; p.alignment = align
+    r = p.add_run(); r.text = text
+    r.font.size = Pt(size); r.font.color.rgb = colour; r.font.underline = True
+    # inject hlinkClick into rPr
+    rPr = r._r.get_or_add_rPr()
+    rId = slide.part.relate_to(url, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink", is_external=True)
+    hl = etree.SubElement(rPr, qn("a:hlinkClick"))
+    hl.set(qn("r:id"), rId)
+
 def header(slide, title):
     rect(slide, 0, 0, 13.33, 0.10, ACCENT)
     rect(slide, 0, 7.40, 13.33, 0.10, ACCENT)
@@ -115,9 +131,15 @@ txt(sl, 0.5, 4.60, 12.3, 0.38,
     "Powered by  OpenAI GPT-4o  ·  Tavily  ·  OpenAlex  ·  Semantic Scholar  ·  Next.js 14",
     size=12, colour=RGBColor(0x66,0x99,0xBB), align=PP_ALIGN.CENTER)
 
+# GitHub link
+hyperlink_txt(sl, 0.5, 4.95, 12.3, 0.38,
+    "🔗  github.com/fescofesco/Skill4People",
+    "https://github.com/fescofesco/Skill4People",
+    size=14, colour=ACCENT, align=PP_ALIGN.CENTER)
+
 # One-liner tagline
-rect(sl, 0.5, 5.25, 12.3, 1.50, RGBColor(0x08, 0x1E, 0x30))
-txt(sl, 0.7, 5.40, 11.9, 1.20,
+rect(sl, 0.5, 5.45, 12.3, 1.50, RGBColor(0x08, 0x1E, 0x30))
+txt(sl, 0.7, 5.60, 11.9, 1.20,
     "Science moves at the speed of operations, not ideas.\n"
     "We compress weeks of lab-planning into a plan a scientist\n"
     "can pick up on Monday and start running by Friday.",
@@ -322,6 +344,6 @@ for i, (left, right) in enumerate(rows):
 
 
 # ── save ──────────────────────────────────────────────────────────────────────
-out = r"C:\Users\Admin\Documents\Repos\Hacknation_april_2026\presentation\AI_Scientist_Deck_v2.pptx"
+out = r"C:\Users\Admin\Documents\Repos\Hacknation_april_2026\presentation\GF_sh_AI_scientist_Deck.pptx"
 prs.save(out)
 print(f"Saved: {out}")
