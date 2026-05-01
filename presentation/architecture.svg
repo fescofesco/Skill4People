@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2200 1080" width="2200" height="1080" font-family="'Inter','Segoe UI','Helvetica Neue',Arial,sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#f1f5f9"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="6"/>
+      <feOffset dx="0" dy="4" result="off"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.10"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="arrowEnd" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L10,4 z" fill="#475569"/>
+    </marker>
+    <marker id="arrowStart" markerWidth="12" markerHeight="12" refX="2" refY="4" orient="auto">
+      <path d="M10,0 L10,8 L0,4 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect width="2200" height="1080" fill="url(#bg)"/>
+
+  <text x="60" y="78" font-size="44" font-weight="800" fill="#0f172a" letter-spacing="-0.5">The AI Scientist &#8212; System Architecture</text>
+  <text x="60" y="116" font-size="20" font-weight="500" fill="#475569">Next.js 14 monolith &#183; OpenAI + knowledge APIs &#183; local JSON persistence &#183; single-deployable on Node / Vercel</text>
+  <line x1="60" y1="148" x2="2140" y2="148" stroke="#e2e8f0" stroke-width="2"/>
+
+  <!-- CARD: Browser -->
+  <g filter="url(#cardShadow)">
+    <rect x="60" y="180" width="480" height="400" rx="16" fill="#ffffff" stroke="#e2e8f0"/>
+    <rect x="60" y="180" width="480" height="6" rx="3" fill="#0ea5e9"/>
+  </g>
+  <text x="84" y="226" font-size="13" font-weight="700" fill="#0ea5e9" letter-spacing="2">CLIENT</text>
+  <text x="84" y="262" font-size="26" font-weight="700" fill="#0f172a">Browser SPA</text>
+  <text x="84" y="290" font-size="15" font-weight="500" fill="#64748b">React 18 &#183; Tailwind &#183; client-rendered</text>
+
+  <g font-size="15" fill="#334155">
+    <circle cx="92" cy="332" r="3" fill="#0ea5e9"/>
+    <text x="106" y="337">Single page &#8212; <tspan font-family="ui-monospace,Menlo,Consolas,monospace" fill="#0f172a">app/page.tsx</tspan></text>
+
+    <circle cx="92" cy="362" r="3" fill="#0ea5e9"/>
+    <text x="106" y="367"><tspan font-family="ui-monospace,Menlo,Consolas,monospace" fill="#0f172a">DocumentManager</tspan> &#183; <tspan font-family="ui-monospace,Menlo,Consolas,monospace" fill="#0f172a">SettingsDrawer</tspan></text>
+
+    <circle cx="92" cy="392" r="3" fill="#0ea5e9"/>
+    <text x="106" y="397">Org id in <tspan font-family="ui-monospace,Menlo,Consolas,monospace" fill="#0f172a">localStorage</tspan> (no auth)</text>
+
+    <circle cx="92" cy="422" r="3" fill="#0ea5e9"/>
+    <text x="106" y="427"><tspan font-family="ui-monospace,Menlo,Consolas,monospace" fill="#0f172a">apiFetch()</tspan> injects header</text>
+  </g>
+
+  <rect x="84" y="450" width="412" height="36" rx="18" fill="#e0f2fe" stroke="#bae6fd"/>
+  <text x="290" y="473" font-size="13" font-family="ui-monospace,Menlo,Consolas,monospace" fill="#0369a1" text-anchor="middle">x-organization-id: &lt;slug&gt;</text>
+
+  <text x="84" y="525" font-size="13" font-weight="600" fill="#0ea5e9" letter-spacing="1.5">UI STAGES</text>
+  <text x="84" y="550" font-size="14" fill="#475569"><tspan font-weight="600" fill="#0f172a">A</tspan> Hypothesis  &#8594;  <tspan font-weight="600" fill="#0f172a">B</tspan> Literature QC</text>
+  <text x="84" y="570" font-size="14" fill="#475569"><tspan font-weight="600" fill="#0f172a">C</tspan> Plan + Critique  &#8594;  <tspan font-weight="600" fill="#0f172a">D</tspan> Save / Regenerate</text>
+
+  <!-- CARD: Reliability principles -->
+  <g filter="url(#cardShadow)">
+    <rect x="60" y="620" width="480" height="380" rx="16" fill="#ffffff" stroke="#e2e8f0"/>
+    <rect x="60" y="620" width="480" height="6" rx="3" fill="#f59e0b"/>
+  </g>
+  <text x="84" y="666" font-size="13" font-weight="700" fill="#f59e0b" letter-spacing="2">RELIABILITY</text>
+  <text x="84" y="702" font-size="26" font-weight="700" fill="#0f172a">Cross-cutting design</text>
+
+  <g font-size="14.5" fill="#334155">
+    <text x="84" y="748" font-weight="700" fill="#0f172a">AI-first, deterministic fallback</text>
+    <text x="84" y="770">Every AI entrypoint has a non-AI path that</text>
+    <text x="84" y="788">returns Zod-valid output. Never hard-fails.</text>
+
+    <text x="84" y="824" font-weight="700" fill="#0f172a">Schema repair loop</text>
+    <text x="84" y="846">Plan generator re-prompts with Zod errors</text>
+    <text x="84" y="864">until valid, then deterministic fallback.</text>
+
+    <text x="84" y="900" font-weight="700" fill="#0f172a">Atomic JSON writes</text>
+    <text x="84" y="922">tmp + rename &#183; single in-process write lock</text>
+    <text x="84" y="940">corruption quarantined, schemas re-validated.</text>
+
+    <text x="84" y="976" font-weight="700" fill="#0f172a">Diagnostics shipped to UI</text>
+  </g>
+
+  <!-- CARD: Next.js server -->
+  <g filter="url(#cardShadow)">
+    <rect x="620" y="180" width="820" height="820" rx="16" fill="#ffffff" stroke="#e2e8f0"/>
+    <rect x="620" y="180" width="820" height="6" rx="3" fill="#6366f1"/>
+  </g>
+  <text x="644" y="226" font-size="13" font-weight="700" fill="#6366f1" letter-spacing="2">SERVER</text>
+  <text x="644" y="262" font-size="28" font-weight="700" fill="#0f172a">Next.js 14 server  &#183;  Node.js runtime</text>
+  <text x="644" y="290" font-size="15" font-weight="500" fill="#64748b">runtime: nodejs &#183; dynamic: force-dynamic &#183; single deployable (Vercel-ready)</text>
+
+  <!-- API routes inner card -->
+  <rect x="640" y="310" width="780" height="190" rx="12" fill="#eef2ff" stroke="#c7d2fe"/>
+  <text x="660" y="340" font-size="18" font-weight="700" fill="#3730a3">API routes  &#183;  app/api/*</text>
+  <text x="660" y="361" font-size="13" fill="#6366f1">JSON over HTTPS &#183; validated by Zod &#183; uniform error envelope</text>
+
+  <g font-size="14" font-family="ui-monospace,Menlo,Consolas,monospace" font-weight="600">
+    <rect x="660" y="378" width="120" height="30" rx="15" fill="#ffffff" stroke="#a5b4fc"/>
+    <text x="720" y="398" fill="#3730a3" text-anchor="middle">/api/health</text>
+
+    <rect x="790" y="378" width="150" height="30" rx="15" fill="#ffffff" stroke="#a5b4fc"/>
+    <text x="865" y="398" fill="#3730a3" text-anchor="middle">/api/literature</text>
+
+    <rect x="950" y="378" width="180" height="30" rx="15" fill="#ffffff" stroke="#a5b4fc"/>
+    <text x="1040" y="398" fill="#3730a3" text-anchor="middle">/api/generate-plan</text>
+
+    <rect x="660" y="418" width="370" height="30" rx="15" fill="#ffffff" stroke="#a5b4fc"/>
+    <text x="845" y="438" fill="#3730a3" text-anchor="middle">/api/feedback  (+ /retrieve, /seed, /reset)</text>
+
+    <rect x="660" y="458" width="170" height="30" rx="15" fill="#ffffff" stroke="#a5b4fc"/>
+    <text x="745" y="478" fill="#3730a3" text-anchor="middle">/api/plans (+ /[id])</text>
+
+    <rect x="840" y="458" width="200" height="30" rx="15" fill="#ffffff" stroke="#a5b4fc"/>
+    <text x="940" y="478" fill="#3730a3" text-anchor="middle">/api/documents (+ /[id])</text>
+
+    <rect x="1050" y="458" width="200" height="30" rx="15" fill="#ffffff" stroke="#a5b4fc"/>
+    <text x="1150" y="478" fill="#3730a3" text-anchor="middle">/api/categories (+ /[id])</text>
+  </g>
+
+  <!-- Business logic inner card -->
+  <rect x="640" y="520" width="780" height="460" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="660" y="550" font-size="18" font-weight="700" fill="#1e293b">Business logic  &#183;  lib/</text>
+  <text x="660" y="571" font-size="13" fill="#64748b">Pure modules &#8212; every external boundary has Zod schema + fallback</text>
+
+  <!-- Column A -->
+  <g font-size="14">
+    <text x="660" y="600" font-size="15" font-weight="700" fill="#6366f1">Stage B &#8212; Literature QC</text>
+    <text x="660" y="624" fill="#334155">parseHypothesis  <tspan fill="#94a3b8">(AI &#8594; heuristic, 30 min cache)</tspan></text>
+    <text x="660" y="644" fill="#334155">6 sources &#183; S2 &#183; OpenAlex &#183; PubMed &#183; arXiv &#183; protocols &#183; news</text>
+    <text x="660" y="664" fill="#334155">round-robin merge &#183; rerank by hypothesis overlap</text>
+    <text x="660" y="684" fill="#334155">classifyNovelty  <tspan fill="#94a3b8">(AI &#8594; heuristic)</tspan></text>
+
+    <text x="660" y="722" font-size="15" font-weight="700" fill="#6366f1">Stage C &#8212; Plan generation</text>
+    <text x="660" y="746" fill="#334155">assessSafety  <tspan fill="#94a3b8">(rule-based, in plan-generation)</tspan></text>
+    <text x="660" y="766" fill="#334155">generateExperimentPlan  <tspan fill="#64748b" font-size="13">(maxAttempts 2)</tspan></text>
+    <text x="680" y="784" fill="#64748b" font-size="13">&#8627; AI &#8594; Zod-repair retry &#8594; deterministic</text>
+    <text x="660" y="806" fill="#334155">enrichPlanPricing  <tspan fill="#94a3b8" font-size="13">(Tavily &#8594; estimatePricesAI)</tspan></text>
+    <text x="660" y="826" fill="#334155">recomputeBudget &#183; critiquePlan  <tspan fill="#94a3b8" font-size="13">(AI &#8594; heuristic)</tspan></text>
+
+    <text x="660" y="864" font-size="15" font-weight="700" fill="#6366f1">Cross-cutting</text>
+    <text x="660" y="888" fill="#334155">org-server  &#183;  header &#8594; org id</text>
+    <text x="660" y="908" fill="#334155">validation  &#183;  Zod at every boundary</text>
+    <text x="660" y="928" fill="#334155">evidence  &#183;  classify + dedupe Tavily cards</text>
+    <text x="660" y="948" fill="#334155">env snapshot  &#183;  diagnostics return on every plan</text>
+  </g>
+
+  <!-- Column B -->
+  <g font-size="14">
+    <text x="1050" y="600" font-size="15" font-weight="700" fill="#6366f1">Feedback memory</text>
+    <text x="1050" y="624" fill="#334155">classifyFeedbackRule  <tspan fill="#94a3b8">(AI rewrite + scope)</tspan></text>
+    <text x="1050" y="644" fill="#334155">embed via text-embedding-3-small</text>
+    <text x="1050" y="664" fill="#334155">3-bucket retrieval at plan-time:</text>
+    <text x="1070" y="684" fill="#64748b" font-size="13">organization &#183; category &#183; experiment</text>
+    <text x="1050" y="704" fill="#334155">cosine + lexical hybrid score</text>
+
+    <text x="1050" y="742" font-size="15" font-weight="700" fill="#6366f1">Document ingestion</text>
+    <text x="1050" y="766" fill="#334155">pdf-parse (pdfjs-dist) + UTF-8 text</text>
+    <text x="1050" y="786" fill="#334155">10 MB upload cap &#183; 60k char body cap</text>
+    <text x="1050" y="806" fill="#334155">scope: organization | experiment</text>
+    <text x="1050" y="826" fill="#334155">injected into plan prompt</text>
+    <text x="1070" y="844" fill="#64748b" font-size="13">(up to 4 docs &#215; 4000 chars per bucket)</text>
+
+    <text x="1050" y="884" font-size="15" font-weight="700" fill="#6366f1">Multi-tenant model</text>
+    <text x="1050" y="908" fill="#334155">Org id from <tspan font-family="ui-monospace,Menlo,Consolas,monospace">x-organization-id</tspan></text>
+    <text x="1050" y="928" fill="#334155">stores filter on read &#183; tag on write</text>
+    <text x="1050" y="948" fill="#334155">cosmetic bucketing &#8212; not access control</text>
+  </g>
+
+  <!-- CARD: Persistence -->
+  <g filter="url(#cardShadow)">
+    <rect x="1520" y="180" width="620" height="380" rx="16" fill="#ffffff" stroke="#e2e8f0"/>
+    <rect x="1520" y="180" width="620" height="6" rx="3" fill="#10b981"/>
+  </g>
+  <text x="1544" y="226" font-size="13" font-weight="700" fill="#10b981" letter-spacing="2">PERSISTENCE</text>
+  <text x="1544" y="262" font-size="26" font-weight="700" fill="#0f172a">JSON files  &#183;  no database</text>
+  <text x="1544" y="290" font-size="15" font-weight="500" fill="#64748b">data/ folder &#183; atomic tmp+rename &#183; single-writer lock &#183; Zod-validated reads</text>
+
+  <g font-family="ui-monospace,Menlo,Consolas,monospace">
+    <rect x="1544" y="318" width="276" height="106" rx="10" fill="#ecfdf5" stroke="#a7f3d0"/>
+    <text x="1560" y="345" font-size="14" font-weight="700" fill="#047857">feedback_store.json</text>
+    <text x="1560" y="370" font-size="12.5" font-family="'Inter','Segoe UI',sans-serif" fill="#334155">Every Suggest correction</text>
+    <text x="1560" y="389" font-size="12.5" font-family="'Inter','Segoe UI',sans-serif" fill="#334155">+ derived rule + embedding</text>
+    <text x="1560" y="408" font-size="12.5" font-family="'Inter','Segoe UI',sans-serif" fill="#334155">+ scope + organization_id</text>
+
+    <rect x="1840" y="318" width="276" height="106" rx="10" fill="#ecfdf5" stroke="#a7f3d0"/>
+    <text x="1856" y="345" font-size="14" font-weight="700" fill="#047857">plan_store.json</text>
+    <text x="1856" y="370" font-size="12.5" font-family="'Inter','Segoe UI',sans-serif" fill="#334155">Saved experiment plans</text>
+    <text x="1856" y="389" font-size="12.5" font-family="'Inter','Segoe UI',sans-serif" fill="#334155">+ critique + feedback used</text>
+    <text x="1856" y="408" font-size="12.5" font-family="'Inter','Segoe UI',sans-serif" fill="#334155">+ category + continue_from</text>
+
+    <rect x="1544" y="436" width="276" height="106" rx="10" fill="#ecfdf5" stroke="#a7f3d0"/>
+    <text x="1560" y="463" font-size="14" font-weight="700" fill="#047857">document_store.json</text>
+    <text x="1560" y="488" font-size="12.5" font-family="'Inter','Segoe UI',sans-serif" fill="#334155">Uploaded PDFs / text</text>
+    <text x="1560" y="507" font-size="12.5" font-family="'Inter','Segoe UI',sans-serif" fill="#334155">+ extracted body (text)</text>
+    <text x="1560" y="526" font-size="12.5" font-family="'Inter','Segoe UI',sans-serif" fill="#334155">+ scope + plan_id</text>
+
+    <rect x="1840" y="436" width="276" height="106" rx="10" fill="#ecfdf5" stroke="#a7f3d0"/>
+    <text x="1856" y="463" font-size="14" font-weight="700" fill="#047857">category_store.json</text>
+    <text x="1856" y="488" font-size="12.5" font-family="'Inter','Segoe UI',sans-serif" fill="#334155">Per-org categories,</text>
+    <text x="1856" y="507" font-size="12.5" font-family="'Inter','Segoe UI',sans-serif" fill="#334155">seeded with 7 process</text>
+    <text x="1856" y="526" font-size="12.5" font-family="'Inter','Segoe UI',sans-serif" fill="#334155">buckets (lazy)</text>
+  </g>
+
+  <!-- CARD: External services -->
+  <g filter="url(#cardShadow)">
+    <rect x="1520" y="620" width="620" height="380" rx="16" fill="#ffffff" stroke="#e2e8f0"/>
+    <rect x="1520" y="620" width="620" height="6" rx="3" fill="#8b5cf6"/>
+  </g>
+  <text x="1544" y="666" font-size="13" font-weight="700" fill="#8b5cf6" letter-spacing="2">EXTERNAL SERVICES</text>
+  <text x="1544" y="702" font-size="26" font-weight="700" fill="#0f172a">AI + knowledge APIs</text>
+
+  <rect x="1544" y="722" width="572" height="124" rx="10" fill="#f5f3ff" stroke="#ddd6fe"/>
+  <text x="1564" y="750" font-size="16" font-weight="700" fill="#5b21b6">OpenAI</text>
+  <text x="1564" y="775" font-size="14" fill="#334155"><tspan font-weight="600" fill="#0f172a">Chat Completions</tspan>  &#183;  gpt-4o (JSON mode)</text>
+  <text x="1564" y="795" font-size="13" fill="#64748b">parse &#183; novelty &#183; plan &#183; critic &#183; feedback rule &#183; pricing</text>
+  <text x="1564" y="819" font-size="14" fill="#334155"><tspan font-weight="600" fill="#0f172a">Embeddings</tspan>  &#183;  text-embedding-3-small</text>
+  <text x="1564" y="838" font-size="13" fill="#64748b">feedback retrieval (cosine in JS, no vector DB)</text>
+
+  <rect x="1544" y="858" width="572" height="124" rx="10" fill="#fffbeb" stroke="#fde68a"/>
+  <text x="1564" y="886" font-size="16" font-weight="700" fill="#b45309">Knowledge APIs (HTTPS)</text>
+  <text x="1564" y="911" font-size="14" fill="#334155"><tspan font-weight="600" fill="#0f172a">Tavily</tspan>  &#183;  protocols &#183; suppliers &#183; regulatory &#183; news &#183; per-material  <tspan fill="#94a3b8">(optional)</tspan></text>
+  <text x="1564" y="935" font-size="14" fill="#334155"><tspan font-weight="600" fill="#0f172a">Semantic Scholar</tspan>  &#183;  <tspan font-weight="600" fill="#0f172a">OpenAlex</tspan>  &#183;  <tspan font-weight="600" fill="#0f172a">PubMed</tspan>  &#183;  <tspan font-weight="600" fill="#0f172a">arXiv</tspan>  &#183;  <tspan font-weight="600" fill="#0f172a">protocols.io / bio-protocol / JoVE</tspan></text>
+  <text x="1564" y="959" font-size="13" fill="#64748b">missing keys &#8594; graceful skip + per-source status in _diagnostics</text>
+
+  <!-- ARROWS -->
+  <line x1="548" y1="380" x2="612" y2="380" stroke="#475569" stroke-width="2.5" marker-end="url(#arrowEnd)" marker-start="url(#arrowStart)"/>
+  <text x="580" y="362" font-size="12" font-weight="600" fill="#475569" text-anchor="middle">HTTP</text>
+
+  <line x1="1448" y1="370" x2="1512" y2="370" stroke="#475569" stroke-width="2.5" marker-end="url(#arrowEnd)" marker-start="url(#arrowStart)"/>
+  <text x="1480" y="352" font-size="12" font-weight="600" fill="#475569" text-anchor="middle">fs</text>
+
+  <line x1="1448" y1="810" x2="1512" y2="810" stroke="#475569" stroke-width="2.5" marker-end="url(#arrowEnd)" marker-start="url(#arrowStart)"/>
+  <text x="1480" y="792" font-size="12" font-weight="600" fill="#475569" text-anchor="middle">HTTPS</text>
+
+  <!-- LEGEND -->
+  <line x1="60" y1="1020" x2="2140" y2="1020" stroke="#e2e8f0" stroke-width="1"/>
+
+  <g font-size="13" font-weight="600" fill="#475569">
+    <rect x="60" y="1042" width="14" height="14" rx="3" fill="#0ea5e9"/>
+    <text x="82" y="1054">Client</text>
+
+    <rect x="160" y="1042" width="14" height="14" rx="3" fill="#6366f1"/>
+    <text x="182" y="1054">Server</text>
+
+    <rect x="262" y="1042" width="14" height="14" rx="3" fill="#10b981"/>
+    <text x="284" y="1054">Persistence</text>
+
+    <rect x="392" y="1042" width="14" height="14" rx="3" fill="#8b5cf6"/>
+    <text x="414" y="1054">External AI / APIs</text>
+
+    <rect x="562" y="1042" width="14" height="14" rx="3" fill="#f59e0b"/>
+    <text x="584" y="1054">Reliability principles</text>
+  </g>
+
+  <text x="2140" y="1054" font-size="13" font-weight="500" fill="#64748b" text-anchor="end">Stack: Next.js 14 &#183; React 18 &#183; Tailwind &#183; Zod &#183; OpenAI SDK &#183; Tavily &#183; pdf-parse &#183; Vercel</text>
+</svg>

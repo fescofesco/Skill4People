@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The AI Scientist — System Architecture</title>
+  <style>
+    :root { color-scheme: light; }
+    html, body { margin: 0; padding: 0; background: #0f172a; min-height: 100vh; font-family: 'Inter', 'Segoe UI', sans-serif; color: #e2e8f0; }
+    .wrap { max-width: 1960px; margin: 0 auto; padding: 24px; }
+    h1 { margin: 0 0 4px 0; font-weight: 700; letter-spacing: -0.5px; font-size: 22px; }
+    p  { margin: 0 0 18px 0; color: #94a3b8; font-size: 14px; }
+    .frame { background: #ffffff; border-radius: 12px; box-shadow: 0 30px 80px rgba(0,0,0,.4); overflow: hidden; }
+    .frame img, .frame object, .frame svg { display: block; width: 100%; height: auto; }
+    .actions { margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; }
+    .actions a { color: #93c5fd; text-decoration: none; padding: 8px 14px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); }
+    .actions a:hover { background: rgba(255,255,255,.12); color: #ffffff; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>The AI Scientist — Slide diagrams</h1>
+    <p>Slide-ready vector diagrams. Right-click any image to save, or import the underlying <code>.svg</code> directly into PowerPoint / Keynote / Google Slides.</p>
+
+    <h2 style="font-weight:600;font-size:16px;color:#cbd5e1;margin:0 0 8px 0;">1 — System architecture</h2>
+    <div class="frame">
+      <object type="image/svg+xml" data="architecture.svg" aria-label="System architecture diagram"></object>
+    </div>
+    <div class="actions">
+      <a href="architecture.svg" download>Download SVG</a>
+      <a href="architecture.svg" target="_blank">Open in new tab</a>
+    </div>
+
+    <h2 style="font-weight:600;font-size:16px;color:#cbd5e1;margin:32px 0 8px 0;">2 — POST /api/generate-plan request lifecycle</h2>
+    <div class="frame">
+      <object type="image/svg+xml" data="sequence-generate-plan.svg" aria-label="Generate plan sequence diagram"></object>
+    </div>
+    <div class="actions">
+      <a href="sequence-generate-plan.svg" download>Download SVG</a>
+      <a href="sequence-generate-plan.svg" target="_blank">Open in new tab</a>
+    </div>
+  </div>
+</body>
+</html>
